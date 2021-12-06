@@ -13921,3 +13921,15 @@ patchsetversion=1.1
       datamodified=0,E900010000
       datacondbehave=0,0
   footer=230
+  header=231
+      enabled=1
+      name=Stop Ahmet from activating heavy triggers
+      description=Removes Ahmet's ability to activate triggers.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,16D3
+      datadefault=0,E8188B0400
+      datamodified=0,9090909090
+      datacondbehave=0,0
+  footer=231
