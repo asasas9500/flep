@@ -13941,3 +13941,19 @@ patchsetversion=1.1
       datamodified=0,9090909090
       datacondbehave=0,0
   footer=231
+  header=232
+      enabled=1
+      name=Fix body parts persistence
+      description=Fixes the removal of body parts when other effects are present.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,53E36
+      datadefault=0,66C741221042
+      datamodified=0,E945813F0090
+      datacondbehave=0,0
+      dataoffset=1,FBF80
+      datadefault=1,
+      datamodified=1,66C741221042C74124000000005EC3
+      datacondbehave=1,1
+  footer=232
