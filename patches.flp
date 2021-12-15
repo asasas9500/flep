@@ -13965,3 +13965,17 @@ patchsetversion=1.1
       datamodified=1,66C741221042C74124000000005EC3
       datacondbehave=1,1
   footer=232
+  header=233
+      enabled=1
+      name=Jeep explosion after falling
+      description=Makes the Jeep explode if the fall speed is higher than the limit.
+      category=
+      dependencies=
+      filename=patches.bin
+      parenabled=0,1
+      parname=0,Fall speed limit
+      paroffset=0,68778
+      parvalue=0,300
+      partype=0,6
+      parcondbehave=0,0
+  footer=233
