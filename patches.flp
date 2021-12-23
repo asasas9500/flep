@@ -13361,6 +13361,18 @@ patchsetversion=1.1
   footer=207
   header=208
       enabled=1
+      name=Ammo Counter -  Shotgun 6x Divider OFF
+      description=An optional extra patch for the Ammo Counter, disables the 6x divider for shotgun ammo, as in the patch://Inventory Customizer -  Shotgun 6x Divider OFF
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,FB3E5
+      datadefault=0,33C0B8ABAAAA2AF7ED8BEAC1ED1F03D5
+      datamodified=0,8BD5EB0C909090909090909090909090
+      datacondbehave=0,0
+  footer=208
+  header=209
+      enabled=1
       name=Fix sound radius bug
       description=Rectifies wrong maximum distance definition when updating sound parameters.
       category=
@@ -13370,8 +13382,8 @@ patchsetversion=1.1
       datadefault=0,33DB8A5803
       datamodified=0,0FB6580343
       datacondbehave=0,0
-  footer=208
-  header=209
+  footer=209
+  header=210
       enabled=1
       name=Upward standing jump ledge grab animation
       description=Changes the animation for grabbing a ledge after upward standing jump and its starting frame. The new animation can have any state ID.
@@ -13406,8 +13418,8 @@ patchsetversion=1.1
       parvalue=1,12
       partype=1,6
       parcondbehave=1,1
-  footer=209
-  header=210
+  footer=210
+  header=211
       enabled=1
       name=Ledge release animation
       description=Modifies the animation performed after releasing from a ledge and the frame at which it should start. The ledge release animation can have any state ID.
@@ -13442,8 +13454,8 @@ patchsetversion=1.1
       parvalue=1,9
       partype=1,6
       parcondbehave=1,1
-  footer=210
-  header=211
+  footer=211
+  header=212
       enabled=1
       name=Pickup flare frames
       description=Sets the frames at which the flare being picked up goes to Lara's hand.
@@ -13468,8 +13480,8 @@ patchsetversion=1.1
       parvalue=2,58
       partype=2,5
       parcondbehave=2,0
-  footer=211
-  header=212
+  footer=212
+  header=213
       enabled=1
       name=Pickup item frames
       description=Sets the frames at which the item being picked up is collected.
@@ -13522,8 +13534,8 @@ patchsetversion=1.1
       parvalue=6,123
       partype=6,5
       parcondbehave=6,0
-  footer=212
-  header=213
+  footer=213
+  header=214
       enabled=1
       name=Jump delay
       description=Removes the delay of four frames before jumping forward in animation 0 when its preceded by animation 6.
@@ -13534,8 +13546,8 @@ patchsetversion=1.1
       datadefault=0,00
       datamodified=0,01
       datacondbehave=0,0
-  footer=213
-  header=214
+  footer=214
+  header=215
       enabled=1
       name=Dive delay
       description=Changes the delay before swimming when Lara is treading on the water surface.
@@ -13560,8 +13572,8 @@ patchsetversion=1.1
       parvalue=0,9
       partype=0,5
       parcondbehave=0,1
-  footer=214
-  header=215
+  footer=215
+  header=216
       enabled=1
       name=Crawlspace pickup
       description=Enables picking up items while crawling and sets the frame where they are collected. The pickup animation used must be 292, with state ID 39, and animcommand Set free hands must be present.
@@ -13590,8 +13602,8 @@ patchsetversion=1.1
       parvalue=0,22
       partype=0,5
       parcondbehave=0,1
-  footer=215
-  header=216
+  footer=216
+  header=217
       enabled=1
       name=Prevent camera position freeze
       description=Forces the camera to always update its position.
@@ -13602,8 +13614,8 @@ patchsetversion=1.1
       datadefault=0,66390DD8E77F00
       datamodified=0,E9220100009090
       datacondbehave=0,0
-  footer=216
-  header=217
+  footer=217
+  header=218
       enabled=1
       name=Customize sas gun
       description=This patch allows you to customize the sas gun properties.//The coordinates are used for the gunflashes.////X: higher numbers push the flash further to the right of the Sas. Negative numbers to its left.////Y: positive numbers move the flash down, negative numbers up.////Z: higher numbers push the flash further in front of the Sas. Negative numbers land the flash behind the Sas.////The mesh # should be the mesh # of the gun.////Same applies for the grenade offsets.//Note: the light emitting when the Sas fires is tied to the grenade offsets.
@@ -13658,8 +13670,8 @@ patchsetversion=1.1
       parvalue=7,7
       partype=7,7
       parcondbehave=7,0
-  footer=217
-  header=218
+  footer=218
+  header=219
       enabled=1
       name=Fix bottom right corner bug
       description=Fixes the bug where rooms are not rendered if the camera is in the bottom right corner of the map (top right corner in Tomb Editor).
@@ -13678,8 +13690,8 @@ patchsetversion=1.1
       datadefault=2,
       datamodified=2,A1C8707E00DB053C3C7500D9E0DB054C3C7500D9E0DB055C3C7500D9E0DB00D80DD8734A00D8CBDB4004D80DD8734A00D8CBDB4008D80DD8734A00D8CBDEC1DEC1D91D283B7500DB4010D80DD8734A00D8CBDB4014D80DD8734A00D8CBDB4018D80DD8734A00D8CBDEC1DEC1D91D2C3B7500DB4020D80DD8734A00DECBDB4024D80DD8734A00DECADB4028D80DD8734A00DEC9DEC1DEC1D91D303B7500DB00D80DD8734A00D91DF83A7500DB4010D80DD8734A00D91DFC3A7500DB4020D80DD8734A00D91D003B7500DB4004D80DD8734A00D91D083B7500DB4014D80DD8734A00D91D0C3B7500DB4024D80DD8734A00D91D103B7500DB4008D80DD8734A00D91D183B7500DB4018D80DD8734A00D91D1C3B7500DB4028D80DD8734A00D91D203B750031C0A3043B7500A3143B7500A3243B7500C705343B75000000803F68F83A75006A02A1B9387500508B08FF516450E8EA3FC4FF83C404C605E5B8840001E9DF30C0FF803DE5B8840000750B8B35C8707E00E9DF2EC4FFC605E5B8840000E9BD2FC4FF00
       datacondbehave=2,1
-  footer=218
-  header=219
+  footer=219
+  header=220
       enabled=1
       name=TR2Main widescreen
       description=Brings to TRLE the widescreen formula used by TR2Main. Vertical FOV is proportional to the scaled height. The default values are 240 on PC and 200 on PS.
@@ -13712,8 +13724,8 @@ patchsetversion=1.1
       parvalue=0,240
       partype=0,7
       parcondbehave=0,1
-  footer=219
-  header=220
+  footer=220
+  header=221
       enabled=1
       name=Fix jumping through objects
       description=Fixes the bug where Lara can slowly embed into objects by doing continuous running jumps at it.////NOTE: This causes a 1 frame delay when landing jumps. Unfortunately there is no way to avoid it, but it is barely noticeable.
@@ -13724,8 +13736,8 @@ patchsetversion=1.1
       datadefault=0,E8C6B20000
       datamodified=0,9090909090
       datacondbehave=0,0
-  footer=220
-  header=221
+  footer=221
+  header=222
       enabled=1
       name=Static collision
       description=Restores hard collisions between Lara and statics.
@@ -13756,8 +13768,8 @@ patchsetversion=1.1
       datadefault=5,
       datamodified=5,396CE4600F8E38ADBFFF3954E4180F8D2EADBFFFDF470CD80D2CBC8400D9EBDEC9D9FB8B2F8B57082B6CE4142B54E420896CE4648954E468DB44E464DB44E468D9C1D8CBD9C1D8CDDEE9D9CAD8CCD9C9D8CBDEC1D9C1DE4110D9CADE4112D9E0D9C1DE4118D9CADE411AD9E08B44E458DB4048DBF4760CDBF37608DBF27604DBF17713DDD8DDD8DDD8DDD8DDD8DDD8DDD8E9ACACBFFFDCECDCEBDCEADCE9D9CCDBF27704D9CAD9E0D9CBDBF17704D9C9D9E0D9CADDD8DDD80FB758760FB7770C29F381C3002000000FB7DBC1EB0EF6C3010F857E000000D9C1D9E1DFF3765566C7407A0100DDD9D9EE31DBDFF10F96C3D8049D30BC8400D9C0D8CCD9C9D8CB8B68648B506C2B6CE4142B54E420896CE4648954E468DB44E464D8CCDB44E468D8CEDEE9D9C0D8CDD8C3D9C9D8CED8EAE99A000000D1EBD9EE31C9DFF20F97C131D98D5C09026689587AD9C1D8CCD9C2D8CED9E0EB79D9C0D9E1DFF3765266C7407A0100DDD8D9EE31DBDFF10F96C3D8049D30BC8400D9C0D8CBD9C9D8CC8B68648B506C2B6CE4142B54E420896CE4648954E468DB44E464D8CDDB44E468D8CDDEC1D9C0D8CED8C3D9C9D8CDD8E2EB1FD1EBD9EE31C9DFF10F97C131D9F7D98D5C09046689587AD9C0D8CDD9C1D8CDD97CE4180FB75CE41881CB000C000066895CE41AD96CE41ADB5860DB5858D96CE418DDD8DDD8DDD8DDD8DDD8E97AABBFFF8B94E480000000528B54247850515256E84CA9BFFF85C00F84960000008B94E4880000000356588914E48B8CE490000000034E60894CE4048B84E4940000008944E4088D44E40850518B84E4940000005052E8BADCBFFF83C4108944E40C8B14E48B4CE404518B8CE490000000515250E8ECDFBFFF83C4108B8CE48C00000081E90002000039C87C248B84E48C0000008B14E48B4CE4045150528B44E41850E80DF1BFFF83C4103B44E4547E06F75E58F75E608B06E943A5BFFF90909000000038000000C000000040
       datacondbehave=5,1
-  footer=221
-  header=222
+  footer=222
+  header=223
       enabled=1
       name=Fix inconsistent camera angle when hanging
       description=Makes the camera look Lara from above when she is hanging at thin ledges and horizontally when she is monkey-swinging.
@@ -13768,8 +13780,8 @@ patchsetversion=1.1
       datadefault=0,66890D6CDF800066890D6EDF8000741AA8407420
       datamodified=0,890D6CDF80007412A840742866394A227E22EB16
       datacondbehave=0,0
-  footer=222
-  header=223
+  footer=223
+  header=224
       enabled=1
       name=Enable gliding camera
       description=Enables TR1/2 glide camera, using fixed cameras.////Speed when moving to the camera position is determined through the "Glide timer" on fixed cameras (in Tomb Editor, select the camera and press O).//Speed range is 0 to 31. Original fixed camera behavior is speed 0, for the other values, the higher the speed value, the slower the camera is. Meaning 1 is fastest and 31 is slowest.////The "Glide out" option determines how the camera moves back to Lara. If it is unchecked the camera snaps, otherwise the camera glides.////Requires TE 1.4.7 or later.
@@ -13808,8 +13820,8 @@ patchsetversion=1.1
       datadefault=7,FFFF
       datamodified=7,9090
       datacondbehave=7,0
-  footer=223
-  header=224
+  footer=224
+  header=225
       enabled=1
       name=Jeep without Ignition Key
       description=Removes the requirement that Lara has the Ignition Key in order to get into the Jeep.
@@ -13824,8 +13836,8 @@ patchsetversion=1.1
       datadefault=1,85
       datamodified=1,84
       datacondbehave=1,0
-  footer=224
-  header=225
+  footer=225
+  header=226
       enabled=1
       name=Fix collision when swimming on water surface
       description=Fixes the bug where objects lose collision when Lara is swimming on water surface.
@@ -13852,8 +13864,8 @@ patchsetversion=1.1
       datadefault=4,
       datamodified=4,8A878400000024D00C10888784000000E9C958BEFF
       datacondbehave=4,1
-  footer=225
-  header=226
+  footer=226
+  header=227
       enabled=1
       name=Fix hair while wading
       description=Fixes Lara's hair while wading in more shallow water. Also fixes the bug where Lara's hair floats when vaulting out of water in wading status.
@@ -13864,8 +13876,8 @@ patchsetversion=1.1
       datadefault=0,79
       datamodified=0,4F
       datacondbehave=0,0
-  footer=226
-  header=227
+  footer=227
+  header=228
       enabled=1
       name=Multi-pickup
       description=Enables picking up multiple pickup items in one go, as in the first three Tomb Raider games. It will work with floor pickups, underwater pickups, crawlspace pickups and pedestal pickups. Pickup triggers with OCB 64 pickups will still get activated.////The additional pickup items will be searched in proximity of the first detected pickup, according to the Pickup detection range (default value 128 units i.e. 1/2 click, max 255). Pickups positioned any further from the main pickup will not be detected.////Also, pickups with the following OCB numbers will be excluded from multi-pickup, due to potentially buggy behavior://2 - pried off with crowbar//256 - mirror puzzle pickup.
@@ -13898,8 +13910,8 @@ patchsetversion=1.1
       parvalue=0,128
       partype=0,3
       parcondbehave=0,0
-  footer=227
-  header=228
+  footer=228
+  header=229
       enabled=1
       name=Fix pedestal pickup bug
       description=Fixes a lesser-known bug of TRLE - when Lara is located in the space directly beneath a pedestal pickup (OCB 3 or 4), she can pick it up when standing below it, even if in a different room.////It does so by introducing a cutoff distance (4 clicks) below the pickup. If the distance is greater, the item won't be picked up.
@@ -13914,8 +13926,8 @@ patchsetversion=1.1
       datadefault=1,
       datamodified=1,6681FA00047C0466BA00046689157ADB4A00E9DAB0C0FF
       datacondbehave=1,1
-  footer=228
-  header=229
+  footer=229
+  header=230
       enabled=1
       name=Change puzzle insert frame
       description=Allows to change the frame at which a puzzle item is inserted into the puzzle hole. Useful if you have a custom puzzle inserting animation (#134). Default frame number is 80.
@@ -13928,8 +13940,8 @@ patchsetversion=1.1
       parvalue=0,80
       partype=0,3
       parcondbehave=0,0
-  footer=229
-  header=230
+  footer=230
+  header=231
       enabled=1
       name=Remove jump to ladder
       description=This patch will always force the slow climb up animation (#160) in front of a climbable wall, replacing the standard jump up animation with tall ladders.
@@ -13940,8 +13952,8 @@ patchsetversion=1.1
       datadefault=0,3D80F8FFFF
       datamodified=0,E900010000
       datacondbehave=0,0
-  footer=230
-  header=231
+  footer=231
+  header=232
       enabled=1
       name=Stop Ahmet from activating heavy triggers
       description=Removes Ahmet's ability to activate triggers.
@@ -13952,8 +13964,8 @@ patchsetversion=1.1
       datadefault=0,E8188B0400
       datamodified=0,9090909090
       datacondbehave=0,0
-  footer=231
-  header=232
+  footer=232
+  header=233
       enabled=1
       name=Fix body parts persistence
       description=Fixes the removal of body parts when other effects are present.
@@ -13968,8 +13980,8 @@ patchsetversion=1.1
       datadefault=1,
       datamodified=1,66C741221042C74124000000005EC3
       datacondbehave=1,1
-  footer=232
-  header=233
+  footer=233
+  header=234
       enabled=1
       name=Jeep explosion after falling
       description=Makes the Jeep explode if the fall speed is higher than the limit.
@@ -13982,4 +13994,4 @@ patchsetversion=1.1
       parvalue=0,300
       partype=0,6
       parcondbehave=0,0
-  footer=233
+  footer=234
