@@ -13995,3 +13995,15 @@ patchsetversion=1.1
       partype=0,6
       parcondbehave=0,0
   footer=234
+  header=235
+      enabled=1
+      name=Fix Lara's crowbar door positioning
+      description=Moves Lara's positioning for the crowbar door further back, so she is no longer partially embedded into the door.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,00ACC80
+      datadefault=0,00010000
+      datamodified=0,8C000000
+      datacondbehave=0,0
+  footer=235
