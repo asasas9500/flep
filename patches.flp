@@ -14203,3 +14203,97 @@ patchsetversion=1.1
       partype=19,9
       parcondbehave=19,0
   footer=237
+  header=238
+      enabled=1
+      name=Ammo type options - Menu Button Show/Hide
+      description=Allows you to set the amount of alternative ammo available for the Shotgun, Grenade Gun, and Crossbow. This patch comes in several parts.
+
+////In this patch, you can disable or keep the "Choose Ammo" menu option with the following values.////
+
+For Shotgun and Crossbow://
+Disable both = 0//
+Disable Crossbow but keep Shotgun = 64//
+Disable Shotgun but keep Crossbow = 128//
+Keep Shotgun and Crossbow = 192////
+
+For Grenade Gun://
+Disable = 0
+//Enable = 1
+      category=
+      dependencies=
+      filename=patches.bin
+      parenabled=0,1
+      parname=0,Shotgun and Crossbow
+      paroffset=0,3D072
+      parvalue=0,192
+      partype=0,3
+      parcondbehave=0,0
+      parenabled=1,1
+      parname=1,Grenade Gun
+      paroffset=1,3D077
+      parvalue=1,1
+      partype=1,3
+      parcondbehave=1,0
+  footer=238
+  header=239
+      enabled=1
+      name=Ammo type options - Shotgun
+      description=Removes Shotgun_Ammo2 from the inventory. ////
+
+If you use this patch, you must also use the "Ammo type options - Show/Hide Menu Option" patch to hide the "Choose Ammo" menu option for the Shotgun.
+      category=
+      dependencies=Ammo type options - Menu Button Show/Hide
+      filename=patches.bin
+      dataoffset=0,3D76C
+      datadefault=0,FEC0
+      datamodified=0,B001
+      datacondbehave=0,0
+  footer=239
+  header=240
+      enabled=1
+      name=Ammo type options - Grenade Gun
+      description=Set the amount of alternative ammo to 2 or 1.////If you set the ammo amount to 1 in this patch, you must use the "Ammo type options - Show/Hide Menu Option" patch to hide the "Choose Ammo" menu option for the Grenade Gun.
+      category=
+      dependencies=Ammo type options - Menu Button Show/Hide
+      filename=patches.bin
+      dataoffset=0,3D714
+      datadefault=0,FEC0
+      datamodified=0,B001
+      datacondbehave=0,0
+      dataoffset=1,3D19A
+      datadefault=1,01
+      datamodified=1,00
+      datacondbehave=1,0
+      parenabled=0,1
+      parname=0,Amount of ammo to display
+      paroffset=0,3D715
+      parvalue=0,2
+      partype=0,3
+      parcondbehave=0,1
+  footer=240
+  header=241
+      enabled=1
+      name=Ammo type options - Crossbow
+      description=Set the amount of alternative ammo to 2 or 1.////If you set the ammo amount to 1 in this patch, you must use the "Ammo type options - Show/Hide Menu Option" patch to hide the "Choose Ammo" menu option for the Crossbow.
+      category=
+      dependencies=Ammo type options - Menu Button Show/Hide
+      filename=patches.bin
+      dataoffset=0,FBFB0
+      datadefault=0,909090909090909090909090909090909090909090909090909090909090
+      datamodified=0,F6C2800F8407000000C605B0E87F0002F6C6010F846217BFFFE9E816BFFF
+      datacondbehave=0,0
+      dataoffset=1,3D6B1
+      datadefault=1,F6C6017475
+      datamodified=1,E9FAE84000
+      datacondbehave=1,0
+      dataoffset=2,3D196
+      datadefault=2,7805
+      datamodified=2,7405
+      datacondbehave=2,0
+      parenabled=0,1
+      parname=0,Amount of ammo to display
+      paroffset=0,FBFBF
+      parvalue=0,2
+      partype=0,3
+      parcondbehave=0,1
+  footer=241
