@@ -14297,3 +14297,23 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       partype=0,3
       parcondbehave=0,1
   footer=241
+  header=242
+      enabled=1
+      name=Disable LoadScreens
+      description=Disables loading screens between levels.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,5203E
+      datadefault=0,e85dc50200
+      datamodified=0,9090909090
+      datacondbehave=0,0
+      dataoffset=1,7B600
+      datadefault=1,a0
+      datamodified=1,c3
+      datacondbehave=1,0
+      dataoffset=2,51CA9
+      datadefault=2,e8f2c80200
+      datamodified=2,9090909090
+      datacondbehave=2,0
+  footer=242
