@@ -14317,3 +14317,15 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=2,9090909090
       datacondbehave=2,0
   footer=242
+  header=243
+      enabled=1
+      name=Remove KNIGHTS_TEMPLAR health regeneration
+      description=Removes the health regeneration from the KNIGHTS_TEMPLAR slot. To make him killable, additional TRNG scripting is required.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,13011
+      datadefault=0,66894622
+      datamodified=0,90909090
+      datacondbehave=0,0
+  footer=243
