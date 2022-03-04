@@ -14329,3 +14329,15 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=0,90909090
       datacondbehave=0,0
   footer=243
+  header=244
+      enabled=1
+      name=Fix multi-mesh inventory item drawing
+      description=Fixes multi-mesh inventory items not being displayed correctly.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,3BD26
+      datadefault=0,19
+      datamodified=0,18
+      datacondbehave=0,0
+  footer=244
