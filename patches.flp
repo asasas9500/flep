@@ -14341,3 +14341,35 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=0,18
       datacondbehave=0,0
   footer=244
+  header=245
+      enabled=1
+      name=Disable shotgun smoke sprite
+      description=Removes completely the shotgun smoke sprites when you shoot.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,29088
+      datadefault=0,E8B3F20000
+      datamodified=0,9090909090
+      datacondbehave=0,0
+      dataoffset=1,2ADF7
+      datadefault=1,E844D50000
+      datamodified=1,9090909090
+      datacondbehave=1,0
+      dataoffset=2,38BBC
+      datadefault=2,E87FF7FFFF
+      datamodified=2,9090909090
+      datacondbehave=2,0
+  footer=245
+  header=246
+      enabled=1
+      name=Remove Knights Templar sparks
+      description=Prevents the generation of sparks next to the Knights Templar sword.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,12F65
+      datadefault=0,740F83F801
+      datamodified=0,E986000000
+      datacondbehave=0,0
+  footer=246
