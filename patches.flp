@@ -14757,3 +14757,39 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=14,8D0495A0B37F0031C966837E2CFF0F94C16BC91E668988B2050000E95E6FC0FF8D048DA0B37F000FBF8EB205000085C90F84D3C5C0FF4966898EB205000085C90F85C3C5C0FF8D9E240100008DBE44020000891383C30C39FB75F7E9A9C5C0FF8B44E42401CA8B4CE4186683B9B20500001E0F85506EC0FFBB0060000089C1C1E10A29CB895EF8C17EFC04C1E107C7861801000000400000898E1C010000C7862001000000400000E91B6EC0FF
       datacondbehave=14,1
   footer=259
+  header=260
+      enabled=1
+      name=Save ropes
+      description=Preserves in the savegame the momentum of all ropes.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,5A363
+      datadefault=0,7449
+      datamodified=0,31C0
+      datacondbehave=0,0
+      dataoffset=1,5A369
+      datadefault=1,B405
+      datamodified=1,841C
+      datacondbehave=1,0
+      dataoffset=2,5B104
+      datadefault=2,7439
+      datamodified=2,31C0
+      datacondbehave=2,0
+      dataoffset=3,5B10A
+      datadefault=3,B405
+      datamodified=3,841C
+      datacondbehave=3,0
+  footer=260
+  header=261
+      enabled=1
+      name=Fix rope glitch
+      description=Fixes the incorrect numeric type used in the rope velocity calculation.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,23F50
+      datadefault=0,81E1FFFF0000
+      datamodified=0,0FBFC9909090
+      datacondbehave=0,0
+  footer=261
