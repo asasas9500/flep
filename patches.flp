@@ -14793,3 +14793,17 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=0,0FBFC9909090
       datacondbehave=0,0
   footer=261
+  header=262
+      enabled=1
+      name=Change blood sprite
+      description=Set the blood sprite ID. The sprite must be in the DEFAULT_SPRITES slot.
+      category=
+      dependencies=
+      filename=patches.bin
+      parenabled=0,1
+      parname=0,Sprite ID
+      paroffset=0,87EAD
+      parvalue=0,15
+      partype=0,3
+      parcondbehave=0,0
+  footer=262
