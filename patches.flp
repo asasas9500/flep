@@ -14807,3 +14807,29 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       partype=0,3
       parcondbehave=0,0
   footer=262
+  header=263
+      enabled=1
+      name=FLEP number
+      description=Stores a secret number that can be used for integrity check.
+      category=
+      dependencies=
+      filename=patches.bin
+      parenabled=0,1
+      parname=0,Number
+      paroffset=0,FC750
+      parvalue=0,144
+      partype=0,3
+      parcondbehave=0,1
+  footer=263
+  header=264
+      enabled=1
+      name=Disable harmless Sentry Gun behaviour
+      description=Makes the Sentry Gun attack even if Weapon Code Key is present in inventory.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,3F1E3
+      datadefault=0,757B
+      datamodified=0,31C0
+      datacondbehave=0,0
+  footer=264
