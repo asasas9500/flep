@@ -14833,3 +14833,17 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=0,31C0
       datacondbehave=0,0
   footer=264
+  header=265
+      enabled=1
+      name=Burning torch customizer
+      description=Change the sound effect of the burning torch item.
+      category=
+      dependencies=
+      filename=patches.bin
+      parenabled=0,1
+      parname=0,Sound Effect
+      paroffset=0,1F3AE
+      parvalue=0,150
+      partype=0,3
+      parcondbehave=0,0
+  footer=265
