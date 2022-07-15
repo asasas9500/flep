@@ -7,7 +7,7 @@
 #define flame_end_colour_g   VAR_U_(0x0084C774, uchar)
 #define flame_end_colour_b   VAR_U_(0x0084C775, uchar)
 
-#define GetRandomControl	( (long(*)()) 0x0048eb50 )
+#define GetRandomControl	( (long(*)(void)) 0x0048eb50 )
 
 long check_flep(long number)
 {
