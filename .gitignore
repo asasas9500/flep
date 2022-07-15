@@ -1,3 +1,4 @@
-*
-!.gitignore
-!patches.flp
+/*
+!/.gitignore
+!/patches.flp
+!/Plugin_FLEP/
