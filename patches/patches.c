@@ -1,3 +1,8 @@
+#define savegame	VAR_U_(0x007F75A0, SAVEGAME_INFO)
+#define gfCurrentLevel	VAR_U_(0x007FD170, char)
+
+#define sprintf	( (long(*)(char*, char*, ...)) 0x0049DB7F )
+
 #define flep_number	         VAR_U_(0x0084C750, uchar)
 
 #define flame_start_colour_r VAR_U_(0x0084C770, uchar)

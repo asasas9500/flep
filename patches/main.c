@@ -433,6 +433,77 @@ typedef struct
 
 typedef struct
 {
+	char Text[80];
+} StrText80;
+
+typedef struct
+{
+	union
+	{
+		long Long;
+
+		struct
+		{
+			short Short1;
+			short Short2;
+		};
+
+		struct
+		{
+			uchar Byte1;
+			uchar Byte2;
+			uchar Byte3;
+			uchar Byte4;
+		};
+	};
+} StrGroupLongVar;
+
+typedef struct
+{
+	StrGroupLongVar Alfa;
+	StrGroupLongVar Beta;
+	StrGroupLongVar Delta;
+	long Timer;
+} StrVariableNames;
+
+typedef struct
+{
+	union
+	{
+		long VetNumeriLong[4];
+		short VetNumeriShort[8];
+		uchar VetNumeriByte[16];
+		StrVariableNames Name;
+	};
+} StrBloccoNumVar;
+
+typedef struct
+{
+	StrBloccoNumVar NumWar;
+	StrText80 VetTextVar[4];
+
+	union
+	{
+		long VetStoreLong[16];
+		short VetStoreShort[32];
+		uchar VetStoreByte[64];
+	};
+
+	char LastInputText[80];
+	long LastInputNumber;
+	long CurrentValue;
+	char TextBig[320];
+	ulong VetExtra[20];
+} StrVariabiliGlobTRNG;
+
+typedef struct
+{
+	StrVariabiliGlobTRNG Globals;
+	StrBloccoNumVar Locals;
+} StrBaseVarAll;
+
+typedef struct
+{
 	uchar opCode;	// must be 0xE9;
 	ulong offset;	// jump offset
 } JMP;
@@ -449,9 +520,7 @@ do \
 #define VAR_U_(address, type)		(*(type*)(address))
 #define ARRAY_(address, type, length)	(*(type(*)length)(address))
 
-#define savegame	VAR_U_(0x007F75A0, SAVEGAME_INFO)
-
-#define sprintf	( (long(*)(char*, char*, ...)) 0x0049DB7F )
+__attribute__ ((dllimport)) extern StrBaseVarAll BaseVariableTRNG;
 
 #include "patches.c"
 
@@ -534,6 +603,11 @@ void cbAssignSlotMine(ushort Slot, ushort ObjType)
 	switch (ObjType)
 	{
 	}
+}
+
+void cbInitObjects(void)
+{
+
 }
 
 void Inject(void)
