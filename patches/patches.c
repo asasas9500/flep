@@ -19,9 +19,14 @@ long check_flep(long number)
 	return flep_number == number;
 }
 
+long patch_secret_counter_status;
+
 long print_secret_counter(char* buf, char* format)
 {
 	uchar secrets, count;
+
+	if (!patch_secret_counter_status)
+		return sprintf(buf, format, savegame.Game.Secrets);
 
 	secrets = savegame.Level.Secrets;
 	count = 0;
@@ -44,4 +49,9 @@ void burning_torch_customizer_colour(SPARKS* sptr)
 	sptr->dR = (GetRandomControl() & 0x3F) + flame_end_colour_r;
 	sptr->dG = (GetRandomControl() & 0x3F) + flame_end_colour_g;
 	sptr->dB = flame_end_colour_b;
+}
+
+void set_patch_secret_counter_status(long status)
+{
+	patch_secret_counter_status = status;
 }

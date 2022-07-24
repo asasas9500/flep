@@ -529,17 +529,18 @@ extern void ReadMyData(void* Data, ulong Size);
 
 void cbSaveMyData(void)
 {
-
+	WriteMyData(&patch_secret_counter_status, sizeof(long));
 }
 
 void cbLoadMyData(void)
 {
-
+	ReadMyData(&patch_secret_counter_status, sizeof(long));
 }
 
 void cbInitLoadNewLevel(void)
 {
-
+	if (!gfCurrentLevel)
+		patch_secret_counter_status = 1;
 }
 
 long cbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort ActivationMode)
@@ -550,6 +551,9 @@ long cbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort Activ
 
 	switch (FlipIndex)
 	{
+	case 1:
+		set_patch_secret_counter_status(Timer);
+		break;
 	}
 
 	return RetValue;
