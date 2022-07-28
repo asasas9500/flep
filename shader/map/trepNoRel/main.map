@@ -1,0 +1,164 @@
+
+- NASM Map file ---------------------------------------------------------------
+
+Source file:  main.asm
+Output file:  main.bin
+
+-- Program origin -------------------------------------------------------------
+
+0084A2D0
+
+-- Sections (summary) ---------------------------------------------------------
+
+Vstart            Start             Stop              Length    Class     Name
+          84A2D0            84A2D0            84B090  00000DC0  progbits  .text
+
+-- Sections (detailed) --------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+class:     progbits
+length:                 DC0
+start:               84A2D0
+align:                   10
+follows:   not defined
+vstart:              84A2D0
+valign:    not defined
+vfollows:  not defined
+
+-- Symbols --------------------------------------------------------------------
+
+---- No Section ---------------------------------------------------------------
+
+Value     Name
+00000000  rule
+00000000  rule.condition
+00000002  rule.level
+00000003  rule.result
+00000004  rule.subject
+00000008  rule.subject_type
+00000009  rule.blend_mode
+0000000B  rule.operation
+0000000C  rule.colour
+00000014  rule_size
+
+
+---- Section .text ------------------------------------------------------------
+
+Real              Virtual           Name
+          84A2D0            84A2D0  blend_table
+          84A2F0            84A2F0  void
+          84A300            84A300  multiply
+          84A310            84A310  screen
+          84A330            84A330  darken
+          84A340            84A340  lighten
+          84A350            84A350  difference
+          84A360            84A360  operation_table
+          84A370            84A370  cast
+          84A380            84A380  addition
+          84A390            84A390  subtraction
+          84A3A0            84A3A0  jmp_0x448B5C
+          84A3A5            84A3A5  jmp_0x448B5C.loop
+          84A3C2            84A3C2  jmp_0x448B5C.condition
+          84A3D0            84A3D0  jmp_0x448B5C.check
+          84A3DC            84A3DC  jmp_0x448B5C.continue
+          84A400            84A400  jmp_0x451C92
+          84A405            84A405  jmp_0x451C92.loop
+          84A422            84A422  jmp_0x451C92.condition
+          84A42C            84A42C  jmp_0x451C92.continue
+          84A450            84A450  jmp_0x45202C
+          84A455            84A455  jmp_0x45202C.loop
+          84A472            84A472  jmp_0x45202C.condition
+          84A47C            84A47C  jmp_0x45202C.continue
+          84A4A0            84A4A0  jmp_0x409110
+          84A4C0            84A4C0  jmp_0x40A79B
+          84A4E0            84A4E0  jmp_0x40A82C
+          84A500            84A500  jmp_0x40FCEF
+          84A520            84A520  jmp_0x4158BA
+          84A540            84A540  jmp_0x41D222
+          84A560            84A560  jmp_0x41D2AA
+          84A580            84A580  jmp_0x41D2B8
+          84A5A0            84A5A0  jmp_0x41D57A
+          84A5D0            84A5D0  jmp_0x41D6DA
+          84A5F0            84A5F0  jmp_0x41D805
+          84A610            84A610  jmp_0x42077A
+          84A630            84A630  jmp_0x420788
+          84A650            84A650  jmp_0x420818
+          84A670            84A670  jmp_0x420831
+          84A690            84A690  jmp_0x432C10
+          84A6B0            84A6B0  jmp_0x432F59
+          84A6D0            84A6D0  jmp_0x438FBE
+          84A6F0            84A6F0  jmp_0x439691
+          84A720            84A720  jmp_0x43A051
+          84A740            84A740  jmp_0x43A152
+          84A760            84A760  jmp_0x43A389
+          84A780            84A780  jmp_0x44D0E4
+          84A7B0            84A7B0  jmp_0x44D535
+          84A7E0            84A7E0  jmp_0x44E980
+          84A7F0            84A7F0  jmp_0x44E997
+          84A810            84A810  jmp_0x44EAF8
+          84A830            84A830  jmp_0x44F1C0
+          84A850            84A850  jmp_0x44F27B
+          84A880            84A880  jmp_0x44F775
+          84A8B0            84A8B0  jmp_0x44F7BE
+          84A8E0            84A8E0  jmp_0x44F8E0
+          84A900            84A900  jmp_0x44F993
+          84A930            84A930  jmp_0x44F9DA
+          84A960            84A960  jmp_0x44FB33
+          84A980            84A980  jmp_0x463C4B
+          84A9A0            84A9A0  jmp_0x463CCE
+          84A9C0            84A9C0  jmp_0x470542
+          84A9F0            84A9F0  jmp_0x470542.resume
+          84AA70            84AA70  jmp_0x4707BD
+          84AA83            84AA83  jmp_0x4707BD.proceed
+          84AA9A            84AA9A  jmp_0x4707BD.resume
+          84AB10            84AB10  jmp_0x47086E
+          84AB15            84AB15  jmp_0x47086E.loop
+          84AB34            84AB34  jmp_0x47086E.flags
+          84AB47            84AB47  jmp_0x47086E.found
+          84AB59            84AB59  jmp_0x47086E.continue
+          84AB70            84AB70  jmp_0x4708A3
+          84ABB7            84ABB7  jmp_0x4708A3.change
+          84AC12            84AC12  jmp_0x4708A3.pack
+          84AC20            84AC20  jmp_0x470B13
+          84AC25            84AC25  jmp_0x470B13.loop
+          84AC44            84AC44  jmp_0x470B13.flags
+          84AC57            84AC57  jmp_0x470B13.found
+          84AC6F            84AC6F  jmp_0x470B13.continue
+          84AC90            84AC90  jmp_0x47B90F
+          84ACA2            84ACA2  jmp_0x47B90F.loop
+          84ACC1            84ACC1  jmp_0x47B90F.slot
+          84ACD4            84ACD4  jmp_0x47B90F.found
+          84ACDF            84ACDF  jmp_0x47B90F.continue
+          84ACF0            84ACF0  jmp_0x47B93C
+          84AD40            84AD40  jmp_0x47BA35
+          84AD51            84AD51  jmp_0x47BA35.start
+          84AD56            84AD56  jmp_0x47BA35.loop
+          84AD75            84AD75  jmp_0x47BA35.found
+          84AD83            84AD83  jmp_0x47BA35.continue
+          84ADA0            84ADA0  jmp_0x47BAAB
+          84AE00            84AE00  jmp_0x47BB2A
+          84AE10            84AE10  jmp_0x47BB30
+          84AE30            84AE30  jmp_0x47C950
+          84AE50            84AE50  jmp_0x4827C5
+          84AE97            84AE97  jmp_0x4827C5.change
+          84AEF5            84AEF5  jmp_0x4827C5.pack
+          84AF00            84AF00  jmp_0x487964
+          84AF19            84AF19  jmp_0x487964.loop
+          84AF2B            84AF2B  jmp_0x487964.continue
+          84AF47            84AF47  jmp_0x487964.else
+          84AF4D            84AF4D  jmp_0x487964.mesh
+          84AF5C            84AF5C  jmp_0x487964.slot
+          84AF6B            84AF6B  jmp_0x487964.found
+          84AF90            84AF90  jmp_0x487C52
+          84AFE0            84AFE0  jmp_0x487CF2
+          84B030            84B030  jmp_0x487D92
+          84B080            84B080  jmp_0x487DB2
+          84B090            84B090  text_end
+          84B090            84B090  target
+          84B094            84B094  temporary
+          84B096            84B096  process
+          84B098            84B098  node
+          84B09C            84B09C  list
+          84B59C            84B59C  list_end
+
