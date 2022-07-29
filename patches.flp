@@ -14810,7 +14810,7 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
   header=263
       enabled=1
       name=FLEP number
-      description=NOTE: This patch depends on Plugin_FLEP.////Stores a secret number that can be used for integrity check.////To run the check:////#define @Plugin_FLEP 1//TriggerGroup=<TriggerGroupId>,$018000+TGROUP_NOT,<SecretNumber>,$1,<ExportedTrigger>//#define @plugins CLEAR////If the check is unsuccessful the <ExportedTrigger> will be performed.
+      description=Stores a secret number that can be used for integrity check.////To run the check:////#define @Plugin_FLEP 1//TriggerGroup=<TriggerGroupId>,$018000+TGROUP_NOT,<SecretNumber>,$1,<ExportedTrigger>//#define @plugins CLEAR////If the check is unsuccessful the <ExportedTrigger> will be performed.
       category=
       dependencies=
       filename=patches.bin
@@ -14836,7 +14836,7 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
   header=265
       enabled=1
       name=Burning torch customizer
-      description=NOTE: This patch depends on Plugin_FLEP.////Change the sound effect and flame colour of the burning torch item.
+      description=Change the sound effect and flame colour of the burning torch item.
       category=
       dependencies=
       filename=patches.bin
@@ -14866,7 +14866,7 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
   header=266
       enabled=1
       name=Level secrets counter
-      description=NOTE: This patch depends on Plugin_FLEP.////Replaces the number of secrets collected in the game by the number of secrets collected in the level. The total number of secrets in the level should be set by CUST_SET_SECRET_NUMBER.////By default, this patch is enabled. To change its state:////#define @Plugin_FLEP 1//TriggerGroup=<TriggerGroupId>,$012000,1,<State>//#define @plugins CLEAR////Where <State> is ENABLED or DISABLED.
+      description=Replaces the number of secrets collected in the game by the number of secrets collected in the level. The total number of secrets in the level should be set by CUST_SET_SECRET_NUMBER.////By default, this patch is enabled. To change its state:////#define @Plugin_FLEP 1//TriggerGroup=<TriggerGroupId>,$012000,1,<State>//#define @plugins CLEAR////Where <State> is ENABLED or DISABLED.
       category=
       dependencies=
       filename=patches.bin
