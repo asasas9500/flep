@@ -14875,3 +14875,31 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=0,BD5449
       datacondbehave=0,0
   footer=266
+  header=267
+      enabled=1
+      name=Disable mummy follow block
+      description=Allows mummies to follow Lara over large distances.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,ABEC
+      datadefault=0,0f8e8601000066c746100100
+      datamodified=0,909090909090909090909090
+      datacondbehave=0,0
+      dataoffset=1,AC3F
+      datadefault=1,66c746100100
+      datamodified=1,909090909090
+      datacondbehave=1,0
+  footer=267
+  header=268
+      enabled=1
+      name=Fix Lara's elbows
+      description=Prevents Lara's elbows from collapsing when drawing weapons or flares.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,1D4FE
+      datadefault=0,0fbfc0f7d8d1f8
+      datamodified=0,f7d8d1f80fbfc0
+      datacondbehave=0,0
+  footer=268
