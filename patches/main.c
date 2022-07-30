@@ -508,15 +508,14 @@ typedef struct
 	ulong offset;	// jump offset
 } JMP;
 
+#pragma pack(pop)
+
 #define INJECT(from,to) \
 do \
 { \
 	((JMP*)(from))->opCode = 0xE9; \
 	((JMP*)(from))->offset = (ulong)(to) - ((ulong)(from) + sizeof(JMP)); \
 } while (0)
-
-#pragma pack(pop)
-
 #define VAR_U_(address, type)		(*(type*)(address))
 #define ARRAY_(address, type, length)	(*(type(*)length)(address))
 
