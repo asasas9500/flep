@@ -3,6 +3,13 @@
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned long ulong;
+typedef long long __int64;
+typedef float D3DVALUE;
+
+#define W2V_SHIFT	14
+#define SQUARE(x) ((x)*(x))
+#define RGBONLY(r, g, b) ((b) | (((g) | ((r) << 8)) << 8))
+#define RGBA(r, g, b, a) (RGBONLY(r, g, b) | ((a) << 24))
 
 typedef enum
 {
@@ -20,6 +27,15 @@ typedef enum
 	HUMAN_ZONE,
 	FLYER_ZONE,
 } zone_type;
+
+typedef enum
+{
+	M00, M01, M02, M03,
+	M10, M11, M12, M13,
+	M20, M21, M22, M23,
+
+	indices_count
+} matrix_indices;
 
 typedef struct
 {
@@ -431,6 +447,145 @@ typedef struct
 	uchar NodeNumber;
 } SPARKS;
 
+typedef struct {
+	union {
+		D3DVALUE x;
+		D3DVALUE dvX;
+	};
+
+	union {
+		D3DVALUE y;
+		D3DVALUE dvY;
+	};
+
+	union {
+		D3DVALUE z;
+		D3DVALUE dvZ;
+	};
+
+	union {
+		D3DVALUE nx;
+		D3DVALUE dvNX;
+	};
+
+	union {
+		D3DVALUE ny;
+		D3DVALUE dvNY;
+	};
+
+	union {
+		D3DVALUE nz;
+		D3DVALUE dvNZ;
+	};
+
+	union {
+		D3DVALUE tu;
+		D3DVALUE dvTU;
+	};
+
+	union {
+		D3DVALUE tv;
+		D3DVALUE dvTV;
+	};
+} D3DVERTEX;
+
+typedef struct
+{
+	long x;
+	long y;
+	long z;
+	uchar on;
+	uchar r;
+	uchar g;
+	uchar b;
+	ushort falloff;
+	uchar used;
+	uchar pad1[1];
+	long FalloffScale;
+} DYNAMIC;
+
+typedef struct
+{
+	long mid_floor;
+	long mid_ceiling;
+	long mid_type;
+	long front_floor;
+	long front_ceiling;
+	long front_type;
+	long left_floor;
+	long left_ceiling;
+	long left_type;
+	long right_floor;
+	long right_ceiling;
+	long right_type;
+	long left_floor2;
+	long left_ceiling2;
+	long left_type2;
+	long right_floor2;
+	long right_ceiling2;
+	long right_type2;
+	long radius;
+	long bad_pos;
+	long bad_neg;
+	long bad_ceiling;
+	PHD_VECTOR shift;
+	PHD_VECTOR old;
+	short old_anim_state;
+	short old_anim_number;
+	short old_frame_number;
+	short facing;
+	short quadrant;
+	short coll_type;
+	short* trigger;
+	char tilt_x;
+	char tilt_z;
+	char hit_by_baddie;
+	char hit_static;
+	ushort slopes_are_walls : 2;
+	ushort slopes_are_pits : 1;
+	ushort lava_is_pit : 1;
+	ushort enable_baddie_push : 1;
+	ushort enable_spaz : 1;
+	ushort hit_ceiling : 1;
+} COLL_INFO;
+
+typedef struct
+{
+	short nmeshes;
+	short mesh_index;
+	long bone_index;
+	short* frame_base;
+	void (*initialise)(short item_number);
+	void (*control)(short item_number);
+	void (*floor)(ITEM_INFO* item, long x, long y, long z, long* height);
+	void (*ceiling)(ITEM_INFO* item, long x, long y, long z, long* height);
+	void (*draw_routine)(ITEM_INFO* item);
+	void (*collision)(short item_num, ITEM_INFO* laraitem, COLL_INFO* coll);
+	short object_mip;
+	short anim_index;
+	short hit_points;
+	short pivot_length;
+	short radius;
+	short shadow_size;
+	ushort bite_offset;
+	ushort loaded : 1;
+	ushort intelligent : 1;
+	ushort non_lot : 1;
+	ushort save_position : 1;
+	ushort save_hitpoints : 1;
+	ushort save_flags : 1;
+	ushort save_anim : 1;
+	ushort semi_transparent : 1;
+	ushort water_creature : 1;
+	ushort using_drawanimating_item : 1;
+	ushort HitEffect : 2;
+	ushort undead : 1;
+	ushort save_mesh : 1;
+	void (*draw_routine_extra)(ITEM_INFO* item);
+	ulong explodable_meshbits;
+	ulong padfuck;
+} OBJECT_INFO;
+
 typedef struct
 {
 	char Text[80];
@@ -521,6 +676,33 @@ do \
 
 __attribute__ ((dllimport)) extern StrBaseVarAll BaseVariableTRNG;
 
+__int64 __fixsfdi(float num)
+{
+	__asm__ __volatile__
+	(
+		"subl $0xC, %esp\n\t"
+		"flds 0x8(%ebp)\n\t"
+		"fnstcw -0x2(%ebp)\n\t"
+		"movw -0x2(%ebp), %ax\n\t"
+		"orb $0xC, %ah\n\t"
+		"movw %ax, -0x4(%ebp)\n\t"
+		"fldcw -0x4(%ebp)\n\t"
+		"fistpq -0xC(%ebp)\n\t"
+		"fldcw -0x2(%ebp)\n\t"
+		"movl -0xC(%ebp), %eax\n\t"
+		"movl -0x8(%ebp), %edx\n\t"
+	);
+}
+
+float sqrt(float num)
+{
+	__asm__ __volatile__
+	(
+		"flds 0x8(%ebp)\n\t"
+		"fsqrt\n\t"
+	);
+}
+
 #include "patches.c"
 
 extern void WriteMyData(void* Data, ulong Size);
@@ -540,6 +722,9 @@ void cbInitLoadNewLevel(void)
 {
 	if (!gfCurrentLevel)
 		patch_secret_counter_status = 1;
+
+	for (int i = 0; i < 3; i++)
+		bridge_object[i] = -1;
 }
 
 long cbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort ActivationMode)
@@ -605,16 +790,23 @@ void cbAssignSlotMine(ushort Slot, ushort ObjType)
 {
 	switch (ObjType)
 	{
+	case 1:
+	case 2:
+	case 3:
+		bridge_object[ObjType - 1] = Slot;
+		break;
 	}
 }
 
 void cbInitObjects(void)
 {
-
+	setup_bridge_object();
 }
 
 void Inject(void)
 {
 	INJECT(0x00910000, print_secret_counter);
 	INJECT(0x00910005, burning_torch_customizer_colour);
+	INJECT(0x0091000A, get_global_mesh_position);
+	INJECT(0x0091000F, calculate_static_vertex_light);
 }

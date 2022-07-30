@@ -14903,3 +14903,47 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=0,f7d8d1f80fbfc0
       datacondbehave=0,0
   footer=268
+  header=269
+      enabled=1
+      name=Add dynamic lighting to statics
+      description=Makes dynamic lights like flares and gunflashes affect statics. To customize its behaviour the Vertex shader patch should have a rule where Subject type: 5 and Subject description 1: static slot. Operation has the same purpose as Subject type: 2.
+      category=
+      dependencies=Vertex shader base
+      filename=patches.bin
+      dataoffset=0,7B9F0
+      datadefault=0,83EC0CA1C46D5300
+      datamodified=0,E9A80D3D00909090
+      datacondbehave=0,0
+      dataoffset=1,7BB0C
+      datadefault=1,508907E81C6D0000
+      datamodified=1,E9180D3D00909090
+      datacondbehave=1,0
+      dataoffset=2,FC790
+      datadefault=2,
+      datamodified=2,83EC0CA1C46D5300E95BF2C2FFE868380C008B4CE40C8B411E8B106A0068B5C884006A1050FF520CA0666F8100A2676F810084C0743EB96C6F810080790300742180790805751B668B4104663DFFFF7409663B05606F81007508890DB9C88400EB1283C11481F96C74810075CEC605676F8100008B4CE40C8B44E4088B54E404515052E878FFFFFF83C40C8B4CE40C8B411E8B1050FF5210C389C30F7789E8C1E0050305B5C8840050E8D1370C0083C4040FEFFF0F6EC0803D676F810000744A0F60C78B15B9C884000F6E4A0C0F60CF0FBE4209FF1485A46181000F6E4A100F60CF0FBE420AFF1485A46181000F6FC80F6EC30F60C70FBE420BFF1485346281000F71F0010F67C7EB060F6ECB0FDCC10F7EC00D000000FF508907E8805FC3FFE95FF2C2FF
+      datacondbehave=2,1
+  footer=269
+  header=270
+      enabled=1
+      name=Disable "Hang game thread" on lost focus
+      description=Debug option. When enabled, tomb4.exe process won't hang if window has lost focus. Useful when debugging engine with OllyDbg (you can modify code and immediately see result without switching back to tomb4.exe window).
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,8D1B0
+      datadefault=0,74
+      datamodified=0,EB
+      datacondbehave=0,0
+  footer=270
+  header=271
+      enabled=1
+      name=Save Turn Switch direction
+      description=Saves in the savegame the Turn Switch direction.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,5D5B8
+      datadefault=0,60
+      datamodified=0,68
+      datacondbehave=0,0
+  footer=271
