@@ -14483,8 +14483,8 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
   footer=253
   header=254
       enabled=1
-      name=Force bilinear filtering off
-      description=Forces bilinear filtering off regardless of the settings used by the user.
+      name=Force bilinear filtering
+      description=Forces bilinear filtering on/off regardless of the settings used by the user.////on 1//off 0////Do NOT use other values.
       category=
       dependencies=
       filename=patches.bin
@@ -14492,6 +14492,12 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datadefault=0,83C4486A0168403975006894184B00E854FEFFFF
       datamodified=0,83C43CC605403975000090909090909090909090
       datacondbehave=0,0
+      parenabled=0,1
+      parname=0,on off
+      paroffset=0,0082BA1
+      parvalue=0,0
+      partype=0,3
+      parcondbehave=0,0
   footer=254
   header=255
       enabled=1
