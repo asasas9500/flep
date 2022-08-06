@@ -48,14 +48,14 @@ long print_secret_counter(char* buf, char* format)
 
 	secrets = savegame.Level.Secrets;
 	count = 0;
-	
+
 	while (secrets)
 	{
 		if (secrets & 0x1)
 			count++;
 		secrets >>= 1;
 	}
-	
+
 	return sprintf(buf, format, count);
 }
 

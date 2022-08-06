@@ -448,42 +448,50 @@ typedef struct
 } SPARKS;
 
 typedef struct {
-	union {
+	union
+	{
 		D3DVALUE x;
 		D3DVALUE dvX;
 	};
 
-	union {
+	union
+	{
 		D3DVALUE y;
 		D3DVALUE dvY;
 	};
 
-	union {
+	union
+	{
 		D3DVALUE z;
 		D3DVALUE dvZ;
 	};
 
-	union {
+	union
+	{
 		D3DVALUE nx;
 		D3DVALUE dvNX;
 	};
 
-	union {
+	union
+	{
 		D3DVALUE ny;
 		D3DVALUE dvNY;
 	};
 
-	union {
+	union
+	{
 		D3DVALUE nz;
 		D3DVALUE dvNZ;
 	};
 
-	union {
+	union
+	{
 		D3DVALUE tu;
 		D3DVALUE dvTU;
 	};
 
-	union {
+	union
+	{
 		D3DVALUE tv;
 		D3DVALUE dvTV;
 	};
