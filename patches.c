@@ -5,7 +5,6 @@
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned long ulong;
-typedef long long __int64;
 typedef float D3DVALUE;
 
 #define W2V_SHIFT	14
