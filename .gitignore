@@ -1,8 +1,9 @@
 /*
 !/.gitignore
 !/patches.flp
+!/patches.dll
+!/patches.c
 !/Plugin_FLEP.zip
-!/patches/
 !/downloads/
 !/source/
 !/shader/
