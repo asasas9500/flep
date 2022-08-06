@@ -1,5 +1,6 @@
 /*
 !/.gitignore
+!/.github/
 !/patches.flp
 !/patches.dll
 !/patches.c

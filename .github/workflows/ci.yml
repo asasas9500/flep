@@ -1,0 +1,23 @@
+on:
+  push:
+    paths:
+      - patches.c
+      - .github/workflows/ci.yml
+jobs:
+  update:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW32
+          update: true
+          install: mingw-w64-i686-gcc
+      - run: gcc -march=pentium -mms-bitfields -std=c99 -O2 -shared -o patches.dll patches.c
+        shell: msys2 {0}
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add patches.dll
+          git commit -m "Update patches.dll"
+          git push
