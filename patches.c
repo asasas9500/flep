@@ -852,17 +852,17 @@ void setup_bridge_object(void)
 	}
 }
 
-void (*WriteMyData)(void* Data, ulong Size);
-void (*ReadMyData)(void* Data, ulong Size);
+void (*pWriteMyData)(void* Data, ulong Size);
+void (*pReadMyData)(void* Data, ulong Size);
 
 void cbSaveMyData(void)
 {
-	WriteMyData(&patch_secret_counter_status, sizeof(long));
+	pWriteMyData(&patch_secret_counter_status, sizeof(long));
 }
 
 void cbLoadMyData(void)
 {
-	ReadMyData(&patch_secret_counter_status, sizeof(long));
+	pReadMyData(&patch_secret_counter_status, sizeof(long));
 }
 
 void cbInitLoadNewLevel(void)
