@@ -14936,7 +14936,7 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       category=
       dependencies=
       filename=patches.bin
-      dataoffset=0,8D1B0
+      dataoffset=0,8D1B1
       datadefault=0,74
       datamodified=0,EB
       datacondbehave=0,0
