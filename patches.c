@@ -1,10 +1,9 @@
-#include <math.h>
-
 #pragma pack(push, 1)
 
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned long ulong;
+typedef long long __int64;
 typedef float D3DVALUE;
 
 #define W2V_SHIFT	14
@@ -684,6 +683,33 @@ do \
 #define ARRAY_(address, type, length)	(*(type(*)length)(address))
 
 StrBaseVarAll* pBaseVariableTRNG;
+
+__int64 __fixsfdi(float num)
+{
+	__asm__ __volatile__
+	(
+		"subl $0xC, %esp\n\t"
+		"flds 0x8(%ebp)\n\t"
+		"fnstcw -0x2(%ebp)\n\t"
+		"movw -0x2(%ebp), %ax\n\t"
+		"orb $0xC, %ah\n\t"
+		"movw %ax, -0x4(%ebp)\n\t"
+		"fldcw -0x4(%ebp)\n\t"
+		"fistpq -0xC(%ebp)\n\t"
+		"fldcw -0x2(%ebp)\n\t"
+		"movl -0xC(%ebp), %eax\n\t"
+		"movl -0x8(%ebp), %edx\n\t"
+	);
+}
+
+float sqrt(float num)
+{
+	__asm__ __volatile__
+	(
+		"flds 0x8(%ebp)\n\t"
+		"fsqrt\n\t"
+	);
+}
 
 #define savegame	VAR_U_(0x007F75A0, SAVEGAME_INFO)
 #define gfCurrentLevel	VAR_U_(0x007FD170, char)

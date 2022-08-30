@@ -8,13 +8,31 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW32
-          update: true
-          install: mingw-w64-i686-gcc
-      - run: gcc -march=pentium -mms-bitfields -std=c99 -O2 -shared -o patches.dll patches.c
-        shell: msys2 {0}
+      - run: |
+          [System.IO.Directory]::SetCurrentDirectory($pwd)
+          Add-Type -TypeDefinition @'
+          using System;
+          using System.Runtime.InteropServices;
+
+          namespace Application {
+              public static class Platform {
+                  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+                  public static extern UIntPtr BeginUpdateResource(string pFileName, bool bDeleteExistingResources);
+
+                  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+                  public static extern bool UpdateResource(UIntPtr hUpdate, UIntPtr lpType, string lpName, ushort wLanguage, byte[] lpData, uint cb);
+
+                  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+                  public static extern bool EndUpdateResource(UIntPtr hUpdate, bool fDiscard);
+              }
+          }
+          '@
+          $module = [Application.Platform]::BeginUpdateResource('patches.dll', $false)
+          $type = New-Object -TypeName 'UIntPtr' -ArgumentList 10
+          $data = [System.IO.File]::ReadAllBytes('patches.c') + (New-Object -TypeName 'byte[]' -ArgumentList 1)
+          [Application.Platform]::UpdateResource($module, $type, 'patches.c', 1033, $data, $data.Length)
+          [Application.Platform]::EndUpdateResource($module, $false)
+        shell: pwsh
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
