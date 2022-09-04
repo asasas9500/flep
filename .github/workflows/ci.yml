@@ -1,8 +1,9 @@
+name: CI
 on:
   push:
     paths:
       - patches.c
-      - .github/workflows/ci.yml
+  workflow_dispatch:
 jobs:
   update:
     runs-on: windows-latest
@@ -32,8 +33,6 @@ jobs:
           $data = [System.IO.File]::ReadAllBytes('patches.c') + (New-Object -TypeName 'byte[]' -ArgumentList 1)
           [Application.Platform]::UpdateResource($module, $type, 'patches.c', 1033, $data, $data.Length)
           [Application.Platform]::EndUpdateResource($module, $false)
-        shell: pwsh
-      - run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add patches.dll
