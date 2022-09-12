@@ -14674,6 +14674,10 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datadefault=4,6685C0
       datamodified=4,83F801
       datacondbehave=4,0
+      dataoffset=5,4088D
+      datadefault=5,25000C00003D00040000
+      datamodified=5,804F298080E40C80FC04
+      datacondbehave=5,0
   footer=257
   header=258
       enabled=1
@@ -14953,3 +14957,15 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=0,68
       datacondbehave=0,0
   footer=271
+  header=272
+      enabled=1
+      name=Remove MUMMY stun animations
+      description=Removes the stunned animations for the MUMMY slot, when shot with weapons.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,A992
+      datadefault=0,A8100F8412010000
+      datamodified=0,E915010000909090
+      datacondbehave=0,0
+  footer=272
