@@ -1,8 +1,10 @@
-name: CI
+name: CI/CD
 on:
   push:
     paths:
       - patches.c
+      - patches.flp
+      - Plugin_FLEP.zip
   workflow_dispatch:
 jobs:
   update:
@@ -33,8 +35,9 @@ jobs:
           $data = [System.IO.File]::ReadAllBytes('patches.c') + (New-Object -TypeName 'byte[]' -ArgumentList 1)
           [Application.Platform]::UpdateResource($module, $type, 'patches.c', 1033, $data, $data.Length)
           [Application.Platform]::EndUpdateResource($module, $false)
+          Compress-Archive -Path patches.dll, patches.flp, Plugin_FLEP.zip -DestinationPath patches.zip -Update
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add patches.dll
-          git commit -m "Update patches.dll"
+          git add patches.dll patches.zip
+          git commit -m "Update patches"
           git push
