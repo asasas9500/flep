@@ -15095,3 +15095,29 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       partype=0,6
       parcondbehave=0,1
   footer=273
+  header=274
+      enabled=1
+      name=Enable bike nitro without Puzzle_Item1
+      description=Allows Lara to use the bike's nitro without first using Puzzle_Item1 on the bike.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,65DB3
+      datadefault=0,f60568777f0004
+      datamodified=0,90909090909090
+      datacondbehave=0,0
+  footer=274
+  header=275
+      enabled=1
+      name=Change bike nitro item
+      description=Change the item that enables the bike's nitro. To get an item's slot number, check the Rerefence Browser in TombIDE or NG Center.//To disable the nitro item entirely, type in 0.////Note: Due to programming limitations, the highest item slot that may be used is Quest_Item4 which has an ID of 255.
+      category=
+      dependencies=
+      filename=patches.bin
+      parenabled=0,1
+      parname=0,Item Slot
+      paroffset=0,63922,63B0F
+      parvalue=0,175
+      partype=0,3
+      parcondbehave=0,0
+  footer=275
