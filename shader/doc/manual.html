@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="normalize.css">
+<link rel="stylesheet" href="style.css">
+<title>User Manual</title>
+</head>
+<body>
+<h1>Vertex shader patch<br />
+User Manual</h1>
+<h2>Overview</h2>
+<p>This patch allows the level builder to dinamically override lighting effects.</p>
+<h2>Black shadows</h2>
+<p>If you want nice black shadows in water rooms and nothing more, just create a rule with these contents:</p>
+<pre><code>Level:                 -1
+Condition:             -1
+Subject type:           2
+Subject description 1:  1
+Subject description 2: -1
+Blend mode 1:           1
+Colour 1:               &lt;read below&gt;
+Blend mode 2:          -1
+Colour 2:               0,0,0
+Operation:              2
+</code></pre>
+<p>Colour 1 is the only parameter that you have to adjust.
+Start with white and progressively make it darker, producing shades of grey.
+You will notice that the caustics strength is proportional to the colour brightness.
+Setting it to black will effectively remove all caustics.</p>
+<ol>
+<li>
+<p><a href="images/shadow/no.jpg"><img src="images/shadow/no.jpg" alt="" /></a>
+Unpatched</p>
+</li>
+<li>
+<p><a href="images/shadow/255.jpg"><img src="images/shadow/255.jpg" alt="" /></a>
+Colour 1: 255,255,255</p>
+</li>
+<li>
+<p><a href="images/shadow/127.jpg"><img src="images/shadow/127.jpg" alt="" /></a>
+Colour 1: 127,127,127</p>
+</li>
+<li>
+<p><a href="images/shadow/0.jpg"><img src="images/shadow/0.jpg" alt="" /></a>
+Colour 1: 0,0,0</p>
+</li>
+</ol>
+<h2>Definitions</h2>
+<p>The interface provided by this patch is based on rules.
+A rule is a complete and independent declaration of commands and their prerequisites.
+They are called respectively actions and constraints.</p>
+<p>This patch exposes 64 rules, which are processed sequentially before each lighting effect calculation.
+The goal is to find a matching rule, that is, a rule whose constraints are satisfied.
+The first matching rule found has its actions executed and further rules are skipped.
+Otherwise, if there is no matching rule, the lighting effect stays the same.</p>
+<h2>Syntax</h2>
+<p>The rule syntax is composed of several numeric fields.
+All fields have allowed values, specified in a list containing numbers and inclusive ranges.
+Values that are not in the list result in undefined behaviour.</p>
+<h3>Level</h3>
+<p>This constraint is satisfied if the number of the level being played is this value.
+It is satisfied for all levels if this value is Universe.</p>
+<blockquote>
+<p>Allowed values:</p>
+<ul>
+<li>
+<p>-1</p>
+<p>Universe</p>
+</li>
+<li>
+<p>0</p>
+<p>Title</p>
+</li>
+<li>
+<p>1-127</p>
+<p>Number of the level</p>
+</li>
+</ul>
+</blockquote>
+<h3>Condition</h3>
+<p>This field has different purposes depending on the patch flavour.</p>
+<p><strong>Patch flavour: FLEP</strong></p>
+<p>This constraint is satisfied if the condition inside the TriggerGroup ID of this value returns true.
+It is always satisfied if this value is Universe.</p>
+<blockquote>
+<p>Allowed values:</p>
+<ul>
+<li>
+<p>-1</p>
+<p>Universe</p>
+</li>
+<li>
+<p>1-9999</p>
+<p>TriggerGroup ID</p>
+</li>
+</ul>
+</blockquote>
+<p><em>During level loading this constraint is satisfied only if this value is Universe.</em></p>
+<p><strong>Patch flavour: TREP</strong></p>
+<p>This constraint is satisfied if the custom flipeffect of this value returns true.
+It is always satisfied if this value is Universe.</p>
+<blockquote>
+<p>Allowed values:</p>
+<ul>
+<li>
+<p>-1</p>
+<p>Universe</p>
+</li>
+<li>
+<p>47-558</p>
+<p>Custom flipeffect</p>
+</li>
+</ul>
+</blockquote>
+<p><em>During level loading this constraint is satisfied only if this value is Universe.</em></p>
+<h3>Subject type</h3>
+<p>This constraint is satisfied if the type of the lighting effect being calculated is this value.</p>
+<blockquote>
+<p>Allowed values:</p>
+<ul>
+<li>
+<p>1</p>
+<p>Lighting cast on rooms by ambient and placed lights</p>
+</li>
+<li>
+<p>2</p>
+<p>Lighting cast on rooms by caustics</p>
+</li>
+<li>
+<p>3</p>
+<p>Lighting cast on objects by ambient, placed and dynamic lights</p>
+</li>
+<li>
+<p>4</p>
+<p>Lighting cast on statics by its internal lighting</p>
+</li>
+</ul>
+</blockquote>
+<h3>Subject description 1</h3>
+<p>This field has different purposes depending on the value of Subject type.</p>
+<p><strong>Subject type: 1 or 2</strong></p>
+<p>This constraint is satisfied if the room has a flag of this value.
+It is satisfied for all rooms if this value is Universe.</p>
+<blockquote>
+<p>Allowed values:</p>
+<ul>
+<li>
+<p>-1</p>
+<p>Universe</p>
+</li>
+<li>
+<p>1</p>
+<p>Water</p>
+</li>
+<li>
+<p>4</p>
+<p>Quicksand</p>
+</li>
+<li>
+<p>16</p>
+<p>Damage</p>
+</li>
+<li>
+<p>32</p>
+<p>Outside</p>
+</li>
+<li>
+<p>128</p>
+<p>No lens flare</p>
+</li>
+<li>
+<p>256</p>
+<p>Mist</p>
+</li>
+<li>
+<p>512</p>
+<p>Reflection</p>
+</li>
+<li>
+<p>1024</p>
+<p>Snow</p>
+</li>
+<li>
+<p>2048</p>
+<p>Rain</p>
+</li>
+</ul>
+</blockquote>
+<p><strong>Subject type: 3</strong></p>
+<p>This constraint is satisfied if the object slot is this value.
+It is satisfied for all objects if this value is Universe.</p>
+<blockquote>
+<p>Allowed values:</p>
+<ul>
+<li>
+<p>-1</p>
+<p>Universe</p>
+</li>
+<li>
+<p>0-519</p>
+<p>Object slot</p>
+</li>
+</ul>
+</blockquote>
+<p><strong>Subject type: 4</strong></p>
+<p>This constraint is satisfied if the static slot is this value.
+It is satisfied for all statics if this value is Universe.</p>
+<blockquote>
+<p>Allowed values:</p>
+<ul>
+<li>
+<p>-1</p>
+<p>Universe</p>
+</li>
+<li>
+<p>0-159</p>
+<p>Static slot</p>
+</li>
+</ul>
+</blockquote>
+<p><em>This constraint is satisfied no matter if the static is shattered or not.</em></p>
+<h3>Subject description 2</h3>
+<p>This field has different purposes depending on the value of Subject type.</p>
+<p><strong>Subject type: 1 or 2</strong></p>
+<p>This constraint is satisfied if the in-game room number is this value.
+It is satisfied for all rooms if this value is Universe.</p>
+<blockquote>
+<p>Allowed values:</p>
+<ul>
+<li>
+<p>-1</p>
+<p>Universe</p>
+</li>
+<li>
+<p>0-511</p>
+<p>In-game room number</p>
+</li>
+</ul>
+</blockquote>
+<p><em>This constraint is satisfied no matter if the room is flipped or not.</em></p>
+<p><strong>Subject type: 3</strong></p>
+<p>This constraint is satisfied if the mesh ID of the object is this value.
+It is satisfied for all meshes if this value is Universe.</p>
+<blockquote>
+<p>Allowed values:</p>
+<ul>
+<li>
+<p>-1</p>
+<p>Universe</p>
+</li>
+<li>
+<p>0-31</p>
+<p>Mesh ID of the object</p>
+</li>
+</ul>
+</blockquote>
+<p><em>This constraint is satisfied no matter if the mesh is normal or swapped, if it is shattered or not, or if the object was exploded.</em></p>
+<p><strong>Subject type: 4</strong></p>
+<blockquote>
+<p>Allowed values:</p>
+<p>This field is unused.</p>
+</blockquote>
+<h3>Blend mode 1</h3>
+<p>When this action is executed, the lighting colour and Colour 1 are blended with the blend mode of this value.
+Nothing is done if this value is None.</p>
+<blockquote>
+<p>Allowed values:</p>
+<ul>
+<li>
+<p>-1</p>
+<p>None</p>
+</li>
+<li>
+<p>1</p>
+<p>Multiply</p>
+</li>
+<li>
+<p>2</p>
+<p>Screen</p>
+</li>
+<li>
+<p>3</p>
+<p>Darken</p>
+</li>
+<li>
+<p>4</p>
+<p>Lighten</p>
+</li>
+<li>
+<p>5</p>
+<p>Difference</p>
+</li>
+</ul>
+</blockquote>
+<h3>Colour 1</h3>
+<blockquote>
+<p>Allowed values:</p>
+<ul>
+<li>
+<p>0-255</p>
+<p>Colour component magnitude</p>
+</li>
+</ul>
+</blockquote>
+<h3>Blend mode 2</h3>
+<p>When this action is executed, the modified lighting colour (lighting colour blended with Colour 1) and Colour 2 are blended with the blend mode of this value.
+Nothing is done if this value is None.</p>
+<blockquote>
+<p>Allowed values:</p>
+<p>Same as Blend mode 1.</p>
+</blockquote>
+<h3>Colour 2</h3>
+<blockquote>
+<p>Allowed values:</p>
+<p>Same as Colour 1.</p>
+</blockquote>
+<h3>Operation</h3>
+<p>This field has different purposes depending on the value of Subject type.</p>
+<p><strong>Subject type: 1, 3 or 4</strong></p>
+<blockquote>
+<p>Allowed values:</p>
+<p>This field is unused.</p>
+</blockquote>
+<p><strong>Subject type: 2</strong></p>
+<p>When this action is executed, the lighting cast on rooms by caustics is combined with the lighting cast on rooms using the operation of this value.
+Nothing is done if this value is None.</p>
+<blockquote>
+<p>Allowed values:</p>
+<ul>
+<li>
+<p>-1</p>
+<p>None</p>
+</li>
+<li>
+<p>1</p>
+<p>Addition</p>
+</li>
+<li>
+<p>2</p>
+<p>Subtraction</p>
+</li>
+</ul>
+</blockquote>
+<h2>Blending</h2>
+<p>You can read more about blending here: <a href="https://www.w3.org/TR/compositing-1/#blending">https://www.w3.org/TR/compositing-1/#blending</a>.</p>
+<h2>Limitations</h2>
+<p>The lighting cast on objects in the inventory or in pickup notifications cannot be overridden.</p>
+<p>This patch prevents changes in the lighting cast on rooms by dynamic lights.
+Isolated changes in the lighting cast on objects by dynamic lights are prevented too.</p>
+<h2>Examples</h2>
+<p>The following examples illustrate some uses of this patch.</p>
+<h3>Example 1</h3>
+<p><code>Make the skeleton head redish.</code></p>
+<p>One possible solution is to create a rule with these contents:</p>
+<pre><code>Level:                 -1
+Condition:             -1
+Subject type:           3
+Subject description 1:  35
+Subject description 2:  9
+Blend mode 1:           2
+Colour 1:               192,0,0
+Blend mode 2:           1
+Colour 2:               135,135,135
+Operation:              0
+</code></pre>
+<ol>
+<li>
+<p><a href="images/1/shot000.jpg"><img src="images/1/shot000.jpg" alt="" /></a>
+Red-headed skeleton</p>
+</li>
+<li>
+<p><a href="images/1/shot001.jpg"><img src="images/1/shot001.jpg" alt="" /></a>
+Head shattering</p>
+</li>
+<li>
+<p><a href="images/1/shot002.jpg"><img src="images/1/shot002.jpg" alt="" /></a>
+Skeleton blowing up</p>
+</li>
+</ol>
+<h3>Example 2</h3>
+<p><code>Make SHATTER0 glow with yellow light if Lara is drawing guns and if it is the first level.</code></p>
+<p>There are different procedures depending on the patch flavour.</p>
+<p><strong>Patch flavour: FLEP</strong></p>
+<p>One possible solution is to create a rule with these contents:</p>
+<pre><code>Level:                  1
+Condition:              1000
+Subject type:           4
+Subject description 1:  50
+Subject description 2:  0
+Blend mode 1:           4
+Colour 1:               255,255,0
+Blend mode 2:           1
+Colour 2:               55,55,55
+Operation:              0
+</code></pre>
+<p>Open script.txt and type these contents inside the [Level] section of the first level:</p>
+<pre><code>; Set Trigger Type - FLIPEFFECT 244
+; Exporting: TRIGGER(1279:0) for FLIPEFFECT(244) {Tomb_NextGeneration}
+; &lt;#&gt; : Variables. Memory. Copy to &lt;&amp;&gt;Numeric Variable the (E)Savegame Memory value
+; &lt;&amp;&gt; : Current Value
+; (E) : Lara. Hands. Attached Lara Status (Short)
+; Values to add in script command: $2000, 244, $4FF
+
+; Set Trigger Type - CONDITION 48
+; Exporting: CONDITION(48:0) for PARAMETER(4) {Tomb_NextGeneration}
+; &lt;#&gt; : Value=     4
+; &lt;&amp;&gt; : Variables. The Current Value variable is = than &lt;#&gt;Value
+; (E) :
+; Values to add in script command: $8000, 4, $30
+
+TriggerGroup=	1000,$2000,244,$4FF,$8000,4,$30
+</code></pre>
+<p><strong>Patch flavour: TREP</strong></p>
+<p>One possible solution is to create a rule with these contents:</p>
+<pre><code>Level:                  1
+Condition:              50
+Subject type:           4
+Subject description 1:  50
+Subject description 2:  0
+Blend mode 1:           4
+Colour 1:               255,255,0
+Blend mode 2:           1
+Colour 2:               55,55,55
+Operation:              0
+</code></pre>
+<p>Open Flipeffect editor, select the custom flipeffect 50 and type these contents:</p>
+<pre><code>IF_CARRY_GUNS
+RETURN_TRUE
+</code></pre>
+<ol>
+<li>
+<p><a href="images/2/shot000.jpg"><img src="images/2/shot000.jpg" alt="" /></a>
+Lara</p>
+</li>
+<li>
+<p><a href="images/2/shot001.jpg"><img src="images/2/shot001.jpg" alt="" /></a>
+Lara and her guns</p>
+</li>
+<li>
+<p><a href="images/2/shot002.jpg"><img src="images/2/shot002.jpg" alt="" /></a>
+SHATTER0 shattering</p>
+</li>
+</ol>
+<h3>Example 3</h3>
+<p><code>Make the reflections of room 112 of the seventh level greenish and make the underwater reflections of room 10 of the same level coloured with shades of pink and green.</code></p>
+<p>One possible solution is to create rules with these contents:</p>
+<pre><code>Level:                  7
+Condition:             -1
+Subject type:           2
+Subject description 1: -1
+Subject description 2:  112
+Blend mode 1:           3
+Colour 1:               0,255,0
+Blend mode 2:           2
+Colour 2:               25,25,25
+Operation:              1
+</code></pre>
+<pre><code>Level:                  7
+Condition:             -1
+Subject type:           2
+Subject description 1: -1
+Subject description 2:  10
+Blend mode 1:           5
+Colour 1:               64,0,64
+Blend mode 2:           2
+Colour 2:               15,15,15
+Operation:              1
+</code></pre>
+<ol>
+<li>
+<p><a href="images/3/shot000.jpg"><img src="images/3/shot000.jpg" alt="" /></a>
+Colourful pool</p>
+</li>
+<li>
+<p><a href="images/3/shot001.jpg"><img src="images/3/shot001.jpg" alt="" /></a>
+Colourful pool again</p>
+</li>
+</ol>
+</body>
+</html>
