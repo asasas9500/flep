@@ -5,11 +5,14 @@ typedef unsigned short ushort;
 typedef unsigned long ulong;
 typedef long long __int64;
 typedef float D3DVALUE;
+typedef ulong D3DCOLOR;
 
 #define W2V_SHIFT	14
 #define SQUARE(x) ((x)*(x))
+#define ABS(x) (((x)<0) ? (-(x)) : (x))
 #define RGBONLY(r, g, b) ((b) | (((g) | ((r) << 8)) << 8))
 #define RGBA(r, g, b, a) (RGBONLY(r, g, b) | ((a) << 24))
+#define NO_HEIGHT	-32512
 
 typedef enum
 {
@@ -777,6 +780,36 @@ typedef enum
 	NUM_INVOBJ
 } invobj_types;
 
+typedef enum
+{
+	ROOM_UNDERWATER =	0x1,
+	ROOM_OUTSIDE =		0x8,
+	ROOM_DYNAMIC_LIT =	0x10,
+	ROOM_NOT_INSIDE =	0x20,
+	ROOM_INSIDE =		0x40,
+	ROOM_NO_LENSFLARE = 0x80
+} room_flags;
+
+typedef enum
+{
+	LM_HIPS,
+	LM_LTHIGH,
+	LM_LSHIN,
+	LM_LFOOT,
+	LM_RTHIGH,
+	LM_RSHIN,
+	LM_RFOOT,
+	LM_TORSO,
+	LM_RINARM,
+	LM_ROUTARM,
+	LM_RHAND,
+	LM_LINARM,
+	LM_LOUTARM,
+	LM_LHAND,
+	LM_HEAD,
+	NUM_LARA_MESHES
+} lara_mesh;
+
 typedef struct
 {
 	char b;
@@ -1430,6 +1463,215 @@ typedef struct
 
 typedef struct
 {
+	ushort index;
+	ushort fx : 4;
+	ushort box : 11;
+	ushort stopper : 1;
+	uchar pit_room;
+	char floor;
+	uchar sky_room;
+	char ceiling;
+} FLOOR_INFO;
+
+typedef struct
+{
+	FLOOR_INFO* floor;
+	FLOOR_INFO data;
+	short block;
+} DOORPOS_DATA;
+
+typedef struct
+{
+	DOORPOS_DATA d1;
+	DOORPOS_DATA d1flip;
+	DOORPOS_DATA d2;
+	DOORPOS_DATA d2flip;
+	short Opened;
+} DOOR_DATA;
+
+typedef struct
+{
+	float x;
+	float y;
+	float z;
+} D3DVECTOR;
+
+typedef struct
+{
+	long x;
+	long y;
+	long z;
+	uchar r;
+	uchar g;
+	uchar b;
+	uchar Type;
+	short Intensity;
+	float Inner;
+	float Outer;
+	float Length;
+	float Cutoff;
+	float nx;
+	float ny;
+	float nz;
+} LIGHTINFO;
+
+typedef struct
+{
+	long x;
+	long y;
+	long z;
+	short y_rot;
+	short shade;
+	short Flags;
+	short static_number;
+} MESH_INFO;
+
+typedef struct
+{
+	float x;
+	float y;
+	float z;
+	float r;
+	float g;
+	float b;
+	long shadow;
+	float Inner;
+	float Outer;
+	float InnerAngle;
+	float OuterAngle;
+	float Cutoff;
+	float nx;
+	float ny;
+	float nz;
+	long ix;
+	long iy;
+	long iz;
+	long inx;
+	long iny;
+	long inz;
+	uchar Type;
+	uchar Pad;
+} PCLIGHT_INFO;
+
+typedef struct
+{
+	short* data;
+	short* door;
+	FLOOR_INFO* floor;
+	LIGHTINFO* light;
+	MESH_INFO* mesh;
+	long x;
+	long y;
+	long z;
+	long minfloor;
+	long maxceiling;
+	short x_size;
+	short y_size;
+	long ambient;
+	short num_lights;
+	short num_meshes;
+	uchar ReverbType;
+	uchar FlipNumber;
+	char MeshEffect;
+	char bound_active;
+	short left;
+	short right;
+	short top;
+	short bottom;
+	short test_left;
+	short test_right;
+	short test_top;
+	short test_bottom;
+	short item_number;
+	short fx_number;
+	short flipped_room;
+	ushort flags;
+	long nVerts;
+	long nWaterVerts;
+	long nShoreVerts;
+	void* SourceVB;
+	short* FaceData;
+	float posx;
+	float posy;
+	float posz;
+	D3DVECTOR* vnormals;
+	D3DVECTOR* fnormals;
+	long* prelight;
+	long* prelightwater;
+	long watercalc;
+	D3DVECTOR* verts;
+	long gt3cnt;
+	long gt4cnt;
+	PCLIGHT_INFO* pclight;
+} ROOM_INFO;
+
+typedef struct
+{
+	ushort drawtype;
+	ushort tpage;
+	ushort flag;
+	float u1;
+	float v1;
+	float u2;
+	float v2;
+	float u3;
+	float v3;
+	float u4;
+	float v4;
+} TEXTURESTRUCT;
+
+typedef struct {
+	union
+	{
+		D3DVALUE sx;
+		D3DVALUE dvSX;
+	};
+
+	union
+	{
+		D3DVALUE sy;
+		D3DVALUE dvSY;
+	};
+
+	union
+	{
+		D3DVALUE sz;
+		D3DVALUE dvSZ;
+	};
+
+	union
+	{
+		D3DVALUE rhw;
+		D3DVALUE dvRHW;
+	};
+
+	union
+	{
+		D3DCOLOR color;
+		D3DCOLOR dcColor;
+	};
+
+	union
+	{
+		D3DCOLOR specular;
+		D3DCOLOR dcSpecular;
+	};
+
+	union
+	{
+		D3DVALUE tu;
+		D3DVALUE dvTU;
+	};
+
+	union
+	{
+		D3DVALUE tv;
+		D3DVALUE dvTV;
+	};
+} D3DTLVERTEX;
+
+typedef struct
+{
 	char Text[80];
 } StrText80;
 
@@ -1604,6 +1846,57 @@ float sqrt(float num)
 
 #define inventry_objects_list	ARRAY_(0x004AC068, INVOBJ, [119])
 
+#define InitialiseDoor	( (void(*)(short)) 0x00452F30 )
+
+#define OpenThatDoor	( (void(*)(DOORPOS_DATA*)) 0x0044D650 )
+#define ShutThatDoor	( (void(*)(DOORPOS_DATA*)) 0x0044D5F0 )
+
+#define TriggerActive	( (long(*)(ITEM_INFO*)) 0x0044ACB0 )
+
+#define GetFrames	( (long(*)(ITEM_INFO*, short**, long*)) 0x00450450 )
+#define phd_PushMatrix	( (void(*)(void)) 0x0048DF30 )
+#define phd_PushUnitMatrix	( (void(*)(void)) 0x0048DF90 )
+#define phd_TranslateAbs	( (void(*)(long, long, long)) 0x0048E690 )
+#define phd_RotYXZ	( (void(*)(short, short, short)) 0x0048E4A0 )
+#define phd_RotY	( (void(*)(short)) 0x0048E130 )
+#define S_GetObjectBounds	( (long(*)(short*)) 0x0047DD00 )
+#define phd_TranslateRel	( (long(*)(long, long, long)) 0x0048DFD0 )
+#define ScaleCurrentMatrix	( (void(*)(PHD_VECTOR*)) 0x0048D7F0 )
+#define CalculateObjectLighting	( (void(*)(ITEM_INFO*, short*)) 0x00450240 )
+#define phd_PutPolygons	( (void(*)(short*, long)) 0x0047BB30 )
+
+#define meshes	VAR_U_(0x00533950, short**)
+#define room	VAR_U_(0x00533934, ROOM_INFO*)
+
+#define setXYZ3	( (void(*)(D3DTLVERTEX*, long, long, long, long, long, long, long, long, long, short*)) 0x00483BD0 )
+
+#define AddTriSorted	( *(void(**)(D3DTLVERTEX*, short, short, short, TEXTURESTRUCT*, long)) 0x0053399C )
+
+#define GetFloor	( (FLOOR_INFO*(*)(long, long, long, short*)) 0x00449880 )
+#define GetHeight	( (long(*)(FLOOR_INFO*, long, long, long)) 0x00449BD0 )
+#define GetLaraJointPos	( (void(*)(PHD_VECTOR*, long)) 0x0041D890 )
+
+#define clipflags   VAR_U_(0x00753854, short*)
+
+#define rcossin_tbl	ARRAY_(0x004B34D0, short, [8192])
+
+short phd_sin(long angle)
+{
+	angle >>= 3;
+	return 4 * rcossin_tbl[angle & 0x1FFE];
+}
+
+short phd_cos(long angle)
+{
+	angle >>= 3;
+	return 4 * rcossin_tbl[(angle & 0x1FFE) + 1];
+}
+
+void phd_PopMatrix()
+{
+	phd_mxptr -= indices_count;
+}
+
 long patch_secret_counter_status;
 PHD_VECTOR global_mesh_position;
 long bridge_object[3];
@@ -1617,6 +1910,8 @@ short sfx_hk_stop;
 short hk_ammo1;
 short hk_ammo2;
 short hk_ammo3;
+long lift_doors[2];
+short sfx_lift_doors;
 
 long check_flep(long number)
 {
@@ -2001,6 +2296,290 @@ void fire_hk_lasersight(char* Fire, short* ammo)
 	}
 }
 
+void InitialiseLiftDoors(short item_number)
+{
+	ITEM_INFO* item;
+
+	item = &items[item_number];
+	item->item_flags[0] = 4096;
+	InitialiseDoor(item_number);
+}
+
+void LiftDoorsControl(short item_number)
+{
+	ITEM_INFO* item;
+	DOOR_DATA* door;
+
+	item = &items[item_number];
+	door = (DOOR_DATA*)item->data;
+
+	if (!TriggerActive(item))
+	{
+		if (item->item_flags[0] >= 4096)
+		{
+			if (door->Opened)
+			{
+				ShutThatDoor(&door->d1);
+				ShutThatDoor(&door->d2);
+				ShutThatDoor(&door->d1flip);
+				ShutThatDoor(&door->d2flip);
+				door->Opened = 0;
+			}
+		}
+		else
+		{
+			if (!item->item_flags[0] && sfx_lift_doors != -1)
+				SoundEffect(sfx_lift_doors, &item->pos, SFX_DEFAULT);
+
+			item->item_flags[0] += 256;
+		}
+	}
+	else
+	{
+		if (item->item_flags[0] > 0)
+		{
+			if (item->item_flags[0] == 4096 && sfx_lift_doors != -1)
+				SoundEffect(sfx_lift_doors, &item->pos, SFX_DEFAULT);
+
+			item->item_flags[0] -= 256;
+		}
+
+		if (!door->Opened)
+		{
+			OpenThatDoor(&door->d1);
+			OpenThatDoor(&door->d2);
+			OpenThatDoor(&door->d1flip);
+			OpenThatDoor(&door->d2flip);
+			door->Opened = 1;
+		}
+	}
+}
+
+void DrawLiftDoors(ITEM_INFO* item)
+{
+	PHD_VECTOR v;
+	short** meshpp;
+	short* frmptr[2];
+	long clip, rate;
+
+	if (item->item_flags[0])
+	{
+		GetFrames(item, frmptr, &rate);
+		phd_PushMatrix();
+		phd_TranslateAbs(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+		phd_RotYXZ(item->pos.y_rot, item->pos.x_rot, item->pos.z_rot);
+		clip = S_GetObjectBounds(frmptr[0]);
+
+		if (clip)
+		{
+			meshpp = &meshes[objects[item->object_number].mesh_index];
+			phd_TranslateRel(frmptr[0][6], frmptr[0][7], frmptr[0][8]);
+			v.x = item->item_flags[0] << 2;
+			v.y = 16384;
+			v.z = 16384;
+			ScaleCurrentMatrix(&v);
+			CalculateObjectLighting(item, frmptr[0]);
+			phd_PutPolygons(*meshpp, clip);
+		}
+
+		phd_PopMatrix();
+	}
+}
+
+void setup_lift_doors(void)
+{
+	OBJECT_INFO* obj;
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (lift_doors[i] != -1)
+		{
+			obj = &objects[lift_doors[i]];
+			obj->initialise = InitialiseLiftDoors;
+			obj->collision = 0;
+			obj->control = LiftDoorsControl;
+			obj->draw_routine = DrawLiftDoors;
+			obj->using_drawanimating_item = 0;
+			obj->save_flags = 1;
+		}
+	}
+}
+
+long test_vertex_wibble(ROOM_INFO* r, D3DVECTOR* v)
+{
+	short* door;
+	int count;
+
+	door = r->door;
+
+	if (door)
+	{
+		count = *door;
+		door++;
+
+		for (int i = 0; i < count; i++)
+		{
+			if (door[2] && ABS(v->y - door[5]) <= 1 && v->x >= door[4] && v->x <= door[10] && v->z >= door[6] && v->z <= door[12] &&
+				(r->flags & ROOM_UNDERWATER) != (room[door[0]].flags & ROOM_UNDERWATER))
+				return 0;
+
+			door += 16;
+		}
+	}
+
+	return 1;
+}
+
+void S_PrintCircleShadow(short size, short* box, ITEM_INFO* item, D3DCOLOR inner, D3DCOLOR outer, long scale)
+{
+	TEXTURESTRUCT Tex;
+	D3DTLVERTEX v[3];
+	PHD_VECTOR pos;
+	PHD_VECTOR cv[32];
+	PHD_VECTOR cp[32];
+	PHD_VECTOR ccv;
+	PHD_VECTOR ccp;
+	D3DCOLOR clr;
+	long x, y, z, x1, y1, z1, x2, y2, z2, x3, y3, z3, xSize, zSize, xDist, zDist;
+	short room_number;
+
+	if (!scale)
+		scale = 1;
+
+	xSize = size * (box[1] - box[0]) / scale;
+	zSize = size * (box[5] - box[4]) / scale;
+	xDist = xSize / 4;
+	zDist = zSize / 4;
+	x = xDist + (xDist >> 1);
+	z = zDist + (zDist >> 1);
+
+	for (int i = 0; i < 32; i++)
+	{
+		cv[i].x = x * phd_sin(2048 * i) >> 14;
+		cv[i].z = z * phd_cos(2048 * i) >> 14;
+	}
+
+	phd_PushUnitMatrix();
+
+	if (item == lara_item)
+	{
+		pos.x = 0;
+		pos.y = 0;
+		pos.z = 0;
+		GetLaraJointPos(&pos, LM_TORSO);
+		room_number = lara_item->room_number;
+		y = GetHeight(GetFloor(pos.x, pos.y, pos.z, &room_number), pos.x, pos.y, pos.z);
+
+		if (y == NO_HEIGHT)
+			y = item->floor;
+	}
+	else
+	{
+		pos.x = item->pos.x_pos;
+		y = item->floor;
+		pos.z = item->pos.z_pos;
+	}
+
+	y -= 16;
+	phd_TranslateRel(pos.x, y, pos.z);
+	phd_RotY(item->pos.y_rot);
+
+	for (int i = 0; i < 32; i++)
+	{
+		cp[i].x = (cv[i].x * phd_mxptr[M00] + cv[i].z * phd_mxptr[M02] + phd_mxptr[M03]) >> 14;
+		cp[i].z = (cv[i].x * phd_mxptr[M20] + cv[i].z * phd_mxptr[M22] + phd_mxptr[M23]) >> 14;
+	}
+
+	ccp.x = phd_mxptr[M03] >> 14;
+	ccp.z = phd_mxptr[M23] >> 14;
+	phd_PopMatrix();
+
+	for (int i = 0; i < 32; i++)
+	{
+		room_number = item->room_number;
+		cp[i].y = GetHeight(GetFloor(cp[i].x, item->floor, cp[i].z, &room_number), cp[i].x, item->floor, cp[i].z);
+
+		if (ABS(cp[i].y - item->floor) > 196)
+			cp[i].y = item->floor;
+	}
+
+	room_number = item->room_number;
+	ccp.y = GetHeight(GetFloor(ccp.x, item->floor, ccp.z, &room_number), ccp.x, item->floor, ccp.z);
+
+	if (ABS(ccp.y - item->floor) > 196)
+		ccp.y = item->floor;
+
+	phd_PushMatrix();
+	phd_TranslateAbs(pos.x, y, pos.z);
+	phd_RotY(item->pos.y_rot);
+
+	for (int i = 0; i < 32; i++)
+	{
+		x = cv[i].x;
+		y = cp[i].y - item->floor;
+		z = cv[i].z;
+		cv[i].x = (phd_mxptr[M00] * x + phd_mxptr[M01] * y + phd_mxptr[M02] * z + phd_mxptr[M03]) >> 14;
+		cv[i].y = (phd_mxptr[M10] * x + phd_mxptr[M11] * y + phd_mxptr[M12] * z + phd_mxptr[M13]) >> 14;
+		cv[i].z = (phd_mxptr[M20] * x + phd_mxptr[M21] * y + phd_mxptr[M22] * z + phd_mxptr[M23]) >> 14;
+	}
+
+	y = ccp.y - item->floor;
+	ccv.x = (phd_mxptr[M01] * y + phd_mxptr[M03]) >> 14;
+	ccv.y = (phd_mxptr[M11] * y + phd_mxptr[M13]) >> 14;
+	ccv.z = (phd_mxptr[M21] * y + phd_mxptr[M23]) >> 14;
+	phd_PopMatrix();
+
+	for (int i = 0; i < 32; i++)
+	{
+		x1 = cv[i].x;
+		y1 = cv[i].y;
+		z1 = cv[i].z;
+		x2 = cv[(i + 1) % 32].x;
+		y2 = cv[(i + 1) % 32].y;
+		z2 = cv[(i + 1) % 32].z;
+		x3 = ccv.x;
+		y3 = ccv.y;
+		z3 = ccv.z;
+		setXYZ3(v, x1, y1, z1, x2, y2, z2, x3, y3, z3, clipflags);
+		v[0].color = outer;
+		v[1].color = v[0].color;
+		v[2].color = inner;
+
+		if (item->after_death)
+		{
+			clr = item->after_death << 25;
+
+			if (v[0].color > clr)
+				v[0].color -= clr;
+			else
+				v[0].color = 0x00000000;
+
+			v[1].color = v[0].color;
+
+			if (v[2].color > clr)
+				v[2].color -= clr;
+			else
+				v[2].color = 0x00000000;
+		}
+
+		v[0].specular = 0xFF000000;
+		v[1].specular = 0xFF000000;
+		v[2].specular = 0xFF000000;
+		Tex.flag = 0;
+		Tex.tpage = 0;
+		Tex.drawtype = 3;
+		Tex.u1 = 0;
+		Tex.v1 = 0;
+		Tex.u2 = 0;
+		Tex.v2 = 0;
+		Tex.u3 = 0;
+		Tex.v3 = 0;
+		Tex.u4 = 0;
+		Tex.v4 = 0;
+		AddTriSorted(v, 0, 1, 2, &Tex, 1);
+	}
+}
+
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
 
@@ -2028,6 +2607,11 @@ void cbInitLoadNewLevel(void)
 	hk_ammo1 = W_AMMO1;
 	hk_ammo2 = W_AMMO2;
 	hk_ammo3 = W_AMMO3;
+
+	for (int i = 0; i < 2; i++)
+		lift_doors[i] = -1;
+
+	sfx_lift_doors = -1;
 }
 
 long cbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort ActivationMode)
@@ -2103,6 +2687,13 @@ void cbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArra
 		}
 
 		break;
+
+	case 2:
+
+		if (NumberOfItems == 1 && pItemArray[0] != -1)
+			sfx_lift_doors = pItemArray[0];
+
+		break;
 	}
 }
 
@@ -2122,12 +2713,16 @@ void cbAssignSlotMine(ushort Slot, ushort ObjType)
 	case 3:
 		bridge_object[ObjType - 1] = Slot;
 		break;
+	case 4:
+	case 5:
+		lift_doors[ObjType - 4] = Slot;
 	}
 }
 
 void cbInitObjects(void)
 {
 	setup_bridge_object();
+	setup_lift_doors();
 }
 
 void cbInitGame(void)
@@ -2167,4 +2762,6 @@ void Inject(void)
 	INJECT(0x00910041, reset_hk_lasersight);
 	INJECT(0x00910046, wait_hk_lasersight);
 	INJECT(0x0091004B, fire_hk_lasersight);
+	INJECT(0x00910050, test_vertex_wibble);
+	INJECT(0x00910055, S_PrintCircleShadow);
 }
