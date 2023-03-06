@@ -15096,6 +15096,10 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datadefault=27,00
       datamodified=27,01
       datacondbehave=27,0
+      dataoffset=28,1FE60
+      datadefault=28,9CFF02
+      datamodified=28,D3014F
+      datacondbehave=28,0
       parenabled=0,1
       parname=0,Choose Weapon Mode string ID
       paroffset=0,FCA1E
@@ -15381,3 +15385,27 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       partype=4,3
       parcondbehave=4,1
   footer=283
+  header=284
+      enabled=1
+      name=Wibble objects
+      description=Wibbles underwater objects when the camera is above water, and above water objects when the camera is underwater.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,4E9FC
+      datadefault=0,A1343953
+      datamodified=0,E9AEE33F
+      datacondbehave=0,0
+      dataoffset=1,4EC60
+      datadefault=1,A3C8707E
+      datamodified=1,E95BE13F
+      datacondbehave=1,0
+      dataoffset=2,7BC71
+      datadefault=2,890D0CA95200
+      datamodified=2,E90A113D0090
+      datacondbehave=2,0
+      dataoffset=3,FCD80
+      datadefault=3,
+      datamodified=3,803DD1CD840001751B69354CDE7F00940000000335343953000FB67E4E83E70131F931FF890D0CA95200E9C8EEC2FFC605D1CD840001A134395300E9411CC0FFC605D1CD840000A3C8707E00E9941EC0FF
+      datacondbehave=3,1
+  footer=284

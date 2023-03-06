@@ -1910,6 +1910,9 @@ short sfx_hk_stop;
 short hk_ammo1;
 short hk_ammo2;
 short hk_ammo3;
+short hk_ammo1_slot;
+short hk_ammo2_slot;
+short hk_ammo3_slot;
 long lift_doors[2];
 short sfx_lift_doors;
 
@@ -2419,9 +2422,24 @@ long test_vertex_wibble(ROOM_INFO* r, D3DVECTOR* v)
 
 		for (int i = 0; i < count; i++)
 		{
-			if (door[2] && ABS(v->y - door[5]) <= 1 && v->x >= door[4] && v->x <= door[10] && v->z >= door[6] && v->z <= door[12] &&
-				(r->flags & ROOM_UNDERWATER) != (room[door[0]].flags & ROOM_UNDERWATER))
-				return 0;
+			if (door[2] && ABS(v->y - door[5]) <= 1 && (r->flags & ROOM_UNDERWATER) != (room[door[0]].flags & ROOM_UNDERWATER))
+			{
+				if (door[4] < door[10])
+				{
+					if (v->x >= door[4] && v->x <= door[10] && v->z >= door[6] && v->z <= door[12])
+						return 0;
+				}
+				else if (door[2] > 0)
+				{
+					if (v->x >= door[7] && v->x <= door[13] && v->z >= door[9] && v->z <= door[15])
+						return 0;
+				}
+				else
+				{
+					if (v->x >= door[10] && v->x <= door[4] && v->z >= door[12] && v->z <= door[6])
+						return 0;
+				}
+			}
 
 			door += 16;
 		}
@@ -2607,6 +2625,9 @@ void cbInitLoadNewLevel(void)
 	hk_ammo1 = W_AMMO1;
 	hk_ammo2 = W_AMMO2;
 	hk_ammo3 = W_AMMO3;
+	hk_ammo1_slot = CROSSBOW_AMMO1_ITEM;
+	hk_ammo2_slot = CROSSBOW_AMMO2_ITEM;
+	hk_ammo3_slot = CROSSBOW_AMMO3_ITEM;
 
 	for (int i = 0; i < 2; i++)
 		lift_doors[i] = -1;
@@ -2665,7 +2686,7 @@ void cbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArra
 	{
 	case 1:
 
-		if (NumberOfItems == 6)
+		if (NumberOfItems == 9)
 		{
 			if (pItemArray[0] != -1)
 				hk_gunflash_slot = pItemArray[0];
@@ -2684,6 +2705,15 @@ void cbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArra
 
 			if (pItemArray[5] != -1)
 				hk_ammo3 = 4 * (1 << pItemArray[5]);
+
+			if (pItemArray[6] != -1)
+				hk_ammo1_slot = pItemArray[6];
+
+			if (pItemArray[7] != -1)
+				hk_ammo2_slot = pItemArray[7];
+
+			if (pItemArray[8] != -1)
+				hk_ammo3_slot = pItemArray[8];
 		}
 
 		break;
@@ -2741,6 +2771,9 @@ void cbInitLevel(void)
 		inventry_objects_list[INV_CROSSBOW_ITEM].xrot = -16384;
 		inventry_objects_list[INV_CROSSBOW_LASER_ITEM].yrot = 0;
 		inventry_objects_list[INV_CROSSBOW_LASER_ITEM].xrot = -16384;
+		inventry_objects_list[INV_CROSSBOW_AMMO1_ITEM].object_number = hk_ammo1_slot;
+		inventry_objects_list[INV_CROSSBOW_AMMO2_ITEM].object_number = hk_ammo2_slot;
+		inventry_objects_list[INV_CROSSBOW_AMMO3_ITEM].object_number = hk_ammo3_slot;
 	}
 }
 
