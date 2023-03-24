@@ -1880,6 +1880,10 @@ float sqrt(float num)
 
 #define rcossin_tbl	ARRAY_(0x004B34D0, short, [8192])
 
+#define AlignLaraPosition	( (void(*)(PHD_VECTOR*, ITEM_INFO*, ITEM_INFO*)) 0x004477E0 )
+#define MoveLaraPositionTrampoline	( (long(*)(PHD_VECTOR*, ITEM_INFO*, ITEM_INFO*)) 0x00818A31 )
+
+
 short phd_sin(long angle)
 {
 	angle >>= 3;
@@ -2598,6 +2602,21 @@ void S_PrintCircleShadow(short size, short* box, ITEM_INFO* item, D3DCOLOR inner
 	}
 }
 
+long move_lara_position_to_pushable(PHD_VECTOR* v, ITEM_INFO* item, ITEM_INFO* l)
+{
+	PHD_VECTOR pos;
+
+	phd_PushUnitMatrix();
+	phd_RotY(-item->pos.y_rot);
+	phd_TranslateRel(l->pos.x_pos - item->pos.x_pos, l->pos.y_pos - item->pos.y_pos, l->pos.z_pos - item->pos.z_pos);
+	pos.x = phd_mxptr[M03] >> 14;
+	phd_PopMatrix();
+	pos.y = v->y;
+	pos.z = v->z;
+	AlignLaraPosition(&pos, item, l);
+	return MoveLaraPositionTrampoline(&pos, item, l);
+}
+
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
 
@@ -2797,4 +2816,5 @@ void Inject(void)
 	INJECT(0x0091004B, fire_hk_lasersight);
 	INJECT(0x00910050, test_vertex_wibble);
 	INJECT(0x00910055, S_PrintCircleShadow);
+	INJECT(0x0091005A, move_lara_position_to_pushable);
 }
