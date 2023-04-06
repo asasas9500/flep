@@ -15497,3 +15497,23 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       partype=9,6
       parcondbehave=9,1
   footer=285
+  header=286
+      enabled=1
+      name=Disable Hair Skinning
+      description=Disables the stretching meshes in Lara's hair to allow for authentic TR2/3 hair.////Use the "Lara's Ponytail Position Changer" patch to adjust the position of her braid.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,312E3
+      datadefault=0,6689500A
+      datamodified=0,90909090
+      datacondbehave=0,0
+      dataoffset=1,FC776
+      datadefault=1,00
+      datamodified=1,01
+      datacondbehave=1,0
+      dataoffset=2,2075D
+      datadefault=2,83ec0c535533db5657895c2414895c2410c74424185ee080000f
+      datamodified=2,83ec0c535533db5657895c24145f5e5d5b83c40ce8f6f84e00c3
+      datacondbehave=2,0
+  footer=286

@@ -810,6 +810,26 @@ typedef enum
 	NUM_LARA_MESHES
 } lara_mesh;
 
+typedef enum
+{
+	GF_YOUNGLARA = 0x1,
+	GF_WEATHER = 0x2,
+	GF_HORIZON = 0x4,
+	GF_LAYER1 = 0x8,
+	GF_LAYER2 = 0x10,
+	GF_STARFIELD = 0x20,
+	GF_LIGHTNING = 0x40,
+	GF_TRAIN = 0x80,
+	GF_PULSE = 0x100,
+	GF_HORIZONCOLADD = 0x200,
+	GF_RESETHUB = 0x400,
+	GF_LENSFLARE = 0x800,
+	GF_TIMER = 0x1000,
+	GF_MIRROR = 0x2000,
+	GF_REMOVEAMULET = 0x4000,
+	GF_NOLEVEL = 0x8000
+} gf_level_options;
+
 typedef struct
 {
 	char b;
@@ -1670,6 +1690,11 @@ typedef struct {
 	};
 } D3DTLVERTEX;
 
+typedef struct {
+	PHD_3DPOS pos;
+	PHD_VECTOR vel;
+} HAIR_STRUCT;
+
 typedef struct
 {
 	char Text[80];
@@ -1882,6 +1907,10 @@ float sqrt(float num)
 
 #define AlignLaraPosition	( (void(*)(PHD_VECTOR*, ITEM_INFO*, ITEM_INFO*)) 0x004477E0 )
 #define MoveLaraPositionTrampoline	( (long(*)(PHD_VECTOR*, ITEM_INFO*, ITEM_INFO*)) 0x00818A31 )
+
+#define phd_RotX	 ((void(*)(short)) 0x0048e080)
+#define hairs        ARRAY_(0x0080e040, HAIR_STRUCT, [2][7])
+#define gfLevelFlags VAR_U_(0x007fd140, short)
 
 
 short phd_sin(long angle)
@@ -2617,6 +2646,34 @@ long move_lara_position_to_pushable(PHD_VECTOR* v, ITEM_INFO* item, ITEM_INFO* l
 	return MoveLaraPositionTrampoline(&pos, item, l);
 }
 
+void DrawClassicHair(void)
+{
+	HAIR_STRUCT* hair;
+	short** meshpp;
+
+	for (int j = 0; j < 2; j++)
+	{
+		meshpp = &meshes[objects[HAIR].mesh_index];
+		
+		for (int i = 0; i < 6; i++)
+		{
+			hair = &hairs[j][i];
+
+			phd_PushMatrix();
+			phd_TranslateAbs(hair->pos.x_pos, hair->pos.y_pos, hair->pos.z_pos);
+			phd_RotY(hair->pos.y_rot);
+			phd_RotX(hair->pos.x_rot);
+			phd_PutPolygons(*meshpp, -1);
+			phd_PopMatrix();
+
+			meshpp += 2;
+		}
+		
+		if (!(gfLevelFlags & GF_YOUNGLARA))
+			break;
+	}
+}
+
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
 
@@ -2817,4 +2874,5 @@ void Inject(void)
 	INJECT(0x00910050, test_vertex_wibble);
 	INJECT(0x00910055, S_PrintCircleShadow);
 	INJECT(0x0091005A, move_lara_position_to_pushable);
+	INJECT(0x0091005F, DrawClassicHair);
 }
