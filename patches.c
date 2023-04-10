@@ -830,6 +830,14 @@ typedef enum
 	GF_NOLEVEL = 0x8000
 } gf_level_options;
 
+typedef enum
+{
+	HAIR_PAGE_BOY =         1,
+	HAIR_TWO_PLAITS =       2,
+	HAIR_ONE_PONYTAIL =     3,
+	HAIR_ONE_TR5_PONYTAIL = 4
+} CUST_HAIR_TYPE;
+
 typedef struct
 {
 	char b;
@@ -1908,9 +1916,12 @@ float sqrt(float num)
 #define AlignLaraPosition	( (void(*)(PHD_VECTOR*, ITEM_INFO*, ITEM_INFO*)) 0x004477E0 )
 #define MoveLaraPositionTrampoline	( (long(*)(PHD_VECTOR*, ITEM_INFO*, ITEM_INFO*)) 0x00818A31 )
 
-#define phd_RotX	 ((void(*)(short)) 0x0048e080)
-#define hairs        ARRAY_(0x0080e040, HAIR_STRUCT, [2][7])
-#define gfLevelFlags VAR_U_(0x007fd140, short)
+#define phd_RotX	   ((void(*)(short)) 0x0048e080)
+#define hairs          ARRAY_(0x0080e040, HAIR_STRUCT, [2][7])
+#define gfLevelFlags   VAR_U_(0x007fd140, short)
+#define TRNGYLHairFlag VAR_U_(0x004A6E6C, short)
+#define TRNGCustHair   VAR_U_(0x104C59F6, ushort)
+
 
 
 short phd_sin(long angle)
@@ -2650,6 +2661,12 @@ void DrawClassicHair(void)
 {
 	HAIR_STRUCT* hair;
 	short** meshpp;
+	char pigtails = 0;
+
+	// HAIR_PAGE_BOY never enters the draw function, so no need to check for it
+	// TRNGYLHairFlag is set if TRNGCustHair == HAIR_TWO_PLAITS
+	if (((gfLevelFlags & GF_YOUNGLARA) || TRNGYLHairFlag) && !((TRNGCustHair == HAIR_ONE_PONYTAIL) || (TRNGCustHair == HAIR_ONE_TR5_PONYTAIL)))
+		pigtails = 1;
 
 	for (int j = 0; j < 2; j++)
 	{
@@ -2669,7 +2686,7 @@ void DrawClassicHair(void)
 			meshpp += 2;
 		}
 		
-		if (!(gfLevelFlags & GF_YOUNGLARA))
+		if (!pigtails)
 			break;
 	}
 }
