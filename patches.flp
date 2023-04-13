@@ -15509,7 +15509,7 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=0,90909090
       datacondbehave=0,0
       dataoffset=1,2075D
-      datadefault=1,4895c2410c74424185ee080000f
-      datamodified=1,45f5e5d5b83c40ce8f6f84e00c3
+      datadefault=1,895c2410c74424185ee080000fbf
+      datamodified=1,5f5e5d5b83c40ce8f6f84e00c390
       datacondbehave=1,0
   footer=286
