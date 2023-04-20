@@ -838,6 +838,32 @@ typedef enum
 	HAIR_ONE_TR5_PONYTAIL = 4
 } CUST_HAIR_TYPE;
 
+typedef enum
+{
+	FLOOR_TYPE,
+	DOOR_TYPE,
+	TILT_TYPE,
+	ROOF_TYPE,
+	TRIGGER_TYPE,
+	LAVA_TYPE,
+	CLIMB_TYPE,
+	SPLIT1,
+	SPLIT2,
+	SPLIT3,
+	SPLIT4,
+	NOCOLF1T,
+	NOCOLF1B,
+	NOCOLF2T,
+	NOCOLF2B,
+	NOCOLC1T,
+	NOCOLC1B,
+	NOCOLC2T,
+	NOCOLC2B,
+	MONKEY_TYPE,
+	TRIGTRIGGER_TYPE,
+	MINER_TYPE
+} floor_types;
+
 typedef struct
 {
 	char b;
@@ -1897,6 +1923,7 @@ float sqrt(float num)
 #define ScaleCurrentMatrix	( (void(*)(PHD_VECTOR*)) 0x0048D7F0 )
 #define CalculateObjectLighting	( (void(*)(ITEM_INFO*, short*)) 0x00450240 )
 #define phd_PutPolygons	( (void(*)(short*, long)) 0x0047BB30 )
+#define	phd_GetVectorAngles	( (void(*)(long, long, long, short*)) 0x0048E710 )
 
 #define meshes	VAR_U_(0x00533950, short**)
 #define room	VAR_U_(0x00533934, ROOM_INFO*)
@@ -1922,7 +1949,12 @@ float sqrt(float num)
 #define TRNGYLHairFlag VAR_U_(0x004A6E6C, short)
 #define TRNGCustHair   VAR_U_(0x104C59F6, ushort)
 
+#define DrawAnimatingItem	( (void(*)(ITEM_INFO*)) 0x0044F600 )
+#define AnimateItem	( (void(*)(ITEM_INFO*)) 0x00449280 )
 
+#define floor_data	VAR_U_(0x00533948, short*)
+
+#define TRNGItemIndexSelected   VAR_U_(0x1036C19C, short)
 
 short phd_sin(long angle)
 {
@@ -1943,7 +1975,7 @@ void phd_PopMatrix()
 
 long patch_secret_counter_status;
 PHD_VECTOR global_mesh_position;
-long bridge_object[3];
+short bridge_object[3];
 char HKTimer;
 char HKShotsFired;
 char LSHKTimer;
@@ -1957,8 +1989,12 @@ short hk_ammo3;
 short hk_ammo1_slot;
 short hk_ammo2_slot;
 short hk_ammo3_slot;
-long lift_doors[2];
+short lift_doors[2];
 short sfx_lift_doors;
+short sprite_object[16];
+long camera_bounce_strength;
+short camera_bounce_item_number;
+long camera_bounce_status;
 
 long check_flep(long number)
 {
@@ -2691,17 +2727,282 @@ void DrawClassicHair(void)
 	}
 }
 
+void RotateItem(ITEM_INFO* item)
+{
+	short angles[2];
+
+	phd_GetVectorAngles(camera.pos.x - camera.target.x, camera.pos.y - camera.target.y, camera.pos.z - camera.target.z, angles);
+	item->pos.y_rot = angles[0];
+	item->pos.x_rot = angles[1];
+}
+
+void SpriteObjectControl(short item_number)
+{
+	ITEM_INFO* item;
+
+	item = &items[item_number];
+	item->mesh_bits = 1 << item->item_flags[0];
+	item->item_flags[0]++;
+
+	if (item->item_flags[0] >= objects[item->object_number].nmeshes)
+		item->item_flags[0] = 0;
+
+	AnimateItem(item);
+	RotateItem(item);
+}
+
+void setup_sprite_object(void)
+{
+	OBJECT_INFO* obj;
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (sprite_object[i] != -1)
+		{
+			obj = &objects[sprite_object[i]];
+			obj->initialise = 0;
+			obj->collision = 0;
+			obj->control = SpriteObjectControl;
+			obj->draw_routine = DrawAnimatingItem;
+			obj->save_flags = 1;
+			obj->save_anim = 1;
+		}
+	}
+}
+
+long GetMaximumFloor(FLOOR_INFO* floor, long x, long z)
+{
+	long height, h1, h2;
+	short* data, type, dx, dz, t0, t1, t2, t3, hadj;
+
+	height = floor->floor << 8;
+
+	if (height != NO_HEIGHT && floor->index)
+	{
+		data = &floor_data[floor->index];
+		type = *data++;
+		h1 = 0;
+		h2 = 0;
+
+		if ((type & 0x1F) != TILT_TYPE)
+		{
+			if ((type & 0x1F) == SPLIT1 || (type & 0x1F) == SPLIT2 || (type & 0x1F) == NOCOLF1T || (type & 0x1F) == NOCOLF1B || (type & 0x1F) == NOCOLF2T || (type & 0x1F) == NOCOLF2B)
+			{
+				dx = x & 0x3FF;
+				dz = z & 0x3FF;
+				t0 = *data & 0xF;
+				t1 = *data >> 4 & 0xF;
+				t2 = *data >> 8 & 0xF;
+				t3 = *data >> 12 & 0xF;
+
+				if ((type & 0x1F) == SPLIT1 || (type & 0x1F) == NOCOLF1T || (type & 0x1F) == NOCOLF1B)
+				{
+					if (dx <= 1024 - dz)
+					{
+						hadj = type >> 10 & 0x1F;
+						h1 = t2 - t1;
+						h2 = t0 - t1;
+					}
+					else
+					{
+						hadj = type >> 5 & 0x1F;
+						h1 = t3 - t0;
+						h2 = t3 - t2;
+					}
+				}
+				else
+				{
+					if (dx <= dz)
+					{
+						hadj = type >> 10 & 0x1F;
+						h1 = t2 - t1;
+						h2 = t3 - t2;
+					}
+					else
+					{
+						hadj = type >> 5 & 0x1F;
+						h1 = t3 - t0;
+						h2 = t0 - t1;
+					}
+				}
+
+				if (hadj & 0x10)
+					hadj |= 0xFFF0;
+
+				height += hadj << 8;
+			}
+		}
+		else
+		{
+			h1 = *data >> 8;
+			h2 = *(char*)data;
+		}
+
+		height += 256 * (ABS(h1) + ABS(h2));
+	}
+
+	return height;
+}
+
+long GetMinimumCeiling(FLOOR_INFO* floor, long x, long z)
+{
+	long height, h1, h2;
+	short* data, type, dx, dz, t0, t1, t2, t3, hadj, ended;
+
+	height = floor->ceiling << 8;
+
+	if (height != NO_HEIGHT && floor->index)
+	{
+		data = &floor_data[floor->index];
+		type = *data++;
+		ended = 0;
+
+		if ((type & 0x1F) == TILT_TYPE || (type & 0x1F) == SPLIT1 || (type & 0x1F) == SPLIT2 || (type & 0x1F) == NOCOLF1T || (type & 0x1F) == NOCOLF1B || (type & 0x1F) == NOCOLF2T || (type & 0x1F) == NOCOLF2B)
+		{
+			data++;
+
+			if (type & 0x8000)
+				ended = 1;
+
+			type = *data++;
+		}
+
+		if (!ended)
+		{
+			h1 = 0;
+			h2 = 0;
+
+			if ((type & 0x1F) != ROOF_TYPE)
+			{
+				if ((type & 0x1F) == SPLIT3 || (type & 0x1F) == SPLIT4 || (type & 0x1F) == NOCOLC1T || (type & 0x1F) == NOCOLC1B || (type & 0x1F) == NOCOLC2T || (type & 0x1F) == NOCOLC2B)
+				{
+					dx = x & 0x3FF;
+					dz = z & 0x3FF;
+					t0 = -(*data & 0xF);
+					t1 = -(*data >> 4 & 0xF);
+					t2 = -(*data >> 8 & 0xF);
+					t3 = -(*data >> 12 & 0xF);
+
+					if ((type & 0x1F) == SPLIT3 || (type & 0x1F) == NOCOLC1T || (type & 0x1F) == NOCOLC1B)
+					{
+						if (dx <= 1024 - dz)
+						{
+							hadj = type >> 10 & 0x1F;
+							h1 = t2 - t1;
+							h2 = t3 - t2;
+						}
+						else
+						{
+							hadj = type >> 5 & 0x1F;
+							h1 = t3 - t0;
+							h2 = t0 - t1;
+						}
+					}
+					else
+					{
+						if (dx <= dz)
+						{
+							hadj = type >> 10 & 0x1F;
+							h1 = t2 - t1;
+							h2 = t0 - t1;
+						}
+						else
+						{
+							hadj = type >> 5 & 0x1F;
+							h1 = t3 - t0;
+							h2 = t3 - t2;
+						}
+					}
+
+					if (hadj & 0x10)
+						hadj |= 0xFFF0;
+
+					height += hadj << 8;
+				}
+			}
+			else
+			{
+				h1 = *data >> 8;
+				h2 = *(char*)data;
+			}
+
+			height -= 256 * (ABS(h1) + ABS(h2));
+		}
+	}
+
+	return height;
+}
+
+void set_bounce(void)
+{
+	ITEM_INFO* item;
+	long dx, dy, dz, distance;
+
+	if (camera_bounce_status)
+	{
+		if (camera_bounce_item_number != -1)
+		{
+			item = &items[camera_bounce_item_number];
+			dx = item->pos.x_pos - camera.pos.x;
+			dy = item->pos.y_pos - camera.pos.y;
+			dz = item->pos.z_pos - camera.pos.z;
+
+			if (ABS(dx) < 16384 && ABS(dy) < 16384 && ABS(dz) < 16384)
+			{
+				distance = SQUARE(dx) + SQUARE(dy) + SQUARE(dz);
+
+				if (distance <= 268435456)
+					camera.bounce = camera_bounce_strength * (1048576 - distance / 256) / 1048576;
+			}
+		}
+		else
+			camera.bounce = camera_bounce_strength;
+	}
+}
+
+void do_spotcam_bounce()
+{
+	long rndval, shake;
+
+	set_bounce();
+
+	if (camera.bounce)
+	{
+		if (camera.bounce <= 0)
+		{
+			rndval = -camera.bounce;
+			shake = rndval >> 1;
+			camera.target.x += GetRandomControl() % rndval - shake;
+			camera.target.y += GetRandomControl() % rndval - shake;
+			camera.target.z += GetRandomControl() % rndval - shake;
+			camera.bounce += 5;
+		}
+		else
+		{
+			camera.pos.y += camera.bounce;
+			camera.target.y += camera.bounce;
+			camera.bounce = 0;
+		}
+	}
+}
+
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
 
 void cbSaveMyData(void)
 {
 	pWriteMyData(&patch_secret_counter_status, sizeof(long));
+	pWriteMyData(&camera_bounce_strength, sizeof(long));
+	pWriteMyData(&camera_bounce_item_number, sizeof(short));
+	pWriteMyData(&camera_bounce_status, sizeof(long));
 }
 
 void cbLoadMyData(void)
 {
 	pReadMyData(&patch_secret_counter_status, sizeof(long));
+	pReadMyData(&camera_bounce_strength, sizeof(long));
+	pReadMyData(&camera_bounce_item_number, sizeof(short));
+	pReadMyData(&camera_bounce_status, sizeof(long));
 }
 
 void cbInitLoadNewLevel(void)
@@ -2726,6 +3027,13 @@ void cbInitLoadNewLevel(void)
 		lift_doors[i] = -1;
 
 	sfx_lift_doors = -1;
+
+	for (int i = 0; i < 16; i++)
+		sprite_object[i] = -1;
+
+	camera_bounce_strength = -66;
+	camera_bounce_item_number = -1;
+	camera_bounce_status = 0;
 }
 
 long cbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort ActivationMode)
@@ -2738,6 +3046,28 @@ long cbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort Activ
 	{
 	case 1:
 		set_patch_secret_counter_status(Timer);
+		break;
+
+	case 2:
+		camera_bounce_strength = -Timer;
+		break;
+
+	case 3:
+		camera_bounce_strength = -(ushort)pBaseVariableTRNG->Globals.CurrentValue;
+		break;
+
+	case 4:
+		camera_bounce_status = 1;
+		camera_bounce_item_number = -1;
+		break;
+
+	case 5:
+		camera_bounce_status = 1;
+		camera_bounce_item_number = TRNGItemIndexSelected;
+		break;
+
+	case 6:
+		camera_bounce_status = 0;
 		break;
 	}
 
@@ -2836,9 +3166,30 @@ void cbAssignSlotMine(ushort Slot, ushort ObjType)
 	case 3:
 		bridge_object[ObjType - 1] = Slot;
 		break;
+
 	case 4:
 	case 5:
 		lift_doors[ObjType - 4] = Slot;
+		break;
+
+	case 6:
+	case 7:
+	case 8:
+	case 9:
+	case 10:
+	case 11:
+	case 12:
+	case 13:
+	case 14:
+	case 15:
+	case 16:
+	case 17:
+	case 18:
+	case 19:
+	case 20:
+	case 21:
+		sprite_object[ObjType - 6] = Slot;
+		break;
 	}
 }
 
@@ -2846,6 +3197,7 @@ void cbInitObjects(void)
 {
 	setup_bridge_object();
 	setup_lift_doors();
+	setup_sprite_object();
 }
 
 void cbInitGame(void)
@@ -2892,4 +3244,8 @@ void Inject(void)
 	INJECT(0x00910055, S_PrintCircleShadow);
 	INJECT(0x0091005A, move_lara_position_to_pushable);
 	INJECT(0x0091005F, DrawClassicHair);
+	INJECT(0x00910064, GetMaximumFloor);
+	INJECT(0x00910069, GetMinimumCeiling);
+	INJECT(0x0091006E, set_bounce);
+	INJECT(0x00910073, do_spotcam_bounce);
 }
