@@ -864,6 +864,12 @@ typedef enum
 	MINER_TYPE
 } floor_types;
 
+typedef enum
+{
+	ANIM_BACKSTEPD_LEFT = 61,
+	ANIM_BACKSTEPD_RIGHT = 62
+} lara_anim;
+
 typedef struct
 {
 	char b;
@@ -1956,6 +1962,9 @@ float sqrt(float num)
 
 #define TRNGItemIndexSelected   VAR_U_(0x1036C19C, short)
 
+#define backstep_start_frame VAR_U_(0x0084D3A0, uchar)
+#define backstep_end_frame VAR_U_(0x0084D3A1, uchar)
+
 short phd_sin(long angle)
 {
 	angle >>= 3;
@@ -2986,6 +2995,20 @@ void do_spotcam_bounce()
 	}
 }
 
+void lara_col_back_fix(ITEM_INFO* item)
+{
+	if (item->frame_number - anims[item->anim_number].frame_base >= backstep_start_frame && item->frame_number - anims[item->anim_number].frame_base <= backstep_end_frame)
+	{
+		item->anim_number = ANIM_BACKSTEPD_RIGHT;
+		item->frame_number = anims[ANIM_BACKSTEPD_RIGHT].frame_base;
+	}
+	else
+	{
+		item->anim_number = ANIM_BACKSTEPD_LEFT;
+		item->frame_number = anims[ANIM_BACKSTEPD_LEFT].frame_base;
+	}
+}
+
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
 
@@ -3248,4 +3271,5 @@ void Inject(void)
 	INJECT(0x00910069, GetMinimumCeiling);
 	INJECT(0x0091006E, set_bounce);
 	INJECT(0x00910073, do_spotcam_bounce);
+	INJECT(0x00910078, lara_col_back_fix);
 }
