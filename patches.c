@@ -867,8 +867,141 @@ typedef enum
 typedef enum
 {
 	ANIM_BACKSTEPD_LEFT = 61,
-	ANIM_BACKSTEPD_RIGHT = 62
+	ANIM_BACKSTEPD_RIGHT = 62,
+	ANIM_RBALL_DEATH = 139
 } lara_anim;
+
+typedef enum
+{
+	ITEM_INACTIVE,
+	ITEM_ACTIVE,
+	ITEM_DEACTIVATED,
+	ITEM_INVISIBLE
+} item_status;
+
+typedef enum
+{
+	AS_WALK = 0,
+	AS_RUN = 1,
+	AS_STOP = 2,
+	AS_FORWARDJUMP = 3,
+	AS_POSE = 4,
+	AS_FASTBACK = 5,
+	AS_TURN_R = 6,
+	AS_TURN_L = 7,
+	AS_DEATH = 8,
+	AS_FASTFALL = 9,
+	AS_HANG = 10,
+	AS_REACH = 11,
+	AS_SPLAT = 12,
+	AS_TREAD = 13,
+	AS_LAND = 14,
+	AS_COMPRESS = 15,
+	AS_BACK = 16,
+	AS_SWIM = 17,
+	AS_GLIDE = 18,
+	AS_NULL = 19,
+	AS_FASTTURN = 20,
+	AS_STEPRIGHT = 21,
+	AS_STEPLEFT = 22,
+	AS_HIT = 23,
+	AS_SLIDE = 24,
+	AS_BACKJUMP = 25,
+	AS_RIGHTJUMP = 26,
+	AS_LEFTJUMP = 27,
+	AS_UPJUMP = 28,
+	AS_FALLBACK = 29,
+	AS_HANGLEFT = 30,
+	AS_HANGRIGHT = 31,
+	AS_SLIDEBACK = 32,
+	AS_SURFTREAD = 33,
+	AS_SURFSWIM = 34,
+	AS_DIVE = 35,
+	AS_PUSHBLOCK = 36,
+	AS_PULLBLOCK = 37,
+	AS_PPREADY = 38,
+	AS_PICKUP = 39,
+	AS_SWITCHON = 40,
+	AS_SWITCHOFF = 41,
+	AS_USEKEY = 42,
+	AS_USEPUZZLE = 43,
+	AS_UWDEATH = 44,
+	AS_ROLL = 45,
+	AS_SPECIAL = 46,
+	AS_SURFBACK = 47,
+	AS_SURFLEFT = 48,
+	AS_SURFRIGHT = 49,
+	AS_USEMIDAS = 50,
+	AS_DIEMIDAS = 51,
+	AS_SWANDIVE = 52,
+	AS_FASTDIVE = 53,
+	AS_GYMNAST = 54,
+	AS_WATEROUT = 55,
+	AS_CLIMBSTNC = 56,
+	AS_CLIMBING = 57,
+	AS_CLIMBLEFT = 58,
+	AS_CLIMBEND = 59,
+	AS_CLIMBRIGHT = 60,
+	AS_CLIMBDOWN = 61,
+	AS_LARATEST1 = 62,
+	AS_LARATEST2 = 63,
+	AS_LARATEST3 = 64,
+	AS_WADE = 65,
+	AS_WATERROLL = 66,
+	AS_FLAREPICKUP = 67,
+	AS_TWIST = 68,
+	AS_KICK = 69,
+	AS_DEATHSLIDE = 70,
+	AS_DUCK = 71,
+	AS_DUCKROLL = 72,
+	AS_DASH = 73,
+	AS_DASHDIVE = 74,
+	AS_HANG2 = 75,
+	AS_MONKEYSWING = 76,
+	AS_MONKEYL = 77,
+	AS_MONKEYR = 78,
+	AS_MONKEY180 = 79,
+	AS_ALL4S = 80,
+	AS_CRAWL = 81,
+	AS_HANGTURNL = 82,
+	AS_HANGTURNR = 83,
+	AS_ALL4TURNL = 84,
+	AS_ALL4TURNR = 85,
+	AS_CRAWLBACK = 86,
+	AS_HANG2DUCK = 87,
+	AS_CRAWL2HANG = 88,
+	AS_CONTROLLED = 89,
+	AS_ROPELEFT = 90,
+	AS_ROPERIGHT = 91,
+	AS_BLOCKSWITCH = 92,
+	AS_LIFTTRAP = 93,
+	AS_PULLTRAP = 94,
+	AS_TURNSWITCH = 95,
+	AS_COGSWITCH = 96,
+	AS_RAILSWITCH = 97,
+	AS_HIDDENPICKUP = 98,
+	AS_POLESTAT = 99,
+	AS_POLEUP = 100,
+	AS_POLEDOWN = 101,
+	AS_POLELEFT = 102,
+	AS_POLERIGHT = 103,
+	AS_PULLEY = 104,
+	AS_DUCKROTL = 105,
+	AS_DUCKROTR = 106,
+	AS_CORNEREXTL = 107,
+	AS_CORNEREXTR = 108,
+	AS_CORNERINTL = 109,
+	AS_CORNERINTR = 110,
+	AS_ROPE = 111,
+	AS_CLIMBROPE = 112,
+	AS_SLIDEROPE = 113,
+	AS_ROPEFWD = 114,
+	AS_ROPEBACK = 115,
+	AS_MOVE = 116,
+	AS_TWODOOR = 117,
+
+	NUM_LARA_STATES
+} lara_anim_state;
 
 typedef struct
 {
@@ -1965,6 +2098,22 @@ float sqrt(float num)
 #define backstep_start_frame VAR_U_(0x0084D3A0, uchar)
 #define backstep_end_frame VAR_U_(0x0084D3A1, uchar)
 
+#define game_malloc	( (void*(*)(long)) 0x0048EBF0 )
+
+#define ItemNewRoom	( (void(*)(short, short)) 0x00453C80 )
+#define TestTriggers	( (void(*)(short*, long, long)) 0x0044A1F0 )
+#define phd_sqrt	( (long(*)(long)) 0x0048DF00 )
+#define GetBoundsAccurate	( (short*(*)(ITEM_INFO*)) 0x004504E0 )
+#define GetCeiling	( (long(*)(FLOOR_INFO*, long, long, long)) 0x0044AD20 )
+#define RemoveActiveItem	( (void(*)(short)) 0x00453AC0 )
+#define	TestBoundsCollide	( (long(*)(ITEM_INFO*, ITEM_INFO*, long)) 0x00447270 )
+#define TestCollision	( (long(*)(ITEM_INFO*, ITEM_INFO*)) 0x0045ED00 )
+#define	ItemPushLara	( (long(*)(ITEM_INFO*, ITEM_INFO*, COLL_INFO*, long, long)) 0x00446EC0 )
+#define DoBloodSplat	( (short(*)(long, long, long, short, short, short)) 0x00436BD0 )
+#define ObjectCollision	( (void(*)(short, ITEM_INFO*, COLL_INFO*)) 0x00446D60 )
+
+#define trigger_index	VAR_U_(0x007FE128, short*)
+
 short phd_sin(long angle)
 {
 	angle >>= 3;
@@ -2004,6 +2153,7 @@ short sprite_object[16];
 long camera_bounce_strength;
 short camera_bounce_item_number;
 long camera_bounce_status;
+short rollingball_object[16];
 
 long check_flep(long number)
 {
@@ -3009,6 +3159,212 @@ void lara_col_back_fix(ITEM_INFO* item)
 	}
 }
 
+void InitialiseRollingBall(short item_number)
+{
+	ITEM_INFO* item;
+	GAME_VECTOR* pos;
+
+	item = &items[item_number];
+	pos = (GAME_VECTOR*)game_malloc(sizeof(GAME_VECTOR));
+	item->data = pos;
+	pos->x = item->pos.x_pos;
+	pos->y = item->pos.y_pos;
+	pos->z = item->pos.z_pos;
+	pos->room_number = item->room_number;
+}
+
+void RollingBallControl(short item_number)
+{
+	ITEM_INFO* item;
+	GAME_VECTOR* pos;
+	FLOOR_INFO* floor;
+	long oldx, oldy, oldz, dx, dz, dist, x, y, z, h, c;
+	short* bounds;
+	short room_number;
+
+	item = &items[item_number];
+
+	if (item->status == ITEM_ACTIVE)
+	{
+		if (item->goal_anim_state == 2)
+		{
+			AnimateItem(item);
+			return;
+		}
+
+		room_number = item->room_number;
+		floor = GetFloor(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, &room_number);
+		oldy = GetHeight(floor, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+
+		if (item->pos.y_pos >= oldy)
+		{
+			if (!item->current_anim_state)
+				item->goal_anim_state = 1;
+		}
+		else if (!item->gravity_status)
+		{
+			item->fallspeed = -10;
+			item->gravity_status = 1;
+		}
+
+		oldx = item->pos.x_pos;
+		oldz = item->pos.z_pos;
+		AnimateItem(item);
+		room_number = item->room_number;
+		floor = GetFloor(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, &room_number);
+		item->floor = GetHeight(floor, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+
+		if (item->room_number != room_number)
+			ItemNewRoom(item_number, room_number);
+
+		TestTriggers(trigger_index, 1, 0);
+
+		if (item->pos.y_pos >= item->floor - 256)
+		{
+			item->gravity_status = 0;
+			item->fallspeed = 0;
+			item->pos.y_pos = item->floor;
+			
+			if (item->trigger_flags != 1)
+			{
+				dx = camera.mike_pos.x - item->pos.x_pos;
+				dz = camera.mike_pos.z - item->pos.z_pos;
+				
+				if (ABS(dx) < 32000 && ABS(dz) < 32000)
+				{
+					dist = phd_sqrt(SQUARE(dx) + SQUARE(dz));
+
+					if (dist < 10240)
+						camera.bounce = 40 * (dist - 10240) / 10240;
+				}
+			}
+		}
+
+		bounds = GetBoundsAccurate(item);
+		dist = bounds[5];
+		y = bounds[3] - bounds[2];
+		x = item->pos.x_pos + ((dist * phd_sin(item->pos.y_rot)) >> W2V_SHIFT);
+		z = item->pos.z_pos + ((dist * phd_cos(item->pos.y_rot)) >> W2V_SHIFT);
+		floor = GetFloor(x, item->pos.y_pos, z, &room_number);
+		h = GetHeight(floor, x, item->pos.y_pos, z);
+		room_number = item->room_number;
+		floor = GetFloor(x, item->pos.y_pos - y, z, &room_number);
+		c = GetCeiling(floor, x, item->pos.y_pos - y, z);
+
+		if (h < item->pos.y_pos || c > item->pos.y_pos - y)
+		{
+			item->goal_anim_state = 2;
+			item->pos.x_pos = oldx;
+			item->pos.y_pos = oldy;
+			item->pos.z_pos = oldz;
+			item->fallspeed = 0;
+			item->speed = 0;
+			item->touch_bits = 0;
+		}
+	}
+	else if (item->status == ITEM_DEACTIVATED && !TriggerActive(item))
+	{
+		item->status = ITEM_INACTIVE;
+		pos = (GAME_VECTOR*)item->data;
+		item->pos.x_pos = pos->x;
+		item->pos.y_pos = pos->y;
+		item->pos.z_pos = pos->z;
+
+		if (item->room_number != pos->room_number)
+			ItemNewRoom(item_number, pos->room_number);
+
+		item->anim_number = objects[item->object_number].anim_index;
+		item->frame_number = anims[item->anim_number].frame_base;
+		item->current_anim_state = anims[item->anim_number].current_anim_state;
+		item->goal_anim_state = item->current_anim_state;
+		RemoveActiveItem(item_number);
+	}
+}
+
+void RollingBallCollision(short item_number, ITEM_INFO* l, COLL_INFO* coll)
+{
+	ITEM_INFO* item;
+	long x, y, z, d;
+	short ang;
+
+	item = &items[item_number];
+
+	if (item->status == ITEM_ACTIVE)
+	{
+		if (!TestBoundsCollide(item, l, coll->radius) || !TestCollision(item, l))
+			return;
+
+		if (l->gravity_status)
+		{
+			if (coll->enable_baddie_push)
+				ItemPushLara(item, l, coll, coll->enable_spaz, 1);
+
+			l->hit_points -= 100;
+			x = l->pos.x_pos - item->pos.x_pos;
+			y = l->pos.y_pos - item->pos.y_pos + 162;
+			z = l->pos.z_pos - item->pos.z_pos;
+			d = phd_sqrt(SQUARE(x) + SQUARE(y) + SQUARE(z));
+
+			if (d < 512)
+				d = 512;
+
+			x = item->pos.x_pos + 512 * x / d;
+			y = item->pos.y_pos + 512 * y / d - 512;
+			z = item->pos.z_pos + 512 * z / d;
+			DoBloodSplat(x, y, z, item->speed, item->pos.y_rot, item->room_number);
+		}
+		else
+		{
+			l->hit_status = 1;
+
+			if (l->hit_points <= 0)
+				return;
+
+			l->hit_points = -1;
+			l->pos.x_rot = 0;
+			l->pos.y_rot = item->pos.y_rot;
+			l->pos.z_rot = 0;
+			l->anim_number = ANIM_RBALL_DEATH;
+			l->frame_number = anims[ANIM_RBALL_DEATH].frame_base;
+			l->current_anim_state = AS_SPECIAL;
+			l->goal_anim_state = AS_SPECIAL;
+			camera.flags = 1;
+			camera.target_angle = 30940;
+			camera.target_elevation = -4550;
+
+			for (int i = 0; i < 15; i++)
+			{
+				x = l->pos.x_pos + (GetRandomControl() - 0x4000) / 256;
+				y = l->pos.y_pos - GetRandomControl() / 64;
+				z = l->pos.z_pos + (GetRandomControl() - 0x4000) / 256;
+				ang = item->pos.y_rot + (GetRandomControl() - 0x4000) / 8;
+				DoBloodSplat(x, y, z, 2 * item->speed, ang, item->room_number);
+			}
+		}
+	}
+	else if (item->status != ITEM_INVISIBLE)
+		ObjectCollision(item_number, l, coll);
+}
+
+void setup_rollingballs(void)
+{
+	OBJECT_INFO* obj;
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (rollingball_object[i] != -1)
+		{
+			obj = &objects[rollingball_object[i]];
+			obj->initialise = InitialiseRollingBall;
+			obj->control = RollingBallControl;
+			obj->collision = RollingBallCollision;
+			obj->save_position = 1;
+			obj->save_flags = 1;
+			obj->save_anim = 1;
+		}
+	}
+}
+
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
 
@@ -3057,6 +3413,9 @@ void cbInitLoadNewLevel(void)
 	camera_bounce_strength = -66;
 	camera_bounce_item_number = -1;
 	camera_bounce_status = 0;
+
+	for (int i = 0; i < 16; i++)
+		rollingball_object[i] = -1;
 }
 
 long cbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort ActivationMode)
@@ -3213,6 +3572,24 @@ void cbAssignSlotMine(ushort Slot, ushort ObjType)
 	case 21:
 		sprite_object[ObjType - 6] = Slot;
 		break;
+	case 22:
+	case 23:
+	case 24:
+	case 25:
+	case 26:
+	case 27:
+	case 28:
+	case 29:
+	case 30:
+	case 31:
+	case 32:
+	case 33:
+	case 34:
+	case 35:
+	case 36:
+	case 37:
+		rollingball_object[ObjType - 22] = Slot;
+		break;
 	}
 }
 
@@ -3221,6 +3598,7 @@ void cbInitObjects(void)
 	setup_bridge_object();
 	setup_lift_doors();
 	setup_sprite_object();
+	setup_rollingballs();
 }
 
 void cbInitGame(void)

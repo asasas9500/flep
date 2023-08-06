@@ -15901,3 +15901,35 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       partype=1,3
       parcondbehave=1,1
   footer=299
+  header=300
+      enabled=1
+      name=Fix null static collision bounds
+      description=Fixes the collision against statics that have no collisional bounds.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,465D8
+      datadefault=0,8B470403E8
+      datamodified=0,E9F36D4000
+      datacondbehave=0,0
+      dataoffset=1,FD3D0
+      datadefault=1,
+      datamodified=1,31C0394110750E39411475093941180F84D192BFFF8B470403E8E9EE91BFFF
+      datacondbehave=1,1
+  footer=300
+  header=301
+      enabled=1
+      name=Fix vertical rotation toward AI objects
+      description=Fixes awkward vertical rotations of baddies that may happen in their AI behaviour.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,3F6D2
+      datadefault=0,3BC1527E14
+      datamodified=0,E939DD4000
+      datacondbehave=0,0
+      dataoffset=1,FD410
+      datadefault=1,
+      datamodified=1,66817E0C8E017C1B66817E0C95017F138B4CE41466C741120000668B4110E9D122BFFF5239C80F8EAF22BFFFE99622BFFF
+      datacondbehave=1,1
+  footer=301
