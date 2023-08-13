@@ -2111,6 +2111,7 @@ float sqrt(float num)
 #define	ItemPushLara	( (long(*)(ITEM_INFO*, ITEM_INFO*, COLL_INFO*, long, long)) 0x00446EC0 )
 #define DoBloodSplat	( (short(*)(long, long, long, short, short, short)) 0x00436BD0 )
 #define ObjectCollision	( (void(*)(short, ITEM_INFO*, COLL_INFO*)) 0x00446D60 )
+#define Splash	( (void(*)(ITEM_INFO*)) 0x00436CF0 )
 
 #define trigger_index	VAR_U_(0x007FE128, short*)
 
@@ -3180,7 +3181,7 @@ void RollingBallControl(short item_number)
 	FLOOR_INFO* floor;
 	long oldx, oldy, oldz, dx, dz, dist, x, y, z, h, c;
 	short* bounds;
-	short room_number;
+	short room_number, fallspeed;
 
 	item = &items[item_number];
 
@@ -3215,7 +3216,17 @@ void RollingBallControl(short item_number)
 		item->floor = GetHeight(floor, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
 
 		if (item->room_number != room_number)
+		{
+			if (item->trigger_flags & 0x20 && room[room_number].flags & ROOM_UNDERWATER && !(room[item->room_number].flags & ROOM_UNDERWATER))
+			{
+				fallspeed = item->fallspeed;
+				item->fallspeed = 400;
+				Splash(item);
+				item->fallspeed = fallspeed;
+			}
+
 			ItemNewRoom(item_number, room_number);
+		}
 
 		TestTriggers(trigger_index, 1, 0);
 
@@ -3225,7 +3236,7 @@ void RollingBallControl(short item_number)
 			item->fallspeed = 0;
 			item->pos.y_pos = item->floor;
 			
-			if (item->trigger_flags != 1)
+			if (!(item->trigger_flags & 0x1))
 			{
 				dx = camera.mike_pos.x - item->pos.x_pos;
 				dz = camera.mike_pos.z - item->pos.z_pos;
@@ -3253,10 +3264,14 @@ void RollingBallControl(short item_number)
 
 		if (h < item->pos.y_pos || c > item->pos.y_pos - y)
 		{
-			item->goal_anim_state = 2;
 			item->pos.x_pos = oldx;
-			item->pos.y_pos = oldy;
 			item->pos.z_pos = oldz;
+
+			if (item->pos.y_pos < item->floor)
+				return;
+
+			item->goal_anim_state = 2;
+			item->pos.y_pos = oldy;
 			item->fallspeed = 0;
 			item->speed = 0;
 			item->touch_bits = 0;
