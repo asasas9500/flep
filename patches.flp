@@ -15933,3 +15933,23 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=1,66817E0C8E017C1B66817E0C95017F138B4CE41466C741120000668B4110E9D122BFFF5239C80F8EAF22BFFFE99622BFFF
       datacondbehave=1,1
   footer=301
+  header=302
+      enabled=1
+      name=Fix Sarcophagus pickups
+      description=Fix Sarcophagus taking pickups not only from itself, but also from near Sarcophagi.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,57D8E
+      datadefault=0,0FBF88B0440000
+      datamodified=0,E9DD563F009090
+      datacondbehave=0,0
+      dataoffset=1,57D97
+      datadefault=1,47
+      datamodified=1,45
+      datacondbehave=1,0
+      dataoffset=2,FD470
+      datadefault=2,
+      datamodified=2,0FBF4D148D14890FBF4CD0188B156CE17F00E90EA9C0FF
+      datacondbehave=2,1
+  footer=302
