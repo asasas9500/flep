@@ -15953,3 +15953,31 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=2,0FBF4D148D14890FBF4CD0188B156CE17F00E90EA9C0FF
       datacondbehave=2,1
   footer=302
+  header=303
+      enabled=1
+      name=Angkor Wat Von Croy
+      description=Makes Von Croy have Angkor Wat behaviour in all levels, instead of only the first level.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,5B7C4
+      datadefault=0,74
+      datamodified=0,EB
+      datacondbehave=0,0
+  footer=303
+  header=304
+      enabled=1
+      name=Fix load.bmp stretching
+      description=Fixes the corruption of load.bmp when it is shrinked to fit the resolution of the screen.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,7E841
+      datadefault=0,FF1540704A00
+      datamodified=0,E96AEC3C0090
+      datacondbehave=0,0
+      dataoffset=1,FD4B0
+      datadefault=1,
+      datamodified=1,68E2D48400FF1570704A0085C0741868ECD4840050FF151C714A0085C074086A03FF74E404FFD0FF1540704A00E96513C3FF67646933322E646C6C0053657453747265746368426C744D6F646500
+      datacondbehave=1,1
+  footer=304
