@@ -2115,6 +2115,10 @@ float sqrt(float num)
 
 #define trigger_index	VAR_U_(0x007FE128, short*)
 
+#define ForcedFixedCamera	VAR_U_(0x007FE770, GAME_VECTOR)
+
+#define mgLOS	( (long(*)(GAME_VECTOR*, GAME_VECTOR*, long)) 0x00444970 )
+
 short phd_sin(long angle)
 {
 	angle >>= 3;
@@ -3380,6 +3384,28 @@ void setup_rollingballs(void)
 	}
 }
 
+void AdjustForcedFixedCamera(PHD_VECTOR* pos, short room_number)
+{
+	FLOOR_INFO* floor;
+	GAME_VECTOR start;
+	long height, ceiling;
+	short r;
+
+	r = ForcedFixedCamera.room_number;
+	floor = GetFloor(ForcedFixedCamera.x, ForcedFixedCamera.y, ForcedFixedCamera.z, &r);
+	height = GetHeight(floor, ForcedFixedCamera.x, ForcedFixedCamera.y, ForcedFixedCamera.z);
+	ceiling = GetCeiling(floor, ForcedFixedCamera.x, ForcedFixedCamera.y, ForcedFixedCamera.z);
+
+	if (ForcedFixedCamera.y < ceiling || ForcedFixedCamera.y > height)
+	{
+		start.x = pos->x;
+		start.y = pos->y;
+		start.z = pos->z;
+		start.room_number = room_number;
+		mgLOS(&start, &ForcedFixedCamera, ABS(ForcedFixedCamera.y - start.y));
+	}
+}
+
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
 
@@ -3665,4 +3691,5 @@ void Inject(void)
 	INJECT(0x0091006E, set_bounce);
 	INJECT(0x00910073, do_spotcam_bounce);
 	INJECT(0x00910078, lara_col_back_fix);
+	INJECT(0x0091007D, AdjustForcedFixedCamera);
 }
