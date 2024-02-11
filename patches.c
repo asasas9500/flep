@@ -2119,6 +2119,17 @@ float sqrt(float num)
 
 #define mgLOS	( (long(*)(GAME_VECTOR*, GAME_VECTOR*, long)) 0x00444970 )
 
+#define FireGrenade	( (void(*)(void)) 0x00429120 )
+#define FireCrossbow	( (void(*)(PHD_3DPOS*)) 0x00429ED0 )
+#define get_current_ammo_pointer	( (short*(*)(long)) 0x0042F010 )
+
+#define next_item_active   VAR_U_(0x007FD0EA, short)
+
+#define ControlGrenade	( (void(*)(short)) 0x004293B0 )
+#define ControlCrossbow	( (void(*)(short)) 0x0042A4B0 )
+#define DrawWeaponMissile	( (void(*)(ITEM_INFO*)) 0x0043AFC0 )
+#define TriggerGunSmoke	( (void(*)(long, long, long, long, long, long, long, long, long)) 0x00438340 )
+
 short phd_sin(long angle)
 {
 	angle >>= 3;
@@ -2159,6 +2170,13 @@ long camera_bounce_strength;
 short camera_bounce_item_number;
 long camera_bounce_status;
 short rollingball_object[16];
+char crossbow_grenade_animations;
+char crossbow_grenade_ammo[3];
+char crossbow_grenade_ammo_type[3];
+short crossbow_grenade_ammo_slot[3];
+short crossbow_grenade_ammo_sound[3];
+char crossbow_grenade_ammo_smoke[3];
+char in_fire_crossbow_grenade;
 
 long check_flep(long number)
 {
@@ -3406,6 +3424,142 @@ void AdjustForcedFixedCamera(PHD_VECTOR* pos, short room_number)
 	}
 }
 
+void fire_crossbow_grenade(void)
+{
+	PHD_VECTOR pos;
+	PHD_VECTOR pos2;
+	short *ammo, *grenade_ammo, backup_ammo, old_next_item_active;
+	long index;
+	char grenade_current_type, crossbow_current_type;
+
+	grenade_current_type = lara.grenade_type_carried & (W_AMMO1 | W_AMMO2 | W_AMMO3);
+
+	if (grenade_current_type & W_AMMO1)
+		index = 0;
+	else if (grenade_current_type & W_AMMO2)
+		index = 1;
+	else
+		index = 2;
+
+	if (crossbow_grenade_ammo[index])
+	{
+		if (crossbow_grenade_ammo_type[index] != grenade_current_type)
+		{
+			grenade_ammo = get_current_ammo_pointer(WEAPON_GRENADE);
+
+			if (!*grenade_ammo)
+				return;
+
+			lara.grenade_type_carried &= ~(W_AMMO1 | W_AMMO2 | W_AMMO3);
+			lara.grenade_type_carried |= crossbow_grenade_ammo_type[index];
+			ammo = get_current_ammo_pointer(WEAPON_GRENADE);
+			backup_ammo = *ammo;
+			*ammo = -1;
+		}
+
+		old_next_item_active = next_item_active;
+		FireGrenade();
+
+		if (crossbow_grenade_ammo_type[index] != grenade_current_type)
+		{
+			*ammo = backup_ammo;
+			lara.grenade_type_carried &= ~(W_AMMO1 | W_AMMO2 | W_AMMO3);
+			lara.grenade_type_carried |= grenade_current_type;
+
+			if (next_item_active != old_next_item_active && *grenade_ammo != -1)
+				(*grenade_ammo)--;
+		}
+
+		if (next_item_active != old_next_item_active && crossbow_grenade_ammo_slot[index] != GRENADE)
+			items[next_item_active].object_number = crossbow_grenade_ammo_slot[index];
+	}
+	else
+	{
+		grenade_ammo = get_current_ammo_pointer(WEAPON_GRENADE);
+
+		if (!*grenade_ammo)
+			return;
+
+		crossbow_current_type = lara.crossbow_type_carried & (W_AMMO1 | W_AMMO2 | W_AMMO3);
+		lara.crossbow_type_carried &= ~(W_AMMO1 | W_AMMO2 | W_AMMO3);
+		lara.crossbow_type_carried |= crossbow_grenade_ammo_type[index];
+		ammo = get_current_ammo_pointer(WEAPON_CROSSBOW);
+		backup_ammo = *ammo;
+		*ammo = -1;
+		old_next_item_active = next_item_active;
+		in_fire_crossbow_grenade = 1;
+		FireCrossbow(0);
+		in_fire_crossbow_grenade = 0;
+		*ammo = backup_ammo;
+		lara.crossbow_type_carried &= ~(W_AMMO1 | W_AMMO2 | W_AMMO3);
+		lara.crossbow_type_carried |= crossbow_current_type;
+
+		if (next_item_active != old_next_item_active)
+		{
+			if (*grenade_ammo != -1)
+				(*grenade_ammo)--;
+
+			if (crossbow_grenade_ammo_slot[index] != CROSSBOW_BOLT)
+				items[next_item_active].object_number = crossbow_grenade_ammo_slot[index];
+		}
+	}
+
+	if (next_item_active != old_next_item_active)
+	{
+		if (crossbow_grenade_ammo_sound[index] != -1)
+			SoundEffect(crossbow_grenade_ammo_sound[index], 0, SFX_DEFAULT);
+
+		if (crossbow_grenade_ammo_smoke[index])
+		{
+			SmokeCountL = 32;
+			SmokeWeapon = WEAPON_GRENADE;
+			pos.x = 0;
+			pos.y = 276;
+			pos.z = 80;
+			GetLaraJointPos(&pos, LM_LINARM);
+			pos2.x = 0;
+			pos2.y = 1204;
+			pos2.z = 80;
+			GetLaraJointPos(&pos2, LM_LINARM);
+
+			for (int i = 0; i < 5; i++)
+				TriggerGunSmoke(pos.x, pos.y, pos.z, pos2.x - pos.x, pos2.y - pos.y, pos2.z - pos.z, 1, SmokeWeapon, SmokeCountL);
+		}
+	}
+}
+
+void setup_crossbow_grenade_ammo(void)
+{
+	OBJECT_INFO* obj;
+
+	for (int i = 0; i < 3; i++)
+	{
+		if (crossbow_grenade_ammo_slot[i] != CROSSBOW_BOLT && crossbow_grenade_ammo_slot[i] != GRENADE)
+		{
+			obj = &objects[crossbow_grenade_ammo_slot[i]];
+			obj->initialise = 0;
+			obj->control = crossbow_grenade_ammo[i] ? ControlGrenade : ControlCrossbow;
+			obj->collision = 0;
+			obj->draw_routine = DrawWeaponMissile;
+			obj->using_drawanimating_item = 0;
+		}
+	}
+}
+
+long fire_crossbow_sound(long sfx, PHD_3DPOS* pos, long flags)
+{
+	if (in_fire_crossbow_grenade)
+		return 0;
+	return SoundEffect(sfx, pos, flags);
+}
+
+long get_weapon_animation(ITEM_INFO* item)
+{
+	if (item->object_number == GRENADE_GUN_ANIM && crossbow_grenade_animations)
+		return objects[GRENADE_GUN_ANIM].anim_index;
+	return objects[item->object_number].anim_index + 1;
+}
+
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
 
@@ -3457,6 +3611,19 @@ void cbInitLoadNewLevel(void)
 
 	for (int i = 0; i < 16; i++)
 		rollingball_object[i] = -1;
+
+	crossbow_grenade_animations = 1;
+
+	for (int i = 0; i < 3; i++)
+	{
+		crossbow_grenade_ammo[i] = 1;
+		crossbow_grenade_ammo_type[i] = 8 * (1 << i);
+		crossbow_grenade_ammo_slot[i] = GRENADE;
+		crossbow_grenade_ammo_sound[i] = -1;
+		crossbow_grenade_ammo_smoke[i] = 1;
+	}
+
+	in_fire_crossbow_grenade = 0;
 }
 
 long cbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort ActivationMode)
@@ -3570,6 +3737,47 @@ void cbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArra
 			sfx_lift_doors = pItemArray[0];
 
 		break;
+
+	case 3:
+
+		if (NumberOfItems == 16)
+		{
+			if (pItemArray[0] != -1)
+				crossbow_grenade_animations = pItemArray[0];
+
+			for (int i = 0; i < 3; i++)
+			{
+				if (pItemArray[i + 1] != -1)
+					crossbow_grenade_ammo[i] = pItemArray[i + 1] != WEAPON_CROSSBOW;
+
+				if (pItemArray[i + 4] != -1)
+					crossbow_grenade_ammo_type[i] = 4 * (1 << pItemArray[i + 4]);
+
+				if (pItemArray[i + 7] != -1)
+					crossbow_grenade_ammo_slot[i] = pItemArray[i + 7];
+				else if (!crossbow_grenade_ammo[i])
+					crossbow_grenade_ammo_slot[i] = CROSSBOW_BOLT;
+
+				if (pItemArray[i + 10] != -1)
+					crossbow_grenade_ammo_sound[i] = pItemArray[i + 10];
+
+				if (pItemArray[i + 13] != -1)
+					crossbow_grenade_ammo_smoke[i] = pItemArray[i + 13];
+
+				if (crossbow_grenade_ammo_slot[i] == CROSSBOW_BOLT)
+				{
+					if (crossbow_grenade_ammo[i])
+						crossbow_grenade_ammo_slot[i] = GRENADE;
+				}
+				else if (crossbow_grenade_ammo_slot[i] == GRENADE)
+				{
+					if (!crossbow_grenade_ammo[i])
+						crossbow_grenade_ammo_slot[i] = CROSSBOW_BOLT;
+				}
+			}
+		}
+
+		break;
 	}
 }
 
@@ -3640,6 +3848,7 @@ void cbInitObjects(void)
 	setup_lift_doors();
 	setup_sprite_object();
 	setup_rollingballs();
+	setup_crossbow_grenade_ammo();
 }
 
 void cbInitGame(void)
@@ -3692,4 +3901,7 @@ void Inject(void)
 	INJECT(0x00910073, do_spotcam_bounce);
 	INJECT(0x00910078, lara_col_back_fix);
 	INJECT(0x0091007D, AdjustForcedFixedCamera);
+	INJECT(0x00910082, fire_crossbow_grenade);
+	INJECT(0x00910087, fire_crossbow_sound);
+	INJECT(0x0091008C, get_weapon_animation);
 }
