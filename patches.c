@@ -1870,6 +1870,24 @@ typedef struct {
 
 typedef struct
 {
+	ulong CheatEnabled : 1;
+	ulong LoadSaveEnabled : 1;
+	ulong TitleEnabled : 1;
+	ulong PlayAnyLevel : 1;
+	ulong Language : 3;
+	ulong DemoDisc : 1;
+	ulong Unused : 24;
+	ulong InputTimeout;
+	uchar SecurityTag;
+	uchar nLevels;
+	uchar nFileNames;
+	uchar Pad;
+	ushort FileNameLen;
+	ushort ScriptLen;
+} GAMEFLOW;
+
+typedef struct
+{
 	char Text[80];
 } StrText80;
 
@@ -2130,6 +2148,10 @@ float sqrt(float num)
 #define DrawWeaponMissile	( (void(*)(ITEM_INFO*)) 0x0043AFC0 )
 #define TriggerGunSmoke	( (void(*)(long, long, long, long, long, long, long, long, long)) 0x00438340 )
 
+#define Gameflow	VAR_U_(0x007FD158, GAMEFLOW*)
+#define reset_flag	VAR_U_(0x004BF2EC, long)
+#define gfLoadRoom	VAR_U_(0x004B0635, uchar)
+
 short phd_sin(long angle)
 {
 	angle >>= 3;
@@ -2177,6 +2199,9 @@ short crossbow_grenade_ammo_slot[3];
 short crossbow_grenade_ammo_sound[3];
 char crossbow_grenade_ammo_smoke[3];
 char in_fire_crossbow_grenade;
+short lara_meshswap_target[256];
+short lara_meshswap_source_slot[256];
+short lara_meshswap_source[256];
 
 long check_flep(long number)
 {
@@ -3560,6 +3585,24 @@ long get_weapon_animation(ITEM_INFO* item)
 	return objects[item->object_number].anim_index + 1;
 }
 
+void do_lara_meshswap(long index)
+{
+	if (lara_meshswap_target[index] != -1 && lara_meshswap_source_slot[index] != -1 && lara_meshswap_source[index] != -1)
+		lara.mesh_ptrs[lara_meshswap_target[index]] = meshes[objects[lara_meshswap_source_slot[index]].mesh_index + 2 * lara_meshswap_source[index]];
+}
+
+void revert_lara_meshswap(long target)
+{
+	lara.mesh_ptrs[target] = meshes[objects[LARA].mesh_index + 2 * target];
+}
+
+void exit_game(void)
+{
+	Gameflow->DemoDisc = 1;
+	reset_flag = 1;
+	gfLoadRoom = 255;
+}
+
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
 
@@ -3624,6 +3667,13 @@ void cbInitLoadNewLevel(void)
 	}
 
 	in_fire_crossbow_grenade = 0;
+
+	for (int i = 0; i < 256; i++)
+	{
+		lara_meshswap_target[i] = -1;
+		lara_meshswap_source_slot[i] = -1;
+		lara_meshswap_source[i] = -1;
+	}
 }
 
 long cbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort ActivationMode)
@@ -3658,6 +3708,18 @@ long cbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort Activ
 
 	case 6:
 		camera_bounce_status = 0;
+		break;
+
+	case 7:
+		do_lara_meshswap(Timer - 1);
+		break;
+
+	case 8:
+		revert_lara_meshswap(Timer);
+		break;
+
+	case 9:
+		exit_game();
 		break;
 	}
 
@@ -3783,8 +3845,21 @@ void cbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArra
 
 void cbParametersMine(ushort ParameterValue, long NumberOfItems, short* pItemArray)
 {
+	long index;
+
 	switch (ParameterValue)
 	{
+	case 1:
+
+		if (NumberOfItems == 4)
+		{
+			index = pItemArray[0] - 1;
+			lara_meshswap_target[index] = pItemArray[1];
+			lara_meshswap_source_slot[index] = pItemArray[2];
+			lara_meshswap_source[index] = pItemArray[3];
+		}
+
+		break;
 	}
 }
 
