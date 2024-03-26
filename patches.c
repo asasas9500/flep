@@ -13,6 +13,10 @@ typedef ulong D3DCOLOR;
 #define RGBONLY(r, g, b) ((b) | (((g) | ((r) << 8)) << 8))
 #define RGBA(r, g, b, a) (RGBONLY(r, g, b) | ((a) << 24))
 #define NO_HEIGHT	-32512
+#define NO_ITEM	-1
+#define WALL_SHIFT	10
+#define WALL_SIZE	(1 << WALL_SHIFT)
+#define WALL_MASK	(WALL_SIZE - 1)
 
 typedef enum
 {
@@ -1003,6 +1007,55 @@ typedef enum
 	NUM_LARA_STATES
 } lara_anim_state;
 
+typedef enum
+{
+	LG_NO_ARMS,
+	LG_HANDS_BUSY,
+	LG_DRAW_GUNS,
+	LG_UNDRAW_GUNS,
+	LG_READY,
+	LG_FLARE,
+} lara_gun_status;
+
+typedef enum
+{
+	WALL,
+	SMALL_SLOPE,
+	BIG_SLOPE,
+	DIAGONAL,
+	SPLIT_TRI
+} height_types;
+
+typedef enum
+{
+	LMX_HIPS,
+	LMX_THIGH_L,
+	LMX_CALF_L,
+	LMX_FOOT_L,
+	LMX_THIGH_R,
+	LMX_CALF_R,
+	LMX_FOOT_R,
+	LMX_TORSO,
+	LMX_HEAD,
+	LMX_UARM_R,
+	LMX_LARM_R,
+	LMX_HAND_R,
+	LMX_UARM_L,
+	LMX_LARM_L,
+	LMX_HAND_L
+} LMX;
+
+typedef enum
+{
+	IFL_TRIGGERED = 0x20,
+	IFL_SWITCH_ONESHOT = 0x40,	//oneshot for switch items
+	IFL_ANTITRIGGER_ONESHOT = 0x80,	//oneshot for antitriggers
+	IFL_INVISIBLE = 0x100,	//also used as oneshot for everything else
+	IFL_CODEBITS = 0x3E00,
+	IFL_REVERSE = 0x4000,
+	IFL_CLEARBODY = 0x8000
+} ITEM_FLAGS;
+
 typedef struct
 {
 	char b;
@@ -1888,6 +1941,21 @@ typedef struct
 
 typedef struct
 {
+	long Speed;
+	long MidPos;
+	long FrontPos;
+	long TurnX;
+	long TurnZ;
+	short TurnLen;
+	short TurnRot;
+	short YVel;
+	short Gradient;
+	char Flags;
+	char StopDelay;
+} CARTINFO;
+
+typedef struct
+{
 	char Text[80];
 } StrText80;
 
@@ -2152,6 +2220,21 @@ float sqrt(float num)
 #define reset_flag	VAR_U_(0x004BF2EC, long)
 #define gfLoadRoom	VAR_U_(0x004B0635, uchar)
 
+#define height_type	VAR_U_(0x007FE170, long)
+#define wibble	VAR_U_(0x004BF238, long)
+#define tsv_buffer	ARRAY_(0x00804E60, char, [16384])
+
+#define CreateFlare	( (void(*)(short, long)) 0x0042F400 )
+#define undraw_flare_meshes	( (void(*)(void)) 0x0042FAB0 )
+#define mGetAngle	( (ulong(*)(long, long, long, long)) 0x0048D9C0 )
+#define DoLotsOfBlood	( (void(*)(long, long, long, short, short, short, long)) 0x00436C40 )
+#define GetCollidedObjects	( (long(*)(ITEM_INFO*, long, long, ITEM_INFO**, MESH_INFO**, long)) 0x004484E0 )
+#define AddActiveItem	( (void(*)(short)) 0x00453C10 )
+#define SwitchControl	( (void(*)(short)) 0x00460ED0 )
+#define WriteSG	( (void(*)(void*, int)) 0x0045A3C0 )
+#define ReadSG	( (void(*)(void*, int)) 0x0045B150 )
+#define phd_atan	( (long(*)(long, long)) 0x0048DE90 )
+
 short phd_sin(long angle)
 {
 	angle >>= 3;
@@ -2202,6 +2285,18 @@ char in_fire_crossbow_grenade;
 short lara_meshswap_target[256];
 short lara_meshswap_source_slot[256];
 short lara_meshswap_source[256];
+short mine_cart_slot_minecart;
+short mine_cart_slot_vehicle_anim;
+short mine_cart_slot_mapper;
+short mine_cart_slot_animating2;
+short mine_cart_sfx_mine_cart_clunk_start;
+short mine_cart_sfx_quad_front_impact;
+short mine_cart_sfx_mine_cart_sreech_brake;
+short mine_cart_sfx_mine_cart_track_loop;
+short mine_cart_sfx_mine_cart_pully_loop;
+char mine_cart_alignment;
+short mine_cart_slot_rollingball[16];
+short mine_cart_health[16];
 
 long check_flep(long number)
 {
@@ -2771,7 +2866,7 @@ void S_PrintCircleShadow(short size, short* box, ITEM_INFO* item, D3DCOLOR inner
 		pos.x = 0;
 		pos.y = 0;
 		pos.z = 0;
-		GetLaraJointPos(&pos, LM_TORSO);
+		GetLaraJointPos(&pos, LMX_TORSO);
 		room_number = lara_item->room_number;
 		y = GetHeight(GetFloor(pos.x, pos.y, pos.z, &room_number), pos.x, pos.y, pos.z);
 
@@ -3541,11 +3636,11 @@ void fire_crossbow_grenade(void)
 			pos.x = 0;
 			pos.y = 276;
 			pos.z = 80;
-			GetLaraJointPos(&pos, LM_LINARM);
+			GetLaraJointPos(&pos, LMX_HAND_R);
 			pos2.x = 0;
 			pos2.y = 1204;
 			pos2.z = 80;
-			GetLaraJointPos(&pos2, LM_LINARM);
+			GetLaraJointPos(&pos2, LMX_HAND_R);
 
 			for (int i = 0; i < 5; i++)
 				TriggerGunSmoke(pos.x, pos.y, pos.z, pos2.x - pos.x, pos2.y - pos.y, pos2.z - pos.z, 1, SmokeWeapon, SmokeCountL);
@@ -3601,6 +3696,1059 @@ void exit_game(void)
 	Gameflow->DemoDisc = 1;
 	reset_flag = 1;
 	gfLoadRoom = 255;
+}
+
+void MineCartInitialise(short item_number)
+{
+	ITEM_INFO* item;
+
+	item = &items[item_number];
+	item->data = game_malloc(sizeof(CARTINFO));
+}
+
+long GetInMineCart(ITEM_INFO* item, ITEM_INFO* l, COLL_INFO* coll)
+{
+	FLOOR_INFO* floor;
+	long dx, dz, dist, h;
+	short room_number, ang;
+
+	if (!(input & IN_ACTION) || lara.gun_status != LG_NO_ARMS || l->gravity_status ||
+		!TestBoundsCollide(item, l, coll->radius) || !TestCollision(item, l))
+		return 0;
+
+	dx = l->pos.x_pos - item->pos.x_pos;
+	dz = l->pos.z_pos - item->pos.z_pos;
+	dist = SQUARE(dx) + SQUARE(dz);
+
+	if (dist > 200000)
+		return 0;
+
+	room_number = item->room_number;
+	floor = GetFloor(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, &room_number);
+	h = GetHeight(floor, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+
+	if (h < -32000)
+		return 0;
+
+	ang = (short)(phd_atan(item->pos.z_pos - lara_item->pos.z_pos, item->pos.x_pos - lara_item->pos.x_pos) - item->pos.y_rot);
+
+	if (ang > -24586 && ang < -8206)
+	{
+		ang = lara_item->pos.y_rot - item->pos.y_rot;
+
+		if (ang > -24586 && ang < -8206)
+			return 1;
+	}
+	else if (ang > 8190 && ang < 24570)
+	{
+		ang = lara_item->pos.y_rot - item->pos.y_rot;
+
+		if (ang > 8190 && ang < 24570)
+			return 1;
+	}
+
+	return 0;
+}
+
+void MineCartCollision(short item_number, ITEM_INFO* l, COLL_INFO* coll)
+{
+	ITEM_INFO* item;
+	CARTINFO* cart;
+	short ang;
+
+	if (l->hit_points < 0 || lara.vehicle != NO_ITEM)
+		return;
+
+	item = &items[item_number];
+
+	if (!GetInMineCart(item, l, coll))
+		return ObjectCollision(item_number, l, coll);
+
+	lara.vehicle = item_number;
+
+	if (lara.gun_type == WEAPON_FLARE)
+	{
+		CreateFlare(FLARE_ITEM, 0);
+		undraw_flare_meshes();
+		lara.flare_control_left = 0;
+		lara.gun_type = WEAPON_NONE;
+		lara.request_gun_type = WEAPON_NONE;
+	}
+
+	lara.gun_status = LG_HANDS_BUSY;
+	ang = (short)(mGetAngle(item->pos.x_pos, item->pos.z_pos, l->pos.x_pos, l->pos.z_pos) - item->pos.y_rot);
+
+	if (ang > -0x1FFE && ang < 0x5FFA)
+		l->anim_number = objects[mine_cart_slot_vehicle_anim].anim_index + 46;
+	else
+		l->anim_number = objects[mine_cart_slot_vehicle_anim].anim_index;
+
+	l->frame_number = anims[l->anim_number].frame_base;
+	l->current_anim_state = 0;
+	l->goal_anim_state = 0;
+	l->pos.x_pos = item->pos.x_pos;
+	l->pos.y_pos = item->pos.y_pos;
+	l->pos.z_pos = item->pos.z_pos;
+	l->pos.x_rot = item->pos.x_rot;
+	l->pos.y_rot = item->pos.y_rot;
+	l->pos.z_rot = item->pos.z_rot;
+
+	cart = (CARTINFO*)item->data;
+	cart->Flags = 0;
+	cart->Speed = 0;
+	cart->YVel = 0;
+	cart->Gradient = 0;
+
+	item->flags |= IFL_TRIGGERED;
+}
+
+long CanGetOut(long lr)
+{
+	ITEM_INFO* item;
+	FLOOR_INFO* floor;
+	long x, y, z, h, c;
+	short ang, room_number;
+
+	item = &items[lara.vehicle];
+
+	if (lr < 0)
+		ang = item->pos.y_rot + 0x4000;
+	else
+		ang = item->pos.y_rot - 0x4000;
+
+	x = item->pos.x_pos - ((330 * phd_sin(ang)) >> W2V_SHIFT);
+	y = item->pos.y_pos;
+	z = item->pos.z_pos - ((330 * phd_cos(ang)) >> W2V_SHIFT);
+	room_number = item->room_number;
+	floor = GetFloor(x, y, z, &room_number);
+	h = GetHeight(floor, x, y, z);
+
+	if (height_type != BIG_SLOPE && height_type != DIAGONAL && h != NO_HEIGHT && ABS(h - item->pos.y_pos) <= 512)
+	{
+		c = GetCeiling(floor, x, y, z);
+
+		if (c - item->pos.y_pos <= -762 && h - c >= 762)
+			return 1;
+	}
+
+	return 0;
+}
+
+void CartToBaddieCollision(ITEM_INFO* cart)
+{
+	ITEM_INFO* item;
+	OBJECT_INFO* obj;
+	FLOOR_INFO* floor;
+	short* doors;
+	long dx, dy, dz, flag;
+	short roomies[20];
+	short room_count, item_number, frame, room_number;
+
+	room_count = 1;
+	roomies[0] = cart->room_number;
+	doors = room[cart->room_number].door;
+
+	if (doors)
+	{
+		for (int i = *doors++; i > 0; i--, doors += 16)
+		{
+			roomies[room_count] = *doors;
+			room_count++;
+		}
+	}
+
+	for (int i = 0; i < room_count; i++)
+	{
+		for (item_number = room[roomies[i]].item_number; item_number != NO_ITEM; item_number = item->next_item)
+		{
+			item = &items[item_number];
+
+			if (!item->collidable || item->status == ITEM_INVISIBLE)
+				continue;
+
+			obj = &objects[item->object_number];
+
+			if (!obj->collision)
+				continue;
+
+			if (!obj->intelligent && item->object_number != mine_cart_slot_animating2)
+			{
+				flag = 0;
+
+				for (int j = 0; j < 16; j++)
+				{
+					if (item->object_number == mine_cart_slot_rollingball[j])
+					{
+						flag = j + 1;
+						break;
+					}
+				}
+			}
+
+			if (obj->intelligent || item->object_number == mine_cart_slot_animating2 || flag)
+			{
+				dx = cart->pos.x_pos - item->pos.x_pos;
+				dy = cart->pos.y_pos - item->pos.y_pos;
+				dz = cart->pos.z_pos - item->pos.z_pos;
+
+				if (dx > -2048 && dx < 2048 && dz > -2048 && dz < 2048 && dy > -2048 && dy < 2048 && TestBoundsCollide(item, cart, 256))
+				{
+					if (item->object_number == mine_cart_slot_animating2)
+					{
+						if (item->status == ITEM_INACTIVE && !(item->flags & IFL_INVISIBLE) && lara_item->current_anim_state == 18 &&
+							lara_item->anim_number == objects[mine_cart_slot_vehicle_anim].anim_index + 6)
+						{
+							frame = lara_item->frame_number - anims[lara_item->anim_number].frame_base;
+
+							if (frame >= 12 && frame <= 22)
+							{
+								item->goal_anim_state = !item->current_anim_state;
+								AddActiveItem(item_number);
+								item->status = ITEM_ACTIVE;
+								AnimateItem(item);
+							}
+						}
+
+						continue;
+					}
+
+					if (obj->intelligent)
+					{
+						DoLotsOfBlood(item->pos.x_pos, cart->pos.y_pos - 256, item->pos.z_pos, cart->speed, cart->pos.y_rot, item->room_number, 3);
+						item->hit_points = 0;
+						continue;
+					}
+
+					if (lara_item->hit_points > 0)
+					{
+						DoLotsOfBlood(lara_item->pos.x_pos, lara_item->pos.y_pos - 512, lara_item->pos.z_pos,
+							(GetRandomControl() & 3) + 8, lara_item->pos.y_rot, lara_item->room_number, 5);
+						lara_item->hit_points -= mine_cart_health[flag - 1];
+						lara_item->hit_status = 1;
+					}
+				}
+			}
+		}
+	}
+}
+
+short GetCollision(ITEM_INFO* item, short ang, long dist, short* c)
+{
+	FLOOR_INFO* floor;
+	long x, y, z, h;
+	short room_number;
+
+	x = item->pos.x_pos + ((dist * phd_sin(ang)) >> W2V_SHIFT);
+	y = item->pos.y_pos - 762;
+	z = item->pos.z_pos + ((dist * phd_cos(ang)) >> W2V_SHIFT);
+	room_number = item->room_number;
+	floor = GetFloor(x, y, z, &room_number);
+	h = GetHeight(floor, x, y, z);
+	*c = (short)GetCeiling(floor, x, y, z);
+
+	if (h != NO_HEIGHT)
+		h -= item->pos.y_pos;
+
+	return (short)h;
+}
+
+long TestHeight(ITEM_INFO* item, long x, long z)
+{
+	PHD_VECTOR pos;
+	FLOOR_INFO* floor;
+	long s, c, h;
+	short room_number;
+
+	s = phd_sin(item->pos.y_rot);
+	c = phd_cos(item->pos.y_rot);
+	pos.x = item->pos.x_pos + ((x * c + z * s) >> W2V_SHIFT);
+	pos.y = (item->pos.y_pos + ((x * phd_sin(item->pos.z_rot)) >> W2V_SHIFT)) - ((z * phd_sin(item->pos.x_rot)) >> W2V_SHIFT);
+	pos.z = item->pos.z_pos + ((z * c - x * s) >> W2V_SHIFT);
+	room_number = item->room_number;
+	floor = GetFloor(pos.x, pos.y, pos.z, &room_number);
+	h = GetHeight(floor, pos.x, pos.y, pos.z);
+	return h;
+}
+
+void DoUserInput(ITEM_INFO* item, ITEM_INFO* l, CARTINFO* cart)
+{
+	ITEM_INFO* item2;
+	ITEM_INFO** itemlist;
+	MESH_INFO** meshlist;
+	PHD_VECTOR pos;
+	short* tmp;
+	long damage, collided, flag;
+	short h, c;
+
+	switch (l->current_anim_state)
+	{
+	case 0:
+
+		if (l->anim_number == objects[mine_cart_slot_vehicle_anim].anim_index + 5 && l->frame_number == anims[l->anim_number].frame_base + 20 &&
+			!cart->Flags)
+		{
+			lara.mesh_ptrs[LM_RHAND] = meshes[objects[mine_cart_slot_vehicle_anim].mesh_index + 2 * LM_RHAND];
+			cart->Flags |= 1;
+		}
+
+		break;
+
+	case 1:
+
+		if (l->anim_number == objects[mine_cart_slot_vehicle_anim].anim_index + 7)
+		{
+			if (l->frame_number == anims[objects[mine_cart_slot_vehicle_anim].anim_index + 7].frame_base + 20 && cart->Flags & 1)
+			{
+				lara.mesh_ptrs[LM_RHAND] = meshes[LARA + 2 * LM_RHAND];
+				cart->Flags &= ~1;
+			}
+
+			if (cart->Flags & 8)
+				l->goal_anim_state = 3;
+			else
+				l->goal_anim_state = 2;
+		}
+
+		break;
+
+	case 2:
+
+		if (l->anim_number == objects[mine_cart_slot_vehicle_anim].anim_index + 1 && l->frame_number == anims[l->anim_number].frame_end)
+		{
+			pos.x = 0;
+			pos.y = 640;
+			pos.z = 0;
+			GetLaraJointPos(&pos, LMX_HIPS);
+			l->pos.x_pos = pos.x;
+			l->pos.y_pos = pos.y;
+			l->pos.z_pos = pos.z;
+			l->pos.x_rot = 0;
+			l->pos.y_rot = item->pos.y_rot + 0x4000;
+			l->pos.z_rot = 0;
+			l->anim_number = 11;
+			l->frame_number = anims[l->anim_number].frame_base;
+			l->current_anim_state = 2;
+			l->goal_anim_state = 2;
+			lara.vehicle = NO_ITEM;
+			lara.gun_status = LG_NO_ARMS;
+		}
+
+		break;
+
+	case 3:
+
+		if (l->anim_number == objects[mine_cart_slot_vehicle_anim].anim_index + 47 && l->frame_number == anims[l->anim_number].frame_end)
+		{
+			pos.x = 0;
+			pos.y = 640;
+			pos.z = 0;
+			GetLaraJointPos(&pos, LMX_HIPS);
+			l->pos.x_pos = pos.x;
+			l->pos.y_pos = pos.y;
+			l->pos.z_pos = pos.z;
+			l->pos.x_rot = 0;
+			l->pos.y_rot = item->pos.y_rot - 0x4000;
+			l->pos.z_rot = 0;
+			l->anim_number = 11;
+			l->frame_number = anims[l->anim_number].frame_base;
+			l->current_anim_state = 2;
+			l->goal_anim_state = 2;
+			lara.vehicle = NO_ITEM;
+			lara.gun_status = LG_NO_ARMS;
+		}
+
+		break;
+
+	case 4:
+
+		if (!(cart->Flags & 0x10))
+		{
+			if (mine_cart_sfx_mine_cart_clunk_start != -1)
+				SoundEffect(mine_cart_sfx_mine_cart_clunk_start, &item->pos, SFX_ALWAYS);
+
+			cart->StopDelay = 1;
+			cart->Flags |= 0x10;
+		}
+
+		if (input & (IN_ROLL | IN_JUMP) && cart->Flags & 0x20)
+		{
+			if (input & IN_LEFT && CanGetOut(-1))
+			{
+				l->goal_anim_state = 1;
+				cart->Flags &= ~8;
+			}
+			else if (input & IN_RIGHT && CanGetOut(1))
+			{
+				l->goal_anim_state = 1;
+				cart->Flags |= 8;
+			}
+		}
+
+		if (input & IN_DUCK)
+			l->goal_anim_state = 5;
+		else if (cart->Speed > 32)
+			l->goal_anim_state = 6;
+
+		break;
+
+	case 5:
+
+		if (input & IN_ACTION)
+			l->goal_anim_state = 18;
+		else if (input & IN_JUMP)
+			l->goal_anim_state = 11;
+		else if (!(input & IN_DUCK))
+			l->goal_anim_state = 4;
+
+		break;
+
+	case 6:
+
+		if (input & IN_ACTION)
+			l->goal_anim_state = 18;
+		else if (input & IN_DUCK)
+			l->goal_anim_state = 5;
+		else if (input & IN_JUMP)
+			l->goal_anim_state = 11;
+		else if (cart->Speed == 32 || cart->Flags & 0x20)
+			l->goal_anim_state = 4;
+		else if (cart->Gradient < -128)
+			l->goal_anim_state = 12;
+		else if (cart->Gradient > 128)
+			l->goal_anim_state = 13;
+		else if (input & IN_LEFT)
+			l->goal_anim_state = 9;
+		else if (input & IN_RIGHT)
+			l->goal_anim_state = 7;
+
+		break;
+
+	case 7:
+
+		if (input & IN_ACTION)
+			l->goal_anim_state = 18;
+		else if (input & IN_DUCK)
+			l->goal_anim_state = 5;
+		else if (input & IN_JUMP)
+			l->goal_anim_state = 11;
+
+		if (!(input & IN_RIGHT))
+			l->goal_anim_state = 6;
+
+		break;
+
+	case 9:
+
+		if (input & IN_ACTION)
+			l->goal_anim_state = 18;
+		else if (input & IN_DUCK)
+			l->goal_anim_state = 5;
+		else if (input & IN_JUMP)
+			l->goal_anim_state = 11;
+
+		if (!(input & IN_LEFT))
+			l->goal_anim_state = 6;
+
+		break;
+
+	case 11:
+		l->goal_anim_state = 19;
+		break;
+
+	case 12:
+
+		if (input & IN_ACTION)
+			l->goal_anim_state = 18;
+		else if (input & IN_DUCK)
+			l->goal_anim_state = 5;
+		else if (input & IN_JUMP)
+			l->goal_anim_state = 11;
+		else if (cart->Gradient > -128)
+			l->goal_anim_state = 6;
+
+		break;
+
+	case 13:
+
+		if (input & IN_ACTION)
+			l->goal_anim_state = 18;
+		else if (input & IN_DUCK)
+			l->goal_anim_state = 5;
+		else if (input & IN_JUMP)
+			l->goal_anim_state = 11;
+		else if (cart->Gradient < 128)
+			l->goal_anim_state = 6;
+
+		break;
+
+	case 14:
+		camera.target_elevation = -8190;
+		camera.target_distance = 2048;
+		h = GetCollision(item, item->pos.y_rot, 512, &c);
+
+		if (h > -256 && h < 256)
+		{
+			if (mine_cart_sfx_quad_front_impact != -1 && !(wibble & 7))
+				SoundEffect(mine_cart_sfx_quad_front_impact, &item->pos, SFX_ALWAYS);
+
+			item->pos.x_pos += 128 * phd_sin(item->pos.y_rot) >> W2V_SHIFT;
+			item->pos.z_pos += 128 * phd_cos(item->pos.y_rot) >> W2V_SHIFT;
+		}
+		else if (l->anim_number == objects[mine_cart_slot_vehicle_anim].anim_index + 30)
+		{
+			cart->Flags |= 0x40;
+			l->hit_points = -1;
+		}
+
+		break;
+
+	case 16:
+		camera.target_elevation = -4550;
+		camera.target_distance = 4096;
+		break;
+
+	case 18:
+		l->goal_anim_state = 6;
+		break;
+
+	case 19:
+
+		if (input & IN_DUCK)
+		{
+			l->goal_anim_state = 5;
+
+			if (mine_cart_sfx_mine_cart_sreech_brake != -1)
+				StopSoundEffect(mine_cart_sfx_mine_cart_sreech_brake);
+		}
+		else if (!(input & IN_JUMP) || cart->Flags & 0x20)
+		{
+			l->goal_anim_state = 6;
+
+			if (mine_cart_sfx_mine_cart_sreech_brake != -1)
+				StopSoundEffect(mine_cart_sfx_mine_cart_sreech_brake);
+		}
+		else
+		{
+			cart->Speed -= 1536;
+
+			if (mine_cart_sfx_mine_cart_sreech_brake != -1)
+				SoundEffect(mine_cart_sfx_mine_cart_sreech_brake, &l->pos, SFX_ALWAYS);
+		}
+
+		break;
+	}
+
+	if (lara.vehicle != NO_ITEM && !(cart->Flags & 0x40))
+	{
+		AnimateItem(l);
+		item->anim_number = l->anim_number + objects[mine_cart_slot_minecart].anim_index - objects[mine_cart_slot_vehicle_anim].anim_index;
+		item->frame_number = l->frame_number + anims[item->anim_number].frame_base - anims[l->anim_number].frame_base;
+	}
+
+	if (l->current_anim_state == 14 || l->current_anim_state == 16)
+		return;
+
+	if (l->current_anim_state != 17 && l->hit_points <= 0)
+	{
+		l->anim_number = objects[mine_cart_slot_vehicle_anim].anim_index + 49;
+		l->frame_number = anims[l->anim_number].frame_base;
+		l->current_anim_state = 17;
+		l->goal_anim_state = 17;
+	}
+
+	if (item->pos.z_rot > 4096 || item->pos.z_rot < -4096)
+	{
+		l->anim_number = objects[mine_cart_slot_vehicle_anim].anim_index + 31;
+		l->frame_number = anims[l->anim_number].frame_base;
+		l->current_anim_state = 14;
+		l->goal_anim_state = 14;
+		cart->Flags = cart->Flags & 0x4F | 0xA0;
+		item->speed = 0;
+		cart->Speed = 0;
+		return;
+	}
+
+	h = GetCollision(item, item->pos.y_rot, 512, &c);
+
+	if (h < -512)
+	{
+		l->anim_number = objects[mine_cart_slot_vehicle_anim].anim_index + 23;
+		l->frame_number = anims[l->anim_number].frame_base;
+		l->current_anim_state = 16;
+		l->goal_anim_state = 16;
+		cart->Flags = cart->Flags & ~0xB0 | 0xA0;
+		item->speed = 0;
+		cart->Speed = 0;
+		l->hit_points = -1;
+		return;
+	}
+
+	if (l->current_anim_state != 5 && l->current_anim_state != 17)
+	{
+		itemlist = (ITEM_INFO**)&tsv_buffer[0];
+		meshlist = (MESH_INFO**)&tsv_buffer[1024];
+		item->pos.y_pos -= 384;
+		GetCollidedObjects(item, 256, 1, itemlist, meshlist, 0);
+		item->pos.y_pos += 384;
+		collided = meshlist[0] ? 1 : 0;
+
+		if (!collided)
+		{
+			for (int i = 0; itemlist[i]; i++)
+			{
+				item2 = itemlist[i];
+
+				if (objects[item2->object_number].draw_routine && !objects[item2->object_number].intelligent && item2->object_number != mine_cart_slot_animating2)
+				{
+					flag = 0;
+
+					for (int j = 0; j < 16; j++)
+					{
+						if (item2->object_number == mine_cart_slot_rollingball[j])
+						{
+							flag = 1;
+							break;
+						}
+					}
+
+					if (!flag)
+					{
+						collided = 1;
+						break;
+					}
+				}
+			}
+		}
+
+		if (collided)
+		{
+			l->anim_number = objects[mine_cart_slot_vehicle_anim].anim_index + 34;
+			l->frame_number = anims[l->anim_number].frame_base;
+			l->current_anim_state = 17;
+			l->goal_anim_state = 17;
+			DoLotsOfBlood(l->pos.x_pos, l->pos.y_pos - 768, l->pos.z_pos, item->speed, item->pos.y_rot, l->room_number, 3);
+
+			damage = 25 * ((ushort)cart->Speed >> 11);
+
+			if (damage < 20)
+				damage = 20;
+
+			l->hit_points -= (short)damage;
+			return;
+		}
+	}
+
+	if (h > 576 && !cart->YVel)
+		cart->YVel = -1024;
+
+	CartToBaddieCollision(item);
+}
+
+void MoveCart(ITEM_INFO* item, ITEM_INFO* l, CARTINFO* cart)
+{
+	ITEM_INFO* item2;
+	long x, z, dx, dy, dz;
+	ushort rot, quad, deg;
+	short ang, item_number;
+	uchar MineL, MineR;
+
+	MineL = 0;
+	MineR = 0;
+
+	for (item_number = room[item->room_number].item_number; item_number != NO_ITEM; item_number = item2->next_item)
+	{
+		item2 = &items[item_number];
+
+		if (item2->object_number == mine_cart_slot_mapper && item2->trigger_flags == item->trigger_flags)
+		{
+			dx = item2->pos.x_pos - item->pos.x_pos;
+			dy = item2->pos.y_pos - item->pos.y_pos;
+			dz = item2->pos.z_pos - item->pos.z_pos;
+
+			if (ABS(dx) < 512 && ABS(dy) < 512 && ABS(dz) < 512)
+			{
+				switch ((((ushort)(item2->pos.y_rot + 0x2000) >> W2V_SHIFT) - ((ushort)(item->pos.y_rot + 0x2000) >> W2V_SHIFT)) & 3)
+				{
+				case 0:
+					MineL = 1;
+					MineR = 1;
+					break;
+
+				case 1:
+					MineL = 1;
+					MineR = 0;
+					break;
+
+				case 3:
+					MineL = 0;
+					MineR = 1;
+					break;
+				}
+
+				break;
+			}
+		}
+	}
+
+	dx = item->pos.x_pos & 0x380;
+	dz = item->pos.z_pos & 0x380;
+
+	if ((dx == 384 || dx == 512) && (dz == 384 || dz == 512))
+	{
+		if (MineL && MineR && !cart->StopDelay && cart->Speed < 0xF000)
+		{
+			cart->Flags |= 0x30;
+			item->speed = 0;
+			cart->Speed = 0;
+			return;
+		}
+	}
+	else if (cart->StopDelay)
+		cart->StopDelay = 0;
+
+
+	if ((MineL || MineR) && !(MineL && MineR) && cart->Speed < 0xF000 && !(cart->Flags & 6))
+	{
+		rot = (ushort)((MineL << 2) | ((ushort)item->pos.y_rot >> 14));
+
+		switch (rot)
+		{
+		case 0:
+			cart->TurnX = (item->pos.x_pos + 4096) & ~WALL_MASK;
+			cart->TurnZ = item->pos.z_pos & ~WALL_MASK;
+			break;
+
+		case 1:
+			cart->TurnX = item->pos.x_pos & ~WALL_MASK;
+			cart->TurnZ = (item->pos.z_pos - 4096) | WALL_MASK;
+			break;
+
+		case 2:
+			cart->TurnX = (item->pos.x_pos - 4096) | WALL_MASK;
+			cart->TurnZ = item->pos.z_pos | WALL_MASK;
+			break;
+
+		case 3:
+			cart->TurnX = item->pos.x_pos | WALL_MASK;
+			cart->TurnZ = (item->pos.z_pos + 4096) & ~WALL_MASK;
+			break;
+
+		case 4:
+			cart->TurnX = (item->pos.x_pos - 4096) | WALL_MASK;
+			cart->TurnZ = item->pos.z_pos & ~WALL_MASK;
+			break;
+
+		case 5:
+			cart->TurnX = item->pos.x_pos & ~WALL_MASK;
+			cart->TurnZ = (item->pos.z_pos + 4096) & ~WALL_MASK;
+			break;
+
+		case 6:
+			cart->TurnX = (item->pos.x_pos + 4096) & ~WALL_MASK;
+			cart->TurnZ = item->pos.z_pos | WALL_MASK;
+			break;
+
+		case 7:
+			cart->TurnX = item->pos.x_pos | WALL_MASK;
+			cart->TurnZ = (item->pos.z_pos - 4096) | WALL_MASK;
+			break;
+		}
+
+		ang = mGetAngle(item->pos.x_pos, item->pos.z_pos, cart->TurnX, cart->TurnZ) & 0x3FFF;
+
+		if (rot >= 4 && ang)
+			ang = 0x4000 - ang;
+
+		cart->TurnRot = item->pos.y_rot;
+		cart->TurnLen = ang;
+		cart->Flags |= MineL ? 2 : 4;
+	}
+
+	if (cart->Speed < 2560)
+		cart->Speed = 2560;
+
+	cart->Speed += -4 * cart->Gradient;
+	item->speed = (short)(cart->Speed >> 8);
+
+	if (item->speed < 32)
+	{
+		item->speed = 32;
+
+		if (mine_cart_sfx_mine_cart_track_loop != -1)
+			StopSoundEffect(mine_cart_sfx_mine_cart_track_loop);
+
+		if (mine_cart_sfx_mine_cart_pully_loop != -1)
+		{
+			if (cart->YVel)
+				StopSoundEffect(mine_cart_sfx_mine_cart_pully_loop);
+			else
+				SoundEffect(mine_cart_sfx_mine_cart_pully_loop, &item->pos, SFX_ALWAYS);
+		}
+	}
+	else
+	{
+		if (mine_cart_sfx_mine_cart_pully_loop != -1)
+			StopSoundEffect(mine_cart_sfx_mine_cart_pully_loop);
+
+		if (mine_cart_sfx_mine_cart_track_loop != -1)
+		{
+			if (cart->YVel)
+				StopSoundEffect(mine_cart_sfx_mine_cart_track_loop);
+			else
+				SoundEffect(mine_cart_sfx_mine_cart_track_loop, &item->pos, (item->speed << 15) + 0x1000000 | SFX_SETPITCH | SFX_ALWAYS);
+		}
+	}
+
+	if (cart->Flags & 6)
+	{
+		cart->TurnLen += 3 * item->speed;
+
+		if (cart->TurnLen > 0x3FFC)
+		{
+			if (cart->Flags & 2)
+				item->pos.y_rot = cart->TurnRot - 0x4000;
+			else
+				item->pos.y_rot = cart->TurnRot + 0x4000;
+
+			cart->Flags &= ~6;
+		}
+		else
+		{
+			if (cart->Flags & 2)
+				item->pos.y_rot = cart->TurnRot - cart->TurnLen;
+			else
+				item->pos.y_rot = cart->TurnRot + cart->TurnLen;
+		}
+
+		if (cart->Flags & 6)
+		{
+			quad = (ushort)item->pos.y_rot >> W2V_SHIFT;
+			deg = item->pos.y_rot & 0x3FFF;
+
+			switch (quad)
+			{
+			case 0:
+				x = -phd_cos(deg);
+				z = phd_sin(deg);
+				break;
+
+			case 1:
+				x = phd_sin(deg);
+				z = phd_cos(deg);
+				break;
+
+			case 2:
+				x = phd_cos(deg);
+				z = -phd_sin(deg);
+				break;
+
+			default:
+				x = -phd_sin(deg);
+				z = -phd_cos(deg);
+				break;
+			}
+
+			if (cart->Flags & 2)
+			{
+				x = -x;
+				z = -z;
+			}
+
+			item->pos.x_pos = cart->TurnX + ((3584 * x) >> W2V_SHIFT);
+			item->pos.z_pos = cart->TurnZ + ((3584 * z) >> W2V_SHIFT);
+		}
+	}
+	else
+	{
+		item->pos.x_pos += (item->speed * phd_sin(item->pos.y_rot)) >> W2V_SHIFT;
+		item->pos.z_pos += (item->speed * phd_cos(item->pos.y_rot)) >> W2V_SHIFT;
+	}
+
+	cart->MidPos = TestHeight(item, 0, 0);
+
+	if (!cart->YVel)
+	{
+		cart->FrontPos = TestHeight(item, 0, 256);
+		cart->Gradient = (short)(cart->MidPos - cart->FrontPos);
+		item->pos.y_pos = cart->MidPos;
+	}
+	else if (item->pos.y_pos > cart->MidPos)
+	{
+		if (mine_cart_sfx_quad_front_impact != -1 && cart->YVel > 0)
+			SoundEffect(mine_cart_sfx_quad_front_impact, &item->pos, SFX_ALWAYS);
+
+		item->pos.y_pos = cart->MidPos;
+		cart->YVel = 0;
+	}
+	else
+	{
+		cart->YVel += 1025;
+
+		if (cart->YVel > 0x3F00)
+			cart->YVel = 0x3F00;
+
+		item->pos.y_pos += cart->YVel >> 8;
+	}
+
+	item->pos.x_rot = cart->Gradient << 5;
+	ang = item->pos.y_rot & 0x3FFF;
+
+	if (cart->Flags & 6)
+	{
+		if (cart->Flags & 4)
+			item->item_flags[0] = -(item->speed * ang) >> 9;
+		else
+			item->item_flags[0] = (item->speed * (0x4000 - ang)) >> 9;
+	}
+	else
+		item->item_flags[0] -= item->item_flags[0] >> 3;
+
+	item->pos.z_rot = item->item_flags[0];
+
+	if (mine_cart_alignment)
+		item->pos.z_rot += (short)(TestHeight(item, 128, 0) - TestHeight(item, -128, 0)) << 5;
+}
+
+long MineCartControl(void)
+{
+	ITEM_INFO* item;
+	ITEM_INFO* l;
+	CARTINFO* cart;
+	FLOOR_INFO* floor;
+	short room_number;
+
+	l = lara_item;
+	item = &items[lara.vehicle];
+	cart = (CARTINFO*)item->data;
+	DoUserInput(item, l, cart);
+
+	if (cart->Flags & 0x10)
+		MoveCart(item, l, cart);
+
+	if (lara.vehicle != -1)
+	{
+		l->pos.x_pos = item->pos.x_pos;
+		l->pos.y_pos = item->pos.y_pos;
+		l->pos.z_pos = item->pos.z_pos;
+		l->pos.x_rot = item->pos.x_rot;
+		l->pos.y_rot = item->pos.y_rot;
+		l->pos.z_rot = item->pos.z_rot;
+	}
+
+	room_number = item->room_number;
+	floor = GetFloor(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, &room_number);
+	GetHeight(floor, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+
+	if (room_number != item->room_number)
+	{
+		ItemNewRoom(lara.vehicle, room_number);
+		ItemNewRoom(lara.item_number, room_number);
+	}
+
+	TestTriggers(trigger_index, 1, 0);
+	TestTriggers(trigger_index, 0, 0);
+
+	if (!(cart->Flags & 0x80))
+	{
+		camera.target_elevation = -8190;
+		camera.target_distance = 2048;
+	}
+
+	return lara.vehicle != NO_ITEM;
+}
+
+long IsInMineCart(void)
+{
+	return mine_cart_slot_minecart != -1 && mine_cart_slot_vehicle_anim != -1 && mine_cart_slot_mapper != -1 && items[lara.vehicle].object_number == mine_cart_slot_minecart;
+}
+
+void MineCartLook(void)
+{
+	if (lara.vehicle != -1 && IsInMineCart() && input & IN_LOOK && lara.look)
+	{
+		camera.type = LOOK_CAMERA;
+
+		if (input & IN_LEFT)
+		{
+			input -= IN_LEFT;
+
+			if (lara.head_y_rot > -8008)
+				lara.head_y_rot -= 364;
+		}
+		else if (input & IN_RIGHT)
+		{
+			input -= IN_RIGHT;
+
+			if (lara.head_y_rot < 8008)
+				lara.head_y_rot += 364;
+		}
+	}
+}
+
+void SaveMineCart(ITEM_INFO* item)
+{
+	if (mine_cart_slot_minecart != -1 && mine_cart_slot_vehicle_anim != -1 && mine_cart_slot_mapper != -1 && item->object_number == mine_cart_slot_minecart)
+		WriteSG(item->data, sizeof(CARTINFO));
+}
+
+void RestoreMineCart(ITEM_INFO* item)
+{
+	if (mine_cart_slot_minecart != -1 && mine_cart_slot_vehicle_anim != -1 && mine_cart_slot_mapper != -1 && item->object_number == mine_cart_slot_minecart)
+		ReadSG(item->data, sizeof(CARTINFO));
+}
+
+void MineCartMapperInitialise(short item_number)
+{
+	items[item_number].flags |= IFL_CODEBITS;
+}
+
+long IsDrivingMineCart(void)
+{
+	return lara.vehicle != -1 && IsInMineCart();
+}
+
+void setup_mine_cart(void)
+{
+	OBJECT_INFO* obj;
+
+	if (mine_cart_slot_minecart != -1 && mine_cart_slot_vehicle_anim != -1 && mine_cart_slot_mapper != -1)
+	{
+		obj = &objects[mine_cart_slot_minecart];
+		obj->initialise = MineCartInitialise;
+		obj->collision = MineCartCollision;
+		obj->control = 0;
+		obj->draw_routine = DrawAnimatingItem;
+		obj->using_drawanimating_item = 1;
+		obj->save_position = 1;
+		obj->save_hitpoints = 0;
+		obj->save_flags = 1;
+		obj->save_anim = 1;
+
+		obj = &objects[mine_cart_slot_mapper];
+		obj->initialise = MineCartMapperInitialise;
+		obj->collision = 0;
+		obj->control = 0;
+		obj->draw_routine = 0;
+		obj->using_drawanimating_item = 0;
+		obj->save_position = 1;
+		obj->save_hitpoints = 0;
+		obj->save_flags = 0;
+		obj->save_anim = 0;
+
+		if (mine_cart_slot_animating2 != -1)
+		{
+			obj = &objects[mine_cart_slot_animating2];
+			obj->initialise = 0;
+			obj->collision = ObjectCollision;
+			obj->control = SwitchControl;
+			obj->draw_routine = DrawAnimatingItem;
+			obj->using_drawanimating_item = 1;
+			obj->save_position = 0;
+			obj->save_hitpoints = 0;
+			obj->save_flags = 1;
+			obj->save_anim = 1;
+		}
+	}
 }
 
 void (*pWriteMyData)(void* Data, ulong Size);
@@ -3673,6 +4821,23 @@ void cbInitLoadNewLevel(void)
 		lara_meshswap_target[i] = -1;
 		lara_meshswap_source_slot[i] = -1;
 		lara_meshswap_source[i] = -1;
+	}
+
+	mine_cart_slot_minecart = -1;
+	mine_cart_slot_vehicle_anim = -1;
+	mine_cart_slot_mapper = -1;
+	mine_cart_slot_animating2 = -1;
+	mine_cart_sfx_mine_cart_clunk_start = -1;
+	mine_cart_sfx_quad_front_impact = -1;
+	mine_cart_sfx_mine_cart_sreech_brake = -1;
+	mine_cart_sfx_mine_cart_track_loop = -1;
+	mine_cart_sfx_mine_cart_pully_loop = -1;
+	mine_cart_alignment = 0;
+
+	for (int i = 0; i < 16; i++)
+	{
+		mine_cart_slot_rollingball[i] = -1;
+		mine_cart_health[i] = 8;
 	}
 }
 
@@ -3749,6 +4914,10 @@ long cbConditionMine(ushort ConditionIndex, long ItemIndex, ushort Extra, ushort
 	{
 	case 1:
 		RetValue |= check_flep(ItemIndex);
+		break;
+
+	case 2:
+		RetValue |= IsDrivingMineCart();
 		break;
 	}
 
@@ -3840,6 +5009,61 @@ void cbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArra
 		}
 
 		break;
+
+	case 4:
+
+		if (NumberOfItems == 10)
+		{
+			if (pItemArray[0] != -1)
+				mine_cart_slot_minecart = pItemArray[0];
+
+			if (pItemArray[1] != -1)
+				mine_cart_slot_vehicle_anim = pItemArray[1];
+
+			if (pItemArray[2] != -1)
+				mine_cart_slot_mapper = pItemArray[2];
+
+			if (pItemArray[3] != -1)
+				mine_cart_slot_animating2 = pItemArray[3];
+
+			if (pItemArray[4] != -1)
+				mine_cart_sfx_mine_cart_clunk_start = pItemArray[4];
+
+			if (pItemArray[5] != -1)
+				mine_cart_sfx_quad_front_impact = pItemArray[5];
+
+			if (pItemArray[6] != -1)
+				mine_cart_sfx_mine_cart_sreech_brake = pItemArray[6];
+
+			if (pItemArray[7] != -1)
+				mine_cart_sfx_mine_cart_track_loop = pItemArray[7];
+
+			if (pItemArray[8] != -1)
+				mine_cart_sfx_mine_cart_pully_loop = pItemArray[8];
+
+			if (pItemArray[9] != -1)
+				mine_cart_alignment = pItemArray[9];
+		}
+
+		break;
+
+	case 5:
+
+		if (NumberOfItems >= 1 && NumberOfItems <= 32)
+		{
+			for (int i = 0; i < NumberOfItems; i++)
+			{
+				if (pItemArray[i] != -1)
+				{
+					if (!(i % 2))
+						mine_cart_slot_rollingball[i / 2] = pItemArray[i];
+					else
+						mine_cart_health[i / 2] = pItemArray[i];
+				}
+			}
+		}
+
+		break;
 	}
 }
 
@@ -3924,6 +5148,7 @@ void cbInitObjects(void)
 	setup_sprite_object();
 	setup_rollingballs();
 	setup_crossbow_grenade_ammo();
+	setup_mine_cart();
 }
 
 void cbInitGame(void)
@@ -3979,4 +5204,9 @@ void Inject(void)
 	INJECT(0x00910082, fire_crossbow_grenade);
 	INJECT(0x00910087, fire_crossbow_sound);
 	INJECT(0x0091008C, get_weapon_animation);
+	INJECT(0x00910091, MineCartControl);
+	INJECT(0x00910096, IsInMineCart);
+	INJECT(0x0091009B, MineCartLook);
+	INJECT(0x009100A0, SaveMineCart);
+	INJECT(0x009100A5, RestoreMineCart);
 }

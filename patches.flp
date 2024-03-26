@@ -16253,3 +16253,31 @@ If you use this patch, you must also use the "Ammo type options - Show/Hide Menu
       datamodified=7,80
       datacondbehave=7,0
   footer=313
+  header=314
+      enabled=1
+      name=Mine Cart
+      description=Read the User Manual: https://raw.githubusercontent.com/asasas9500/flep/master/downloads/Manual_FLEP.pdf
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,20996
+      datadefault=0,A1D85553
+      datamodified=0,E9C5CD42
+      datacondbehave=0,0
+      dataoffset=1,209C3
+      datadefault=1,6683FAFF7439
+      datamodified=1,E978CD420090
+      datacondbehave=1,0
+      dataoffset=2,59F93
+      datadefault=2,66837ECC1F
+      datamodified=2,E9D7373F00
+      datacondbehave=2,0
+      dataoffset=3,5AD68
+      datadefault=3,66837E0C1F
+      datamodified=3,E91E2A3F00
+      datacondbehave=3,0
+      dataoffset=4,FD740
+      datadefault=4,
+      datamodified=4,6683FAFF0F84B832BDFFE847290C0085C00F847232BDFFE835290C005F5E5BC3E836290C00A1D8555300E92C32BDFF8D46C050E828290C0083C40466837ECC1F0F8522C8C0FFE90FC8C0FF56E814290C0083C40466837E0C1F0F85DED5C0FFE9CBD5C0FF
+      datacondbehave=4,1
+  footer=314
