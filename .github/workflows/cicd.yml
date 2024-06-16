@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
 jobs:
   update:
+    needs: forward
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
@@ -41,3 +42,33 @@ jobs:
           git add patches.dll patches.zip
           git commit -m "Update patches"
           git push
+  forward:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: flep
+      - uses: actions/checkout@v4
+        with:
+          repository: FlexiblePatcher/FlexiblePatcher
+          token: ${{ secrets.OAT }}
+          path: FlexiblePatcher
+      - uses: actions/checkout@v4
+        with:
+          repository: FlexiblePatcher/tools
+          path: tools
+      - run: |
+          py tools\convert.py flep\patches.flp FlexiblePatcher\patches.flp
+          py tools\rename.py FlexiblePatcher\patches.flp
+          Copy-Item -Path flep\patches.c -Destination FlexiblePatcher\Plugin_FlexiblePatcher\source\plugin_patcher\patches.cpp
+          Expand-Archive -Path flep\Plugin_FLEP.zip -DestinationPath flep\Plugin_FLEP
+          foreach ($extension in 'script', 'txt') {
+            Copy-Item -Path "flep\Plugin_FLEP\Plugin_FLEP.${extension}" -Destination "FlexiblePatcher\Plugin_FlexiblePatcher\Plugin_FlexiblePatcher.${extension}"
+            py tools\rename.py "FlexiblePatcher\Plugin_FlexiblePatcher\Plugin_FlexiblePatcher.${extension}"
+          }
+          $message = git -C flep show -s --format=%B
+          git -C FlexiblePatcher config user.name 'github-actions[bot]'
+          git -C FlexiblePatcher config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C FlexiblePatcher add -A
+          git -C FlexiblePatcher commit -m $message
+          git -C FlexiblePatcher push

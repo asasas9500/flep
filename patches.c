@@ -3,7 +3,9 @@
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned long ulong;
+#ifdef __TINYC__
 typedef long long __int64;
+#endif
 typedef float D3DVALUE;
 typedef ulong D3DCOLOR;
 
@@ -2045,6 +2047,7 @@ do \
 StrBaseVarAll* pBaseVariableTRNG;
 uchar* pPatchMap;
 
+#ifdef __TINYC__
 __int64 __fixsfdi(float num)
 {
 	__asm__ __volatile__
@@ -2063,7 +2066,7 @@ __int64 __fixsfdi(float num)
 	);
 }
 
-float sqrt(float num)
+float fsqrt(float num)
 {
 	__asm__ __volatile__
 	(
@@ -2071,6 +2074,17 @@ float sqrt(float num)
 		"fsqrt\n\t"
 	);
 }
+#else
+__declspec(naked) float fsqrt(float num)
+{
+	__asm
+	{
+		fld DWORD PTR [esp + 4h]
+		fsqrt
+		ret
+	}
+}
+#endif
 
 #define savegame	VAR_U_(0x007F75A0, SAVEGAME_INFO)
 #define gfCurrentLevel	VAR_U_(0x007FD170, char)
@@ -2373,14 +2387,14 @@ ulong calculate_static_vertex_light(D3DVERTEX* vtx)
 			d.z = dptr->z - global_mesh_position.z;
 			ApplyMatrix(w2v_matrix, &d, &w);
 			ApplyTransposeMatrix(phd_mxptr, &w, &u);
-			fVal = sqrt(SQUARE(u.x - vtx->x) + SQUARE(u.y - vtx->y) + SQUARE(u.z - vtx->z)) * 1.7F;
+			fVal = fsqrt(SQUARE(u.x - vtx->x) + SQUARE(u.y - vtx->y) + SQUARE(u.z - vtx->z)) * 1.7F;
 
 			if (fVal <= dptr->falloff)
 			{
 				fVal = (dptr->falloff - fVal) / dptr->falloff;
-				r += fVal * dptr->r;
-				g += fVal * dptr->g;
-				b += fVal * dptr->b;
+				r += (long)(fVal * dptr->r);
+				g += (long)(fVal * dptr->g);
+				b += (long)(fVal * dptr->b);
 			}
 		}
 	}
@@ -3494,7 +3508,7 @@ void RollingBallCollision(short item_number, ITEM_INFO* l, COLL_INFO* coll)
 				x = l->pos.x_pos + (GetRandomControl() - 0x4000) / 256;
 				y = l->pos.y_pos - GetRandomControl() / 64;
 				z = l->pos.z_pos + (GetRandomControl() - 0x4000) / 256;
-				ang = item->pos.y_rot + (GetRandomControl() - 0x4000) / 8;
+				ang = (short)(item->pos.y_rot + (GetRandomControl() - 0x4000) / 8);
 				DoBloodSplat(x, y, z, 2 * item->speed, ang, item->room_number);
 			}
 		}
@@ -3838,11 +3852,10 @@ void CartToBaddieCollision(ITEM_INFO* cart)
 {
 	ITEM_INFO* item;
 	OBJECT_INFO* obj;
-	FLOOR_INFO* floor;
 	short* doors;
 	long dx, dy, dz, flag;
 	short roomies[20];
-	short room_count, item_number, frame, room_number;
+	short room_count, item_number, frame;
 
 	room_count = 1;
 	roomies[0] = cart->room_number;
@@ -3976,7 +3989,6 @@ void DoUserInput(ITEM_INFO* item, ITEM_INFO* l, CARTINFO* cart)
 	ITEM_INFO** itemlist;
 	MESH_INFO** meshlist;
 	PHD_VECTOR pos;
-	short* tmp;
 	long damage, collided, flag;
 	short h, c;
 
@@ -4751,10 +4763,19 @@ void setup_mine_cart(void)
 	}
 }
 
+#ifdef __TINYC__
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
+#else
+void pWriteMyData(void* Data, ulong Size);
+void pReadMyData(void* Data, ulong Size);
+#endif
 
+#ifdef __TINYC__
 void cbSaveMyData(void)
+#else
+void pcbSaveMyData(void)
+#endif
 {
 	pWriteMyData(&patch_secret_counter_status, sizeof(long));
 	pWriteMyData(&camera_bounce_strength, sizeof(long));
@@ -4762,7 +4783,11 @@ void cbSaveMyData(void)
 	pWriteMyData(&camera_bounce_status, sizeof(long));
 }
 
+#ifdef __TINYC__
 void cbLoadMyData(void)
+#else
+void pcbLoadMyData(void)
+#endif
 {
 	pReadMyData(&patch_secret_counter_status, sizeof(long));
 	pReadMyData(&camera_bounce_strength, sizeof(long));
@@ -4770,7 +4795,11 @@ void cbLoadMyData(void)
 	pReadMyData(&camera_bounce_status, sizeof(long));
 }
 
+#ifdef __TINYC__
 void cbInitLoadNewLevel(void)
+#else
+void pcbInitLoadNewLevel(void)
+#endif
 {
 	if (!gfCurrentLevel)
 		patch_secret_counter_status = 1;
@@ -4841,7 +4870,11 @@ void cbInitLoadNewLevel(void)
 	}
 }
 
+#ifdef __TINYC__
 long cbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort ActivationMode)
+#else
+long pcbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort ActivationMode)
+#endif
 {
 	long RetValue;
 
@@ -4891,20 +4924,30 @@ long cbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort Activ
 	return RetValue;
 }
 
+#ifdef __TINYC__
 long cbActionMine(ushort ActionIndex, long ItemIndex, ushort Extra, ushort ActivationMode)
+#else
+long pcbActionMine(ushort ActionIndex, long ItemIndex, ushort Extra, ushort ActivationMode)
+#endif
 {
 	long RetValue;
 
 	RetValue = ActivationMode & 0x400 ? 2 : 1;
 
+#if 0
 	switch (ActionIndex)
 	{
 	}
+#endif
 
 	return RetValue;
 }
 
+#ifdef __TINYC__
 long cbConditionMine(ushort ConditionIndex, long ItemIndex, ushort Extra, ushort ActivationMode)
+#else
+long pcbConditionMine(ushort ConditionIndex, long ItemIndex, ushort Extra, ushort ActivationMode)
+#endif
 {
 	long RetValue;
 
@@ -4924,7 +4967,11 @@ long cbConditionMine(ushort ConditionIndex, long ItemIndex, ushort Extra, ushort
 	return RetValue;
 }
 
+#ifdef __TINYC__
 void cbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArray)
+#else
+void pcbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArray)
+#endif
 {
 	switch (CustomizeValue)
 	{
@@ -4974,7 +5021,7 @@ void cbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArra
 		if (NumberOfItems == 16)
 		{
 			if (pItemArray[0] != -1)
-				crossbow_grenade_animations = pItemArray[0];
+				crossbow_grenade_animations = (char)pItemArray[0];
 
 			for (int i = 0; i < 3; i++)
 			{
@@ -4993,7 +5040,7 @@ void cbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArra
 					crossbow_grenade_ammo_sound[i] = pItemArray[i + 10];
 
 				if (pItemArray[i + 13] != -1)
-					crossbow_grenade_ammo_smoke[i] = pItemArray[i + 13];
+					crossbow_grenade_ammo_smoke[i] = (char)pItemArray[i + 13];
 
 				if (crossbow_grenade_ammo_slot[i] == CROSSBOW_BOLT)
 				{
@@ -5042,7 +5089,7 @@ void cbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArra
 				mine_cart_sfx_mine_cart_pully_loop = pItemArray[8];
 
 			if (pItemArray[9] != -1)
-				mine_cart_alignment = pItemArray[9];
+				mine_cart_alignment = (char)pItemArray[9];
 		}
 
 		break;
@@ -5067,7 +5114,11 @@ void cbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArra
 	}
 }
 
+#ifdef __TINYC__
 void cbParametersMine(ushort ParameterValue, long NumberOfItems, short* pItemArray)
+#else
+void pcbParametersMine(ushort ParameterValue, long NumberOfItems, short* pItemArray)
+#endif
 {
 	long index;
 
@@ -5087,7 +5138,11 @@ void cbParametersMine(ushort ParameterValue, long NumberOfItems, short* pItemArr
 	}
 }
 
+#ifdef __TINYC__
 void cbAssignSlotMine(ushort Slot, ushort ObjType)
+#else
+void pcbAssignSlotMine(ushort Slot, ushort ObjType)
+#endif
 {
 	switch (ObjType)
 	{
@@ -5141,7 +5196,11 @@ void cbAssignSlotMine(ushort Slot, ushort ObjType)
 	}
 }
 
+#ifdef __TINYC__
 void cbInitObjects(void)
+#else
+void pcbInitObjects(void)
+#endif
 {
 	setup_bridge_object();
 	setup_lift_doors();
@@ -5151,12 +5210,20 @@ void cbInitObjects(void)
 	setup_mine_cart();
 }
 
+#ifdef __TINYC__
 void cbInitGame(void)
+#else
+void pcbInitGame(void)
+#endif
 {
 
 }
 
+#ifdef __TINYC__
 void cbInitLevel(void)
+#else
+void pcbInitLevel(void)
+#endif
 {
 	if (pPatchMap[273])
 	{

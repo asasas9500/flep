@@ -2003,8 +2003,8 @@ patchsetversion=1.1
       dependencies=
       filename=patches.bin
       dataoffset=0,000B09B4
-      datadefault=0,73 61 76 65 67 61 6D 65 2E 25 64 00 00 00 00 00
-      datamodified=0,73 61 76 65 5C 73 61 76 65 67 61 6D 65 2E 25 64
+      datadefault=0,7361766567616D652E25640000000000
+      datamodified=0,736176655C7361766567616D652E2564
       datacondbehave=0,0
   footer=39
   header=40
@@ -14214,19 +14214,7 @@ patchsetversion=1.1
   header=238
       enabled=1
       name=Ammo type options - Menu Button Show/Hide
-      description=Allows you to set the amount of alternative ammo available for the Shotgun, Grenade Gun, and Crossbow. This patch comes in several parts.
-
-////In this patch, you can disable or keep the "Choose Ammo" menu option with the following values.////
-
-For Shotgun and Crossbow://
-Disable both = 0//
-Disable Crossbow but keep Shotgun = 64//
-Disable Shotgun but keep Crossbow = 128//
-Keep Shotgun and Crossbow = 192////
-
-For Grenade Gun://
-Disable = 0
-//Enable = 1
+      description=Allows you to set the amount of alternative ammo available for the Shotgun, Grenade Gun, and Crossbow. This patch comes in several parts.////In this patch, you can disable or keep the "Choose Ammo" menu option with the following values.////For Shotgun and Crossbow://Disable both = 0//Disable Crossbow but keep Shotgun = 64//Disable Shotgun but keep Crossbow = 128//Keep Shotgun and Crossbow = 192////For Grenade Gun://Disable = 0//Enable = 1
       category=
       dependencies=
       filename=patches.bin
@@ -14246,9 +14234,7 @@ Disable = 0
   header=239
       enabled=1
       name=Ammo type options - Shotgun
-      description=Removes Shotgun_Ammo2 from the inventory. ////
-
-If you use this patch, you must also use the "Ammo type options - Show/Hide Menu Option" patch to hide the "Choose Ammo" menu option for the Shotgun.
+      description=Removes Shotgun_Ammo2 from the inventory. ////If you use this patch, you must also use the "Ammo type options - Show/Hide Menu Option" patch to hide the "Choose Ammo" menu option for the Shotgun.
       category=
       dependencies=Ammo type options - Menu Button Show/Hide
       filename=patches.bin
