@@ -66,9 +66,9 @@ jobs:
             Copy-Item -Path "flep\Plugin_FLEP\Plugin_FLEP.${extension}" -Destination "FlexiblePatcher\Plugin_FlexiblePatcher\Plugin_FlexiblePatcher.${extension}"
             py tools\rename.py "FlexiblePatcher\Plugin_FlexiblePatcher\Plugin_FlexiblePatcher.${extension}"
           }
-          $message = git -C flep show -s --format=%B
+          $message = git -C flep show -s --format=%B | Out-String
           git -C FlexiblePatcher config user.name 'github-actions[bot]'
           git -C FlexiblePatcher config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git -C FlexiblePatcher add -A
-          git -C FlexiblePatcher commit -m "${message}"
+          git -C FlexiblePatcher commit -m $message
           git -C FlexiblePatcher push
