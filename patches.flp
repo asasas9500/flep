@@ -16311,3 +16311,23 @@ patchsetversion=1.1
       partype=3,6
       parcondbehave=3,0
   footer=315
+  header=316
+      enabled=1
+      name=Waterfallmist status
+      description=Fixes the Waterfallmist so that its status is saved in the savegame and changed through the use of triggers and antitriggers.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,36FAA
+      datadefault=0,8B4F448B5E40
+      datamodified=0,E95168410090
+      datacondbehave=0,0
+      dataoffset=1,5DCEC
+      datadefault=1,892D7C175300
+      datamodified=1,E92EFB3E0090
+      datacondbehave=1,0
+      dataoffset=2,FD800
+      datadefault=2,
+      datamodified=2,56E8AAD4BFFF83C40485C00F848798BEFF8B57408B4F448B5E40E99197BEFF892D7C17530066A1921753006625FFFD6609D866A392175300E9B504C1FF
+      datacondbehave=2,1
+  footer=316
