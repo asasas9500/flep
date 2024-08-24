@@ -2237,6 +2237,7 @@ __declspec(naked) float fsqrt(float num)
 #define height_type	VAR_U_(0x007FE170, long)
 #define wibble	VAR_U_(0x004BF238, long)
 #define tsv_buffer	ARRAY_(0x00804E60, char, [16384])
+#define OnObject	VAR_U_(0x007FE0E0, long)
 
 #define CreateFlare	( (void(*)(short, long)) 0x0042F400 )
 #define undraw_flare_meshes	( (void(*)(void)) 0x0042FAB0 )
@@ -2248,6 +2249,13 @@ __declspec(naked) float fsqrt(float num)
 #define WriteSG	( (void(*)(void*, int)) 0x0045A3C0 )
 #define ReadSG	( (void(*)(void*, int)) 0x0045B150 )
 #define phd_atan	( (long(*)(long, long)) 0x0048DE90 )
+
+#define TRNGDefaultWeaponBalestraDistanceAiming	VAR_U_(0x104C3A6B, ushort)
+#define TRNGDefaultWeaponBalestraSizeShell	VAR_U_(0x104C3A6A, uchar)
+#define TRNGDefaultWeaponBalestraFrameToTakeWeapon	VAR_U_(0x104C3A6D, uchar)
+#define TRNGCustWeaponBalestraDistanceAiming	VAR_U_(0x104C570B, ushort)
+#define TRNGCustWeaponBalestraSizeShell	VAR_U_(0x104C570A, uchar)
+#define TRNGCustWeaponBalestraFrameToTakeWeapon	VAR_U_(0x104C570D, uchar)
 
 short phd_sin(long angle)
 {
@@ -2282,6 +2290,7 @@ short hk_ammo3;
 short hk_ammo1_slot;
 short hk_ammo2_slot;
 short hk_ammo3_slot;
+char hk_still_hips_fire;
 short lift_doors[2];
 short sfx_lift_doors;
 short sprite_object[16];
@@ -2311,6 +2320,9 @@ short mine_cart_sfx_mine_cart_pully_loop;
 char mine_cart_alignment;
 short mine_cart_slot_rollingball[16];
 short mine_cart_health[16];
+short trapdoor_object[16];
+short horizon_rotation;
+short horizon_rotation_speed;
 
 long check_flep(long number)
 {
@@ -2543,7 +2555,7 @@ void animate_hk(ITEM_INFO* item)
 	{
 		item->goal_anim_state = 7;
 
-		if (!get_shotgun_change() && !harpoon_fired)
+		if ((lara.water_status == LW_UNDERWATER || lara.gun_type == WEAPON_CROSSBOW && (lara_item->speed || hk_still_hips_fire && input & IN_ACTION)) && !harpoon_fired)
 		{
 			if (input & IN_ACTION)
 			{
@@ -4763,6 +4775,89 @@ void setup_mine_cart(void)
 	}
 }
 
+long OnTrapDoor(ITEM_INFO* item, long x, long z)
+{
+	long ix, iz;
+
+	x >>= WALL_SHIFT;
+	z >>= WALL_SHIFT;
+	ix = item->pos.x_pos >> WALL_SHIFT;
+	iz = item->pos.z_pos >> WALL_SHIFT;
+
+	if (!item->pos.y_rot && x == ix && (z == iz || z == iz + 1))
+		return 1;
+
+	if (item->pos.y_rot == -0x8000 && x == ix && (z == iz || z == iz - 1))
+		return 1;
+
+	if (item->pos.y_rot == 0x4000 && z == iz && (x == ix || x == ix + 1))
+		return 1;
+
+	if (item->pos.y_rot == -0x4000 && z == iz && (x == ix || x == ix - 1))
+		return 1;
+
+	return 0;
+}
+
+void TrapDoorCeiling(ITEM_INFO* item, long x, long y, long z, long* h)
+{
+	if (OnTrapDoor(item, x, z) && y > item->pos.y_pos && !item->current_anim_state && item->pos.y_pos > *h)
+		*h = item->pos.y_pos + 256;
+}
+
+void TrapDoorFloor(ITEM_INFO* item, long x, long y, long z, long* h)
+{
+	if (OnTrapDoor(item, x, z) && y <= item->pos.y_pos && !item->current_anim_state && item->pos.y_pos < *h)
+	{
+		*h = item->pos.y_pos;
+		OnObject = 1;
+		height_type = WALL;
+	}
+}
+
+void TrapDoorControl(short item_number)
+{
+	ITEM_INFO* item;
+
+	item = &items[item_number];
+
+	if (TriggerActive(item))
+	{
+		if (!item->current_anim_state)
+			item->goal_anim_state = 1;
+	}
+	else if (item->current_anim_state == 1)
+		item->goal_anim_state = 0;
+
+	AnimateItem(item);
+}
+
+void setup_trapdoors(void)
+{
+	OBJECT_INFO* obj;
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (trapdoor_object[i] != -1)
+		{
+			obj = &objects[trapdoor_object[i]];
+			obj->initialise = 0;
+			obj->collision = 0;
+			obj->control = TrapDoorControl;
+			obj->floor = TrapDoorFloor;
+			obj->ceiling = TrapDoorCeiling;
+			obj->save_flags = 1;
+			obj->save_anim = 1;
+		}
+	}
+}
+
+void rotate_horizon(void)
+{
+	phd_RotY(horizon_rotation);
+	horizon_rotation += horizon_rotation_speed;
+}
+
 #ifdef __TINYC__
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
@@ -4816,6 +4911,7 @@ void pcbInitLoadNewLevel(void)
 	hk_ammo1_slot = CROSSBOW_AMMO1_ITEM;
 	hk_ammo2_slot = CROSSBOW_AMMO2_ITEM;
 	hk_ammo3_slot = CROSSBOW_AMMO3_ITEM;
+	hk_still_hips_fire = 0;
 
 	for (int i = 0; i < 2; i++)
 		lift_doors[i] = -1;
@@ -4868,6 +4964,12 @@ void pcbInitLoadNewLevel(void)
 		mine_cart_slot_rollingball[i] = -1;
 		mine_cart_health[i] = 8;
 	}
+
+	for (int i = 0; i < 16; i++)
+		trapdoor_object[i] = -1;
+
+	horizon_rotation = 0;
+	horizon_rotation_speed = 0;
 }
 
 #ifdef __TINYC__
@@ -4977,81 +5079,78 @@ void pcbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArr
 	{
 	case 1:
 
-		if (NumberOfItems == 9)
-		{
-			if (pItemArray[0] != -1)
-				hk_gunflash_slot = pItemArray[0];
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+			hk_gunflash_slot = pItemArray[0];
 
-			if (pItemArray[1] != -1)
-				sfx_hk_fire = pItemArray[1];
+		if (NumberOfItems > 1 && pItemArray[1] != -1)
+			sfx_hk_fire = pItemArray[1];
 
-			if (pItemArray[2] != -1)
-				sfx_hk_stop = pItemArray[2];
+		if (NumberOfItems > 2 && pItemArray[2] != -1)
+			sfx_hk_stop = pItemArray[2];
 
-			if (pItemArray[3] != -1)
-				hk_ammo1 = 4 * (1 << pItemArray[3]);
+		if (NumberOfItems > 3 && pItemArray[3] != -1)
+			hk_ammo1 = 4 * (1 << pItemArray[3]);
 
-			if (pItemArray[4] != -1)
-				hk_ammo2 = 4 * (1 << pItemArray[4]);
+		if (NumberOfItems > 4 && pItemArray[4] != -1)
+			hk_ammo2 = 4 * (1 << pItemArray[4]);
 
-			if (pItemArray[5] != -1)
-				hk_ammo3 = 4 * (1 << pItemArray[5]);
+		if (NumberOfItems > 5 && pItemArray[5] != -1)
+			hk_ammo3 = 4 * (1 << pItemArray[5]);
 
-			if (pItemArray[6] != -1)
-				hk_ammo1_slot = pItemArray[6];
+		if (NumberOfItems > 6 && pItemArray[6] != -1)
+			hk_ammo1_slot = pItemArray[6];
 
-			if (pItemArray[7] != -1)
-				hk_ammo2_slot = pItemArray[7];
+		if (NumberOfItems > 7 && pItemArray[7] != -1)
+			hk_ammo2_slot = pItemArray[7];
 
-			if (pItemArray[8] != -1)
-				hk_ammo3_slot = pItemArray[8];
-		}
+		if (NumberOfItems > 8 && pItemArray[8] != -1)
+			hk_ammo3_slot = pItemArray[8];
+
+		if (NumberOfItems > 9 && pItemArray[9] != -1)
+			hk_still_hips_fire = (char)pItemArray[9];
 
 		break;
 
 	case 2:
 
-		if (NumberOfItems == 1 && pItemArray[0] != -1)
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
 			sfx_lift_doors = pItemArray[0];
 
 		break;
 
 	case 3:
 
-		if (NumberOfItems == 16)
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+			crossbow_grenade_animations = (char)pItemArray[0];
+
+		for (int i = 0; i < 3; i++)
 		{
-			if (pItemArray[0] != -1)
-				crossbow_grenade_animations = (char)pItemArray[0];
+			if (NumberOfItems > i + 1 && pItemArray[i + 1] != -1)
+				crossbow_grenade_ammo[i] = pItemArray[i + 1] != WEAPON_CROSSBOW;
 
-			for (int i = 0; i < 3; i++)
+			if (NumberOfItems > i + 4 && pItemArray[i + 4] != -1)
+				crossbow_grenade_ammo_type[i] = 4 * (1 << pItemArray[i + 4]);
+
+			if (NumberOfItems > i + 7 && pItemArray[i + 7] != -1)
+				crossbow_grenade_ammo_slot[i] = pItemArray[i + 7];
+			else if (!crossbow_grenade_ammo[i])
+				crossbow_grenade_ammo_slot[i] = CROSSBOW_BOLT;
+
+			if (NumberOfItems > i + 10 && pItemArray[i + 10] != -1)
+				crossbow_grenade_ammo_sound[i] = pItemArray[i + 10];
+
+			if (NumberOfItems > i + 13 && pItemArray[i + 13] != -1)
+				crossbow_grenade_ammo_smoke[i] = (char)pItemArray[i + 13];
+
+			if (crossbow_grenade_ammo_slot[i] == CROSSBOW_BOLT)
 			{
-				if (pItemArray[i + 1] != -1)
-					crossbow_grenade_ammo[i] = pItemArray[i + 1] != WEAPON_CROSSBOW;
-
-				if (pItemArray[i + 4] != -1)
-					crossbow_grenade_ammo_type[i] = 4 * (1 << pItemArray[i + 4]);
-
-				if (pItemArray[i + 7] != -1)
-					crossbow_grenade_ammo_slot[i] = pItemArray[i + 7];
-				else if (!crossbow_grenade_ammo[i])
+				if (crossbow_grenade_ammo[i])
+					crossbow_grenade_ammo_slot[i] = GRENADE;
+			}
+			else if (crossbow_grenade_ammo_slot[i] == GRENADE)
+			{
+				if (!crossbow_grenade_ammo[i])
 					crossbow_grenade_ammo_slot[i] = CROSSBOW_BOLT;
-
-				if (pItemArray[i + 10] != -1)
-					crossbow_grenade_ammo_sound[i] = pItemArray[i + 10];
-
-				if (pItemArray[i + 13] != -1)
-					crossbow_grenade_ammo_smoke[i] = (char)pItemArray[i + 13];
-
-				if (crossbow_grenade_ammo_slot[i] == CROSSBOW_BOLT)
-				{
-					if (crossbow_grenade_ammo[i])
-						crossbow_grenade_ammo_slot[i] = GRENADE;
-				}
-				else if (crossbow_grenade_ammo_slot[i] == GRENADE)
-				{
-					if (!crossbow_grenade_ammo[i])
-						crossbow_grenade_ammo_slot[i] = CROSSBOW_BOLT;
-				}
 			}
 		}
 
@@ -5059,56 +5158,57 @@ void pcbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArr
 
 	case 4:
 
-		if (NumberOfItems == 10)
-		{
-			if (pItemArray[0] != -1)
-				mine_cart_slot_minecart = pItemArray[0];
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+			mine_cart_slot_minecart = pItemArray[0];
 
-			if (pItemArray[1] != -1)
-				mine_cart_slot_vehicle_anim = pItemArray[1];
+		if (NumberOfItems > 1 && pItemArray[1] != -1)
+			mine_cart_slot_vehicle_anim = pItemArray[1];
 
-			if (pItemArray[2] != -1)
-				mine_cart_slot_mapper = pItemArray[2];
+		if (NumberOfItems > 2 && pItemArray[2] != -1)
+			mine_cart_slot_mapper = pItemArray[2];
 
-			if (pItemArray[3] != -1)
-				mine_cart_slot_animating2 = pItemArray[3];
+		if (NumberOfItems > 3 && pItemArray[3] != -1)
+			mine_cart_slot_animating2 = pItemArray[3];
 
-			if (pItemArray[4] != -1)
-				mine_cart_sfx_mine_cart_clunk_start = pItemArray[4];
+		if (NumberOfItems > 4 && pItemArray[4] != -1)
+			mine_cart_sfx_mine_cart_clunk_start = pItemArray[4];
 
-			if (pItemArray[5] != -1)
-				mine_cart_sfx_quad_front_impact = pItemArray[5];
+		if (NumberOfItems > 5 && pItemArray[5] != -1)
+			mine_cart_sfx_quad_front_impact = pItemArray[5];
 
-			if (pItemArray[6] != -1)
-				mine_cart_sfx_mine_cart_sreech_brake = pItemArray[6];
+		if (NumberOfItems > 6 && pItemArray[6] != -1)
+			mine_cart_sfx_mine_cart_sreech_brake = pItemArray[6];
 
-			if (pItemArray[7] != -1)
-				mine_cart_sfx_mine_cart_track_loop = pItemArray[7];
+		if (NumberOfItems > 7 && pItemArray[7] != -1)
+			mine_cart_sfx_mine_cart_track_loop = pItemArray[7];
 
-			if (pItemArray[8] != -1)
-				mine_cart_sfx_mine_cart_pully_loop = pItemArray[8];
+		if (NumberOfItems > 8 && pItemArray[8] != -1)
+			mine_cart_sfx_mine_cart_pully_loop = pItemArray[8];
 
-			if (pItemArray[9] != -1)
-				mine_cart_alignment = (char)pItemArray[9];
-		}
+		if (NumberOfItems > 9 && pItemArray[9] != -1)
+			mine_cart_alignment = (char)pItemArray[9];
 
 		break;
 
 	case 5:
 
-		if (NumberOfItems >= 1 && NumberOfItems <= 32)
+		for (int i = 0; i < 32; i++)
 		{
-			for (int i = 0; i < NumberOfItems; i++)
+			if (NumberOfItems > i && pItemArray[i] != -1)
 			{
-				if (pItemArray[i] != -1)
-				{
-					if (!(i % 2))
-						mine_cart_slot_rollingball[i / 2] = pItemArray[i];
-					else
-						mine_cart_health[i / 2] = pItemArray[i];
-				}
+				if (!(i % 2))
+					mine_cart_slot_rollingball[i / 2] = pItemArray[i];
+				else
+					mine_cart_health[i / 2] = pItemArray[i];
 			}
 		}
+
+		break;
+
+	case 6:
+
+		if (NumberOfItems > 0 && pItemArray[0])
+			horizon_rotation_speed = pItemArray[0];
 
 		break;
 	}
@@ -5175,6 +5275,7 @@ void pcbAssignSlotMine(ushort Slot, ushort ObjType)
 	case 21:
 		sprite_object[ObjType - 6] = Slot;
 		break;
+
 	case 22:
 	case 23:
 	case 24:
@@ -5193,6 +5294,25 @@ void pcbAssignSlotMine(ushort Slot, ushort ObjType)
 	case 37:
 		rollingball_object[ObjType - 22] = Slot;
 		break;
+
+	case 38:
+	case 39:
+	case 40:
+	case 41:
+	case 42:
+	case 43:
+	case 44:
+	case 45:
+	case 46:
+	case 47:
+	case 48:
+	case 49:
+	case 50:
+	case 51:
+	case 52:
+	case 53:
+		trapdoor_object[ObjType - 38] = Slot;
+		break;
 	}
 }
 
@@ -5208,6 +5328,7 @@ void pcbInitObjects(void)
 	setup_rollingballs();
 	setup_crossbow_grenade_ammo();
 	setup_mine_cart();
+	setup_trapdoors();
 }
 
 #ifdef __TINYC__
@@ -5216,7 +5337,12 @@ void cbInitGame(void)
 void pcbInitGame(void)
 #endif
 {
-
+	if (pPatchMap[273])
+	{
+		TRNGDefaultWeaponBalestraDistanceAiming = 12288;
+		TRNGDefaultWeaponBalestraSizeShell = 3;
+		TRNGDefaultWeaponBalestraFrameToTakeWeapon = 16;
+	}
 }
 
 #ifdef __TINYC__
@@ -5227,9 +5353,9 @@ void pcbInitLevel(void)
 {
 	if (pPatchMap[273])
 	{
-		weapons[WEAPON_CROSSBOW].target_dist = 12288;
-		weapons[WEAPON_CROSSBOW].flash_time = 3;
-		weapons[WEAPON_CROSSBOW].draw_frame = 16;
+		weapons[WEAPON_CROSSBOW].target_dist = TRNGCustWeaponBalestraDistanceAiming;
+		weapons[WEAPON_CROSSBOW].flash_time = TRNGCustWeaponBalestraSizeShell;
+		weapons[WEAPON_CROSSBOW].draw_frame = TRNGCustWeaponBalestraFrameToTakeWeapon;
 		inventry_objects_list[INV_CROSSBOW_ITEM].yrot = 0;
 		inventry_objects_list[INV_CROSSBOW_ITEM].xrot = -16384;
 		inventry_objects_list[INV_CROSSBOW_LASER_ITEM].yrot = 0;
@@ -5276,4 +5402,5 @@ void Inject(void)
 	INJECT(0x0091009B, MineCartLook);
 	INJECT(0x009100A0, SaveMineCart);
 	INJECT(0x009100A5, RestoreMineCart);
+	INJECT(0x009100AA, rotate_horizon);
 }
