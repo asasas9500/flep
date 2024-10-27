@@ -1,0 +1,96 @@
+This document describes the script commands that are standalone.
+
+Original bridges
+================
+
+Brings back the bridges used in TR4, as TRNG bridges have incompatible behaviour.
+
+To assign a slot:
+
+AssignSlot=<MyUsedSlot>,<Bridge>
+
+Where <Bridge> is either OBJ_FLEP_BRIDGE_FLAT, OBJ_FLEP_BRIDGE_TILT1 or OBJ_FLEP_BRIDGE_TILT2.
+
+Lift doors
+==========
+
+Implements the lift doors from TR5.
+
+To assign a slot:
+
+AssignSlot=<MyUsedSlot>,<LiftDoor>
+
+Where <LiftDoor> is either OBJ_FLEP_LIFT_DOORS1 or OBJ_FLEP_LIFT_DOORS2.
+
+Additional customization can be done by the command Customize=CUST_FLEP_LIFT_DOORS.
+
+Sprite objects
+==============
+
+Implements objects that always face the camera, as sprites do.
+
+To assign a slot:
+
+AssignSlot=<MyUsedSlot>,<Sprite>
+
+Where <Sprite> is OBJ_FLEP_SPRITE{1..16}.
+
+If the object has more than one mesh, they will be cycled through, like animated sprites.
+
+Old style rollingballs
+======================
+
+Provides the rollingballs from TR1/2/3.
+
+To assign a slot:
+
+AssignSlot=<MyUsedSlot>,<Rollingball>
+
+Where <Rollingball> is OBJ_FLEP_ROLLINGBALL{1..16}.
+
+Use OCB 1 to disable the camera bounce effect. Add 32 to the OCB to produce a splash if the rollingball falls into water.
+Note that the rotation of the rollingball determines their rolling direction.
+
+The rollingballs from original levels will not work, use these ones instead: https://www.trsearch.org/item/5823.
+
+Meshswap of Lara meshes
+=======================
+
+Allows Lara meshes to be swapped.
+
+To do a meshswap:
+
+#define @Plugin_FLEP 1
+TriggerGroup=<TriggerGroupId>,$012000,7,<IdParamList>
+#define @plugins CLEAR
+
+Where <IdParamList> is the Id of the command Parameters=PARAM_FLEP_LARA_MESHSWAP.
+And to revert a meshswap:
+
+#define @Plugin_FLEP 1
+TriggerGroup=<TriggerGroupId>,$012000,8,<LaraMesh>
+#define @plugins CLEAR
+
+Where <LaraMesh> is a LARA_MESH_ constant.
+
+Exit game
+=========
+
+Exits the game in the same moment it is called.
+
+To exit the game:
+
+#define @Plugin_FLEP 1
+TriggerGroup=<TriggerGroupId>,$012000,9,$0
+#define @plugins CLEAR
+
+Old style trapdoors
+===================
+
+Provides the trapdoors from TR1/2/3.
+
+To assign a slot:
+
+AssignSlot=<MyUsedSlot>,<Trapdoor>
+
+Where <Trapdoor> is OBJ_FLEP_TRAPDOOR{1..16}.

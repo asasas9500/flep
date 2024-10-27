@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="normalize.css">
+<link rel="stylesheet" href="style.css">
+<title>User manual</title>
+</head>
+<body>
+<h1>Plugin_FLEP</h1>
+<h2>User manual</h2>
+<h4>by ChocolateFan and LoreRaider</h4>
+<h3>About the plugin</h3>
+<p>This plugin it's the main source of fixes and additions along with FLEP.</p>
+<p>The new additions are the following:</p>
+<ul>
+<li><a href="#p1">Original bridges</a></li>
+<li><a href="#p2">Lift doors</a></li>
+<li><a href="#p3">HK Gun</a></li>
+<li><a href="#p4">Sprite objects</a></li>
+<li><a href="#p5">Old style rollingballs</a></li>
+<li><a href="#p6">Meshswap of Lara meshes</a></li>
+<li><a href="#p7">Exiting game</a></li>
+<li><a href="#p8">Grenadegun</a></li>
+<li><a href="#p9">Mine Cart</a></li>
+<li><a href="#p10">Old style trapdoors</a></li>
+<li><a href="#p11">Horizon rotation</a></li>
+</ul>
+<br>
+<br>
+<h2 id="p1">Original Bridges</h2>
+<p>Brings back the original bridges used in TR4, as TRNG bridges have incompatible behaviour.<br />
+To use this, <strong>AssignSlot=</strong> command is needed.</p>
+<p><strong>Syntax</strong>: AssignSlot=&lt;MyUsedSlot&gt;, &lt;Bridge&gt;</p>
+<p>Where <strong>&lt;MyUsedSlot&gt;</strong> is the slot that should be used for the bridge and <strong>&lt;Bridge&gt;</strong> is either <strong>OBJ_FLEP_BRIDGE_FLAT</strong>, <strong>OBJ_FLEP_BRIDGE_TILT1</strong> or <strong>OBJ_FLEP_BRIDGE_TILT2</strong>.</p>
+<p><strong>Example</strong>: AssignSlot=ANIMATING1, OBJ_FLEP_BRIDGE_FLAT</p>
+<br>
+<br>
+<h2 id="p2">Lift doors</h2>
+<p>Implements the lift doors from TR5.<br />
+To use this, <strong>AssignSlot=</strong> command is needed.</p>
+<p><strong>Syntax</strong>: AssignSlot=&lt;MyUsedSlot&gt;, &lt;LiftDoor&gt;</p>
+<p>Where <strong>&lt;MyUsedSlot&gt;</strong> is the slot that should be used for the lift door and <strong>&lt;LiftDoor&gt;</strong> is either <strong>OBJ_FLEP_LIFT_DOORS1</strong> or <strong>OBJ_FLEP_LIFT_DOORS2</strong>.</p>
+<p><strong>Example</strong>: AssignSlot=ANIMATING1, <strong>OBJ_FLEP_LIFT_DOORS1</strong>.</p>
+<p>Additional customization can be done by the command <strong>Customize=CUST_FLEP_LIFT_DOORS</strong>.</p>
+<p><strong>Syntax</strong>: Customize=CUST_FLEP_LIFT_DOORS, LiftDoorsSound</p>
+<p><strong>LiftDoorsSound</strong>: this parameter sets the sound that plays when the lift doors open or close.<br />
+Type <strong>IGNORE</strong> or <strong>-1</strong> to not play any sound.</p>
+<p><strong>Example</strong>: Customize=CUST_FLEP_LIFT_DOORS, 64</p>
+<br>
+<br>
+<h2 id="p3">HK Gun</h2>
+<p>Replaces Crossbow with HK Gun from TR5.</p>
+<p><strong>Important</strong>: make sure to enable <strong>HK Gun</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
+<p><strong>Syntax</strong>: Customize=CUST_FLEP_HK, GunFlashSlot, FireSound, StopSound, SniperOrder, BurstOrder, RapidOrder, FirstModeSlot, SecondModeSlot, ThirdModeSlot, StillHipsFire</p>
+<p><strong>GunFlashSlot</strong>: this parameter sets the slot of the gunflash.<br />
+Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default value (<strong>GUN_FLASH</strong>).</p>
+<p><strong>FireSound</strong>, <strong>StopSound</strong>: these parameters sets the sounds that play when HK is firing and when it stops firing, respectively.<br />
+Type <strong>IGNORE</strong> or <strong>-1</strong> to not play any sound. The <strong>FireSound</strong> must have <strong>L</strong> flag set.</p>
+<p><strong>SniperOrder</strong>, <strong>BurstOrder</strong>, <strong>RapidOrder</strong>: these parameters sets the sequence in which the modes should be selected in the Choose Weapon Mode menu.<br />
+Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default values (1 for <strong>SniperOrder</strong>, 2 for <strong>BurstOrder</strong> and 3 for <strong>RapidOrder</strong>).</p>
+<p><strong>FirstModeSlot</strong>, <strong>SecondModeSlot</strong>, <strong>ThirdModeSlot</strong>: thes parameters sets the slots that should be used for the modes in the Choose Weapon Mode menu.<br />
+Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default values (<strong>CROSSBOW_AMMO1_ITEM</strong> for <strong>FirstModeSlot</strong>, <strong>CROSSBOW_AMMO2_ITEM</strong> for <strong>SecondModeSlot</strong> and <strong>CROSSBOW_AMMO3_ITEM</strong> for <strong>ThirdModeSlot</strong>).</p>
+<p><strong>StillHipsFire</strong>: this parameter allows <strong>ENABLED</strong> or <strong>DISABLED</strong>.<br />
+<strong>ENABLED</strong>: if Lara stops moving while shooting from her hips, she does not change the HK to her shoulder.<br />
+<strong>DISABLED</strong>: if Lara stops moving while shooting from her hips, she changes the HK to her shoulder.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>DISABLED</strong>).</p>
+<p><strong>Example</strong>: Customize=CUST_FLEP_HK, NEW_SLOT10, 370, 371, -1, -1, -1, -1, -1, -1, ENABLED</p>
+<h2 id="p4">Sprite objects</h2>
+<p>Implements objects that always face the camera, as sprites do.<br />
+To use this, <strong>AssignSlot=</strong> command is needed.</p>
+<p><strong>Syntax</strong>: AssignSlot=&lt;MyUsedSlot&gt;, &lt;Sprite&gt;</p>
+<p>Where <strong>&lt;MyUsedSlot&gt;</strong> is the slot that should be used for the sprite and <strong>&lt;Sprite&gt;</strong> is <strong>OBJ_FLEP_SPRITE{1..16}</strong>.</p>
+<p>If the object has more than one mesh, they will be cycled through, like animated sprites.</p>
+<p><strong>Example</strong>: AssignSlot=ANIMATING1, OBJ_FLEP_SPRITE1</p>
+<br>
+<br>
+<h2 id="p5">Old style rollingballs</h2>
+<p>Provides the rollingballs from TR1/2/3.</p>
+<p><strong>Important</strong>: the rollingballs from original levels will not work, use these ones instead: <a href="https://www.trsearch.org/item/5823">https://www.trsearch.org/item/5823</a>.</p>
+<p>To use this, <strong>AssignSlot=</strong> command is needed.</p>
+<p><strong>Syntax</strong>: AssignSlot=&lt;MyUsedSlot&gt;, &lt;Rollingball&gt;</p>
+<p>Where <strong>&lt;MyUsedSlot&gt;</strong> is the slot that should be used for the rollingball and <strong>&lt;Rollingball&gt;</strong> is <strong>OBJ_FLEP_ROLLINGBALL{1..16}</strong>.</p>
+<p><strong>Example</strong>: AssignSlot=NEW_SLOT5, OBJ_FLEP_ROLLINGBALL1</p>
+<p>Additional settings can be used, you can also sum these together:</p>
+<p>Use OCB 1 to disable the camera bounce effect.<br />
+Use OCB 32 to produce a splash if the rollingball falls into water.</p>
+<p>Note that the rotation of the rollingball determines their rolling direction.</p>
+<br>
+<br>
+<h2 id="p6">Meshswap of Lara meshes</h2>
+<p>Allows Lara meshes to be swapped.<br />
+To use this, <strong>Parameters=PARAM_FLEP_LARA_MESHSWAP</strong> command is needed.</p>
+<p><strong>Syntax</strong>: Parameters=PARAM_FLEP_LARA_MESHSWAP, IdParamList, LaraMesh, SourceSlot, SourceMesh</p>
+<p><strong>IdParamList</strong>: this parameter sets the ID of the meshswap command, which is then used in the trigger.<br />
+The ID range goes from 1 to 256.</p>
+<p><strong>LaraMesh</strong>: this parameter sets the mesh to be swapped, see <strong>LARA_MESH_</strong> constants or type the mesh number.</p>
+<p><strong>SourceSlot</strong>: this parameter sets the slot that supplies the new mesh. Both the slot name or number can be typed.</p>
+<p><strong>SourceMesh</strong>: this parameter sets the the number of the new mesh.</p>
+<p><strong>Example</strong>: Parameters=PARAM_FLEP_LARA_MESHSWAP, 1, LARA_MESH_HEAD, NEW_SLOT10, 0</p>
+<p>To trigger a meshswap:</p>
+<code>#define @Plugin_FLEP 1
+TriggerGroup=&lt;TriggerGroupId&gt;,$012000,7,&lt;IdParamList&gt;
+#define @plugins CLEAR</code>
+<p>Where <strong>&lt;TriggerGroupId&gt;</strong> is the ID of the TriggerGroup (for example 1,10,25...) and <strong>&lt;IdParamList&gt;</strong> is the Id of the command <strong>Parameters=PARAM_FLEP_LARA_MESHSWAP</strong>.</p>
+<p><strong>Example</strong>:</p>
+<code>#define @Plugin_FLEP 1
+TriggerGroup=1,$012000,7,1
+#define @plugins CLEAR</code>
+<p>And to revert a meshswap:</p>
+<code>#define @Plugin_FLEP 1
+TriggerGroup=&lt;TriggerGroupId&gt;,$012000,8,&lt;LaraMesh&gt;
+#define @plugins CLEAR</code>
+<p>Where <strong>&lt;LaraMesh&gt;</strong> is a <strong>LARA_MESH_</strong> constant, the mesh number can be also typed.</p>
+<p><strong>Example</strong>:</p>
+<code>#define @Plugin_FLEP 1
+TriggerGroup=2,$012000,8,14
+#define @plugins CLEAR</code>
+<h2 id="p7">Exit game</h2>
+<p>Exits the game in the same moment it is called.</p>
+<p>To exit the game:</p>
+<code>#define @Plugin_FLEP 1
+TriggerGroup=&lt;TriggerGroupId&gt;,$012000,9,$0
+#define @plugins CLEAR</code>
+<p>Where <strong>&lt;TriggerGroupId&gt;</strong> is the ID of the TriggerGroup (for example 1,10,25...)</p>
+<p><strong>Example</strong>:</p>
+<code>#define @Plugin_FLEP 1
+TriggerGroup=1,$012000,9,$0
+#define @plugins CLEAR</code>
+<br>
+<br>
+<h2 id="p8">Grenadegun</h2>
+<p>Modifies the Grenadegun to shoot different types of grenades or crossbow bolts, also its animations.</p>
+<p><strong>Important</strong>: make sure to enable <strong>Grenadegun and ammo animations</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
+<p>To use this, <strong>Customize=CUST_FLEP_GRENADEGUN</strong> command is needed.</p>
+<p><strong>Syntax</strong>: Customize=CUST_FLEP_GRENADEGUN, GrenadegunAnimations, FirstAmmoWeapon, SecondAmmoWeapon, ThirdAmmoWeapon, FirstAmmoType, SecondAmmoType, ThirdAmmoType, FirstAmmoSlot, SecondAmmoSlot, ThirdAmmoSlot, FirstAmmoSound, SecondAmmoSound, ThirdAmmoSound, FirstAmmoSmoke, SecondAmmoSmoke, ThirdAmmoSmoke</p>
+<p><strong>GrenadegunAnimations</strong>: this parameter sets the usage or not of Grenadegun animations<br />
+<strong>ENABLED</strong>: allows the usage of Grenadegun animations.<br />
+<strong>DISABLED</strong>: allows the usage of Crossbow, Shotgun or HK animations.<br />
+Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default value (<strong>ENABLED</strong>).</p>
+<p><strong>FirstAmmoWeapon</strong>, <strong>SecondAmmoWeapon</strong>, <strong>ThirdAmmoWeapon</strong>: these parameters sets the type of bolt.<br />
+<strong>HOLD_CROSSBOW</strong>: the ammo is a bolt.<br />
+<strong>HOLD_GRENADEGUN</strong>: the ammo is a grenade.<br />
+Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default value (<strong>HOLD_GRENADEGUN</strong>).</p>
+<p><strong>FirstAmmoType</strong>, <strong>SecondAmmoType</strong>, <strong>ThirdAmmoType</strong>: these parameters sets the type of ammo.<br />
+1: Normal ammo.<br />
+2: Poison/Super ammo.<br />
+3: Explosive/Flash ammo.<br />
+Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default values (1 for <strong>FirstAmmoType</strong>, 2 for <strong>SecondAmmoType</strong> and 3 for <strong>ThirdAmmoType</strong>).</p>
+<p><strong>FirstAmmoSlot</strong>, <strong>SecondAmmoSlot</strong>, <strong>ThirdAmmoSlot</strong>: these parameters sets the slots containing the meshes of the ammos.<br />
+Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default value (<strong>CROSSBOW_BOLT</strong>/<strong>GRENADE</strong>).<br />
+<strong>Note</strong>: <strong>CROSSBOW_BOLT</strong> is forbidden if the ammo is a grenade and <strong>GRENADE</strong> is forbidden if the ammo is a bolt.</p>
+<p><strong>FirstAmmoSound</strong>, <strong>SecondAmmoSound</strong>, <strong>ThirdAmmoSound</strong>: these parameters sets the sounds that play when shooting the ammos.<br />
+Type <strong>IGNORE</strong> or <strong>-1</strong> to not play any sound.</p>
+<p><strong>FirstAmmoSmoke</strong>, <strong>SecondAmmoSmoke</strong>, <strong>ThirdAmmoSmoke</strong>: these parameters sets whether the Grenadegun smoke is produced or not when shooting.<br />
+<strong>ENABLED</strong>: Grenadegun smoke is produced when shooting.<br />
+<strong>DISABLED</strong>: no smoke is produced.<br />
+Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default value (<strong>ENABLED</strong>).</p>
+<p><strong>Example</strong>: Customize=CUST_FLEP_GRENADEGUN, ENABLED, HOLD_CROSSBOW, -1, -1, 3, 2, 1, -1, CROSSBOW_BOLT, -1, -1, -1, -1, ENABLED, ENABLED, DISABLED</p>
+<br>
+<br>
+<h2 id="p9">Mine Cart</h2>
+<p>Allows to use the Minecart object like TR3 with some additions.</p>
+<p><strong>Important</strong>: make sure to enable <strong>Mine Cart</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
+<br>
+<p class="smallParagraphs">Minecart controls</p>
+<p>The minecart controls are the following:</p>
+<ul>
+<li><strong>Action</strong>: get in/use the spanner to activate switches</li>
+<li><strong>Jump</strong>: brake</li>
+<li><strong>Jump/Roll+left/right</strong>: get out</li>
+<li><strong>Left/right</strong>: lean lara to the sides</li>
+<li><strong>Duck</strong>: avoid obstacles by crouching</li>
+<li><strong>Look</strong>: looking around</li>
+</ul>
+<br>
+<p class="smallParagraphs">Setting the commands</h3>
+<p>Each script command of the minecart starts with <strong>Customize=</strong> command, followed by these types of customization: <strong>CUST_FLEP_MINE_CART</strong> and <strong>CUST_FLEP_MINE_CART_TRAPS</strong>.</p>
+<br>
+<p class="smallParagraphs">CUST_FLEP_MINE_CART</p>
+<p>This is the main command that associates an existing TRNG slot to a required minecart item.</p>
+<p><strong>Syntax</strong>: Customize=CUST_FLEP_MINE_CART, CartSlot, LaraSlot, ControllerSlot, SwitchSlot, ClunkStartSound, FrontImpactSound, SreechBrakeSound, TrackLoopSound, PullyLoopSound, Alignment</p>
+<p><strong>CartSlot</strong>: this parameter sets the slot where the minecart object is stored inside your wad.</p>
+<p><strong>LaraSlot</strong>: this parameter sets the slot where Lara's minecart special animations object is stored inside your wad.</p>
+<p><strong>ControllerSlot</strong>: this parameter sets the slot where the nullmesh object to manipulate the direction of the minecart is stored inside your wad.</p>
+<p><strong>SwitchSlot</strong>: this parameter sets the slot where the minecart switch object is stored inside your wad.</p>
+<p><strong>ClunkStartSound</strong>: this parameter sets the sound ID when the minecart starts moving.</p>
+<p><strong>FrontImpactSound</strong>: this parameter sets the sound ID when the minecart hits a wall.</p>
+<p><strong>SreechBrakeSound</strong>: this parameter sets the sound ID when Lara brakes the minecart.</p>
+<p><strong>TrackLoopSound</strong>: this parameter sets the sound ID when the minecart moves fast.</p>
+<p><strong>PullyLoopSound</strong>: this parameter sets the sound ID when the minecart moves slowly.</p>
+<p><strong>Alignment (ENABLED/DISABLED)</strong>: this parameter, set as ENABLED, will align the minecart in case the floor is tilted (unlike the original TR3 game).</p>
+<p>This is an example script using the given wad slots and TR3 ID sounds inside the package.</p>
+<p><strong>Example</strong>: Customize=CUST_FLEP_MINE_CART, MINECART, MINECART_LARA, TRIPWIRE, ANIMATING2, 211, 202, 219, 209, 210, ENABLED</p>
+<p>You can also just write the IDs of the slots:</p>
+<p>Customize=CUST_FLEP_MINE_CART, 504, 505, 161, 429, 211, 202, 219, 209, 210, ENABLED</p>
+<p><strong>Notes</strong>:</p>
+<ul>
+<li>on "Slot" parameters you can use any object slot but <strong>AI_</strong> (for instance AI_FOLLOW, AI_GUARD etc...), these won't work.</li>
+<li>setting the <strong>Alignment</strong> parameter to <strong>DISABLED</strong> will result in having the same behavior as TR3.</li>
+<li><strong>LaraSlot</strong> uses mesh 10 (Lara's right hand) for the hand+spanner meshswap.</li>
+<li><strong>SwitchSlot</strong> and "Sound" parameters are not mandatory, you can type <strong>IGNORE</strong> if you don't need them.</li>
+</ul>
+<br>
+<p class="smallParagraphs">CUST_FLEP_MINE_CART_TRAPS</p>
+<p>This command associates a trap with the minecart.</p>
+<p><strong>Syntax</strong>: Customize=CUST_FLEP_MINE_CART_TRAPS, TrapSlot, HealthLoss, {TrapSlot, HealthLoss array}</p>
+<p><strong>TrapSlot</strong>: this parameter sets which slot hurts Lara when using the minecart</p>
+<p><strong>HealthLoss</strong>: this parameter sets the amount of health loss that Lara receives when the minecart collides with the above slot, by setting this to <strong>IGNORE</strong> the defeault health loss it's 8.<br />
+Lara's health is measured in 1000 units, so setting it to the max amount will make her die.</p>
+<p><strong>{TrapSlot, HealthLoss array}</strong>: this is the exact operation explained above, it's the pair of slot and health loss that each different trap causes to Lara.</p>
+<p><strong>Example</strong>: Customize=CUST_FLEP_MINE_CART_TRAPS, TEETH_SPIKES, 200, ROLLINGBALL, 1000</p>
+<p><strong>Note</strong>: it's possible to set up to 16 different traps slots and health losses, by typing IGNORE on.</p>
+<br>
+<p class="smallParagraphs">Minecart triggers</h3>
+<p>You can check whether Lara is in the minecart or not by using the following inside your script:</p>
+<code>#define @Plugin_FLEP 1
+TriggerGroup=&lt;TriggerGroupId&gt;,$018000,0,$2,&lt;ExportedTrigger&gt;
+#define @plugins CLEAR</code>
+<p>Where <strong>&lt;TriggerGroupId&gt;</strong> is the ID of your TriggerGroup (for example 1,10,25...) and where <strong>&lt;ExportedTrigger&gt;</strong> is the trigger or group of triggers that needs to activate when the condition it's true (for example the track that plays in TR3 when you get in the minecart).</p>
+<p>You can of course also use this inside a GlobalTrigger, here's an example:</p>
+<code>#define @Plugin_FLEP 1
+TriggerGroup=1,$018000,0,$2 ;lara is inside the minecart
+TriggerGroup=2,$2000,129,$79 ;play track
+GlobalTrigger=1,FGT_SINGLE_SHOT,GT_CONDITION_GROUP,IGNORE,1,2,IGNORE
+#define @plugins CLEAR</code>
+<br>
+<p class="smallParagraphs">Setting up the minecart</h3>
+<p>Place the minecart in the direction you want, the front is where you see the brake handle.</p>
+<img src="images/1.png" />
+<p>Whenever you want the cart to turn use the nullmesh <strong>ControllerSlot</strong>, the point of the cone is the direction of where the minecart needs to turn.</p>
+<img src="images/2.png" />
+<p>To stop the minecart, turn the point of the cone against its direction.</p>
+<img src="images/3.png" />
+<p>You can use statics as obstacles to hurt Lara during the track.</p>
+<img src="images/4.png" />
+<p>To change the track direction of the minecart, use the <strong>SwitchSlot</strong> item along with the <strong>ControllerSlot</strong> nullmesh.<br />
+To set it up, place a switch type trigger for the switch itself, then use an <strong>Action 11 (A11)</strong> or <strong>Action 12 (A12)</strong> trigger to instantly turn the <strong>ControllerSlot</strong> nullmesh to the desired rotation.<br />
+<strong>Note</strong>: in this setup it's better to set the switch type trigger as <strong>One Shot</strong>, or Lara will be able to pull the already activated switch.</p>
+<p>In this example the <strong>ControllerSlot</strong> nullmesh rotates to the left (inverse clockwise) using <strong>Action 12 (A12)</strong>.</p>
+<img src="images/5.png" />
+<p>You can choose which minecart takes which track using OCB codes.<br />
+To do so, <strong>MinecartSlot</strong> and every instance of the <strong>ControllerSlot</strong> which need to take a specific track must have the same OCB code.</p>
+<img src="images/6.png" />
+<p><strong>Additional notes</strong>: sometimes it's possible that if the player uses the switch too late, the minecart won't change the track direction in time.<br />
+In these situations, there are two options you can look forward to:</p>
+<ul>
+<li>give more space between <strong>SwitchSlot</strong> and <strong>ControllerSlot</strong></li>
+<li>extend the switch trigger forward the <strong>SwitchSlot</strong></li>
+<li>reduce the animation length of the <strong>SwitchSlot</strong> item, default animation has ID 1 (and 3 is reset animation)</li>
+</ul>
+<br>
+<br>
+<h2 id="p10">Old style trapdoors</h2>
+<p>Brings back the original trapdoors behavior used in TR1-3, they can be also placed away from portals.<br />
+Drawbridges (or trapdoors of 1x2 squares) are included.<br />
+In order to activate their collision, a <strong>Dummy</strong> trigger type is needed under the trapdoor object.<br />
+To use this, <strong>AssignSlot=</strong> command is needed.</p>
+<p><strong>Syntax</strong>: AssignSlot=&lt;MyUsedSlot&gt;, &lt;Trapdoor&gt;</p>
+<p>Where <strong>&lt;MyUsedSlot&gt;</strong> is the slot that should be used for the bridge and <strong>&lt;Trapdoor&gt;</strong> is <strong>OBJ_FLEP_TRAPDOOR{1..16}</strong>.</p>
+<p><strong>Example</strong>: AssignSlot=ANIMATING1, OBJ_FLEP_TRAPDOOR1</p>
+<br>
+<br>
+<h2 id="p11">Horizon rotation</h2>
+<p>Allows the continuous rotation of the horizon.</p>
+<p><strong>Important</strong>: make sure to enable <strong>Horizon rotation</strong> patch inside <strong>FLEP</strong> or the following command won't work.</p>
+<p>To use this, Customize=CUST_FLEP_HORIZON_ROTATE command is needed.</p>
+<p><strong>Syntax</strong>: CUSTOMIZE=CUST_FLEP_HORIZON_ROTATE, Speed</p>
+<p><strong>Speed</strong>: the speed (in rotation units) at which the Horizon rotates. Positive values are clockwise.<br />
+Type <strong>DISABLED</strong> to not rotate the Horizon.<br />
+<strong>Note</strong>: 182 rotation units are equivalent to one degree.</p>
+<p><strong>Example</strong>: Customize=CUST_FLEP_HORIZON_ROTATE, 10</p>
+</body>
+</html>

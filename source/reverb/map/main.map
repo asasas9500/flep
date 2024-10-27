@@ -1,0 +1,186 @@
+
+- NASM Map file ---------------------------------------------------------------
+
+Source file:  main.asm
+Output file:  main.bin
+
+-- Program origin -------------------------------------------------------------
+
+00818CE0
+
+-- Sections (summary) ---------------------------------------------------------
+
+Vstart            Start             Stop              Length    Class     Name
+          818CE0            818CE0            8195F0  00000910  progbits  .text
+          8195F0            8195F0            819670  00000080  progbits  .data
+
+-- Sections (detailed) --------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+class:     progbits
+length:                 910
+start:               818CE0
+align:                   10
+follows:   not defined
+vstart:              818CE0
+valign:    not defined
+vfollows:  not defined
+
+---- Section .data ------------------------------------------------------------
+
+class:     progbits
+length:                  80
+start:               8195F0
+align:                   10
+follows:   not defined
+vstart:              8195F0
+valign:    not defined
+vfollows:  not defined
+
+-- Symbols --------------------------------------------------------------------
+
+---- No Section ---------------------------------------------------------------
+
+Value     Name
+00000000  block
+00000000  block.pointer
+00000004  block.length
+00000008  block_size
+00000000  element
+00000000  element.sample
+00000004  element.object
+00000008  element.type
+00000009  element.padding
+0000000C  element_size
+00000000  guid
+00000000  guid.data1
+00000004  guid.data2
+00000006  guid.data3
+00000008  guid.data4
+00000010  guid_size
+00000000  buffer
+00000000  buffer.length
+00000004  buffer.flags
+00000008  buffer.bytes
+0000000C  buffer.reserved
+00000010  buffer.format
+00000014  buffer.algorithm
+00000024  buffer_size
+00000000  effect
+00000000  effect.length
+00000004  effect.flags
+00000008  effect.class
+00000018  effect.reserved1
+0000001C  effect.reserved2
+00000020  effect_size
+00000000  reverb
+00000000  reverb.room
+00000004  reverb.room_high_frequency
+00000008  reverb.rolloff
+0000000C  reverb.decay
+00000010  reverb.decay_ratio
+00000014  reverb.reflections
+00000018  reverb.reflections_delay
+0000001C  reverb.reverberation
+00000020  reverb.reverberation_delay
+00000024  reverb.diffusion
+00000028  reverb.density
+0000002C  reverb.reference
+00000030  reverb_size
+
+
+---- Section .text ------------------------------------------------------------
+
+Real              Virtual           Name
+          818CE0            818CE0  jmp_0x47194E
+          818D24            818D24  jmp_0x47194E.loop
+          818D36            818D36  jmp_0x47194E.repeat
+          818D48            818D48  jmp_0x47194E.each
+          818D61            818D61  jmp_0x47194E.retry
+          818D80            818D80  jmp_0x47194E.error
+          818DA0            818DA0  jmp_0x49F266
+          818DD1            818DD1  jmp_0x49F266.error
+          818DD8            818DD8  jmp_0x49F266.continue
+          818E20            818E20  jmp_0x47184F
+          818E20            818E20  jmp_0x47186C
+          818E3E            818E3E  jmp_0x47186C.normal
+          818E50            818E50  jmp_0x471B4A
+          818E65            818E65  jmp_0x471B4A.loop
+          818EB6            818EB6  jmp_0x471B4A.add
+          818ECB            818ECB  jmp_0x471B4A.continue
+          818ED2            818ED2  jmp_0x471B4A.return
+          818EF0            818EF0  jmp_0x471C4D
+          818F50            818F50  jmp_0x471CB0
+          818FA0            818FA0  jmp_0x471E0F
+          818FCD            818FCD  jmp_0x471E0F.loop
+          818FF4            818FF4  jmp_0x471E0F.next
+          81900E            81900E  jmp_0x471E0F.new
+          8191BD            8191BD  jmp_0x471E0F.continue
+          8191E3            8191E3  jmp_0x471E0F.preset
+          819209            819209  jmp_0x471E0F.standard
+          81921B            81921B  jmp_0x471E0F.check
+          81922C            81922C  jmp_0x471E0F.stop
+          81929E            81929E  jmp_0x471E0F.above
+          8192AA            8192AA  jmp_0x471E0F.frequency
+          8192D8            8192D8  jmp_0x471E0F.below
+          8192E6            8192E6  jmp_0x471E0F.pan
+          819323            819323  jmp_0x471E0F.finish
+          81932C            81932C  jmp_0x471E0F.error
+          819342            819342  jmp_0x471E0F.abort
+          819350            819350  jmp_0x471E0F.cleanup
+          819353            819353  jmp_0x471E0F.return
+          819360            819360  jmp_0x471F50
+          81936E            81936E  jmp_0x471F50.loop
+          819383            819383  jmp_0x471F50.continue
+          819393            819393  jmp_0x471F50.repeat
+          8193BC            8193BC  jmp_0x471F50.skip
+          8193C7            8193C7  jmp_0x471F50.return
+          8193D0            8193D0  jmp_0x471FAB
+          81941E            81941E  jmp_0x471FAB.menu
+          819420            819420  jmp_0x471FAB.change
+          81944A            81944A  jmp_0x471FAB.update
+          8194D4            8194D4  jmp_0x471FAB.continue
+          8194FD            8194FD  jmp_0x471FAB.standard
+          81950F            81950F  jmp_0x471FAB.check
+          819515            819515  jmp_0x471FAB.cleanup
+          819518            819518  jmp_0x471FAB.volume
+          81954C            81954C  jmp_0x471FAB.below
+          81955A            81955A  jmp_0x471FAB.pan
+          819580            819580  jmp_0x471FC9
+          8195C0            8195C0  jmp_0x471FC9.above
+          8195CC            8195CC  jmp_0x471FC9.frequency
+          8195F0            8195F0  text_end
+
+---- Section .data ------------------------------------------------------------
+
+Real              Virtual           Name
+          8195F0            8195F0  interface_direct_sound_buffer8
+          8195F0            8195F0  ..@45.strucstart
+          819600            819600  effect_direct_sound_reverb
+          819600            819600  ..@52.strucstart
+          819610            819610  interface_direct_sound_reverb
+          819610            819610  ..@59.strucstart
+          819620            819620  dsound
+          81962B            81962B  direct_sound_create
+          81963E            81963E  ole32
+          819648            819648  co_initialize_ex
+          819657            819657  co_uninitialize
+          819670            819670  data_end
+          819670            819670  pointer
+          81A270            81A270  pointer_end
+          81A270            81A270  count
+          81AE70            81AE70  channel
+          81AEF0            81AEF0  channel_end
+          81AEF0            81AEF0  current
+          81AF10            81AF10  sample
+          832F10            832F10  sample_end
+          832F10            832F10  object
+          84AF10            84AF10  object_end
+          84AF10            84AF10  referrer
+          84AF14            84AF14  custom
+          84B214            84B214  type
+          84B243            84B243  initialisation
+          84B244            84B244  active
+          84B245            84B245  status
+

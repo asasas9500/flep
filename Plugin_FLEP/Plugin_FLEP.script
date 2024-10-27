@@ -1,0 +1,80 @@
+<START_CONSTANTS>
+OBJ_FLEP_BRIDGE_FLAT:1
+OBJ_FLEP_BRIDGE_TILT1:2
+OBJ_FLEP_BRIDGE_TILT2:3
+OBJ_FLEP_LIFT_DOORS1:4
+OBJ_FLEP_LIFT_DOORS2:5
+OBJ_FLEP_SPRITE1:6
+OBJ_FLEP_SPRITE2:7
+OBJ_FLEP_SPRITE3:8
+OBJ_FLEP_SPRITE4:9
+OBJ_FLEP_SPRITE5:10
+OBJ_FLEP_SPRITE6:11
+OBJ_FLEP_SPRITE7:12
+OBJ_FLEP_SPRITE8:13
+OBJ_FLEP_SPRITE9:14
+OBJ_FLEP_SPRITE10:15
+OBJ_FLEP_SPRITE11:16
+OBJ_FLEP_SPRITE12:17
+OBJ_FLEP_SPRITE13:18
+OBJ_FLEP_SPRITE14:19
+OBJ_FLEP_SPRITE15:20
+OBJ_FLEP_SPRITE16:21
+OBJ_FLEP_ROLLINGBALL1:22
+OBJ_FLEP_ROLLINGBALL2:23
+OBJ_FLEP_ROLLINGBALL3:24
+OBJ_FLEP_ROLLINGBALL4:25
+OBJ_FLEP_ROLLINGBALL5:26
+OBJ_FLEP_ROLLINGBALL6:27
+OBJ_FLEP_ROLLINGBALL7:28
+OBJ_FLEP_ROLLINGBALL8:29
+OBJ_FLEP_ROLLINGBALL9:30
+OBJ_FLEP_ROLLINGBALL10:31
+OBJ_FLEP_ROLLINGBALL11:32
+OBJ_FLEP_ROLLINGBALL12:33
+OBJ_FLEP_ROLLINGBALL13:34
+OBJ_FLEP_ROLLINGBALL14:35
+OBJ_FLEP_ROLLINGBALL15:36
+OBJ_FLEP_ROLLINGBALL16:37
+OBJ_FLEP_TRAPDOOR1:38
+OBJ_FLEP_TRAPDOOR2:39
+OBJ_FLEP_TRAPDOOR3:40
+OBJ_FLEP_TRAPDOOR4:41
+OBJ_FLEP_TRAPDOOR5:42
+OBJ_FLEP_TRAPDOOR6:43
+OBJ_FLEP_TRAPDOOR7:44
+OBJ_FLEP_TRAPDOOR8:45
+OBJ_FLEP_TRAPDOOR9:46
+OBJ_FLEP_TRAPDOOR10:47
+OBJ_FLEP_TRAPDOOR11:48
+OBJ_FLEP_TRAPDOOR12:49
+OBJ_FLEP_TRAPDOOR13:50
+OBJ_FLEP_TRAPDOOR14:51
+OBJ_FLEP_TRAPDOOR15:52
+OBJ_FLEP_TRAPDOOR16:53
+
+CUST_FLEP_HK:1 ;Used with Customize command.>Syntax: Customize=CUST_FLEP_HK, GunFlashSlot, FireSound, StopSound, SniperOrder, BurstOrder, RapidOrder, FirstModeSlot, SecondModeSlot, ThirdModeSlot, StillHipsFire>>GunFlashSlot>------------>The slot of the gunflash.>>Type IGNORE to use the default value (GUN_FLASH).>>FireSound, StopSound>-------------------->The sounds that play when HK is firing and when it stops firing, respectively.>>Type IGNORE to not play any sound.>>Note: the FireSound must have L flag set.>>SniperOrder, BurstOrder, RapidOrder>----------------------------------->The sequence in which the modes should be selected in the Choose Weapon Mode menu.>>Type IGNORE to use the default values (1 for SniperOrder, 2 for BurstOrder and 3 for RapidOrder).>>FirstModeSlot, SecondModeSlot, ThirdModeSlot>-------------------------------------------->The slots that should be used for the modes in the Choose Weapon Mode menu.>>Type IGNORE to use the default values (CROSSBOW_AMMO1_ITEM for FirstModeSlot, CROSSBOW_AMMO2_ITEM for SecondModeSlot and CROSSBOW_AMMO3_ITEM for ThirdModeSlot).>>StillHipsFire>------------->ENABLED : if Lara stops moving while shooting from her hips, she does not change the HK to her shoulder.>DISABLED: if Lara stops moving while shooting from her hips, she changes the HK to her shoulder.>>Type IGNORE to use the default value (DISABLED).
+CUST_FLEP_LIFT_DOORS:2 ;Used with Customize command.>Syntax: Customize=CUST_FLEP_LIFT_DOORS, LiftDoorsSound>>LiftDoorsSound>-------------->The sound that plays when the lift doors open or close.>>Type IGNORE to not play any sound.
+CUST_FLEP_GRENADEGUN:3 ;Used with Customize command.>Syntax: Customize=CUST_FLEP_GRENADEGUN, GrenadegunAnimations, FirstAmmoWeapon, SecondAmmoWeapon, ThirdAmmoWeapon, FirstAmmoType, SecondAmmoType, ThirdAmmoType, FirstAmmoSlot, SecondAmmoSlot, ThirdAmmoSlot, FirstAmmoSound, SecondAmmoSound, ThirdAmmoSound, FirstAmmoSmoke, SecondAmmoSmoke, ThirdAmmoSmoke>>GrenadegunAnimations>-------------------->ENABLED : allows the usage of Grenadegun animations.>DISABLED: allows the usage of Crossbow, Shotgun or HK animations.>>Type IGNORE to use the default value (ENABLED).>>FirstAmmoWeapon, SecondAmmoWeapon, ThirdAmmoWeapon>-------------------------------------------------->HOLD_CROSSBOW  : the ammo is a bolt.>HOLD_GRENADEGUN: the ammo is a grenade.>>Type IGNORE to use the default value (HOLD_GRENADEGUN).>>FirstAmmoType, SecondAmmoType, ThirdAmmoType>-------------------------------------------->1: Normal ammo.>2: Poison/Super ammo.>3: Explosive/Flash ammo.>>Type IGNORE to use the default values (1 for FirstAmmoType, 2 for SecondAmmoType and 3 for ThirdAmmoType).>>FirstAmmoSlot, SecondAmmoSlot, ThirdAmmoSlot>-------------------------------------------->The slots containing the meshes of the ammos.>>Type IGNORE to use the default value (CROSSBOW_BOLT if the ammo is a bolt/GRENADE if the ammo is a grenade).>>Note: CROSSBOW_BOLT is forbidden if the ammo is a grenade and GRENADE is forbidden if the ammo is a bolt.>>FirstAmmoSound, SecondAmmoSound, ThirdAmmoSound>----------------------------------------------->The sounds that play when shooting the ammos.>>Type IGNORE to not play any sound.>>FirstAmmoSmoke, SecondAmmoSmoke, ThirdAmmoSmoke>----------------------------------------------->ENABLED : Grenadegun smoke is produced when shooting.>DISABLED: no smoke is produced.>>Type IGNORE to use the default value (ENABLED).
+CUST_FLEP_MINE_CART:4 ;Used with Customize command.>Syntax: Customize=CUST_FLEP_MINE_CART, CartSlot, LaraSlot, ControllerSlot, SwitchSlot, ClunkStartSound, FrontImpactSound, SreechBrakeSound, TrackLoopSound, PullyLoopSound, Alignment>>Read the Manual that is included in the plugin package.
+CUST_FLEP_MINE_CART_TRAPS:5 ;Used with Customize command.>Syntax: Customize=CUST_FLEP_MINE_CART_TRAPS, TrapSlot, HealthLoss, {TrapSlot, HealthLoss array}>>Read the Manual that is included in the plugin package.
+CUST_FLEP_HORIZON_ROTATE:6 ;Used with Customize command.>Syntax: Customize=CUST_FLEP_HORIZON_ROTATE, Speed>>Speed>----->The speed (in rotation units) at which the Horizon rotates. Positive values are clockwise.>>Type DISABLED to not rotate the Horizon.>>Note: 182 rotation units are equivalent to one degree.
+
+LARA_MESH_HIPS:0
+LARA_MESH_LEFT_THIGH:1
+LARA_MESH_LEFT_SHIN:2
+LARA_MESH_LEFT_FOOT:3
+LARA_MESH_RIGHT_THIGH:4
+LARA_MESH_RIGHT_SHIN:5
+LARA_MESH_RIGHT_FOOT:6
+LARA_MESH_TORSO:7
+LARA_MESH_RIGHT_INNER_ARM:8
+LARA_MESH_RIGHT_OUTER_ARM:9
+LARA_MESH_RIGHT_HAND:10
+LARA_MESH_LEFT_INNER_ARM:11
+LARA_MESH_LEFT_OUTER_ARM:12
+LARA_MESH_LEFT_HAND:13
+LARA_MESH_HEAD:14
+
+PARAM_FLEP_LARA_MESHSWAP:1 ;Used with Parameters command.>Syntax: Parameters=PARAM_FLEP_LARA_MESHSWAP, IdParamList, LaraMesh, SourceSlot, SourceMesh>>IdParamList>----------->The Id to be used in the trigger.>>Note: the minimum Id is 1 and the maximum is 256.>>LaraMesh>-------->The mesh to be swapped.>>See the LARA_MESH_ constants.>>SourceSlot>---------->The slot that supplies the new mesh.>>SourceMesh>---------->The number of the new mesh.
+<END>

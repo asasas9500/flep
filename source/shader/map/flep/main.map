@@ -1,0 +1,164 @@
+
+- NASM Map file ---------------------------------------------------------------
+
+Source file:  main.asm
+Output file:  main.bin
+
+-- Program origin -------------------------------------------------------------
+
+008161A0
+
+-- Sections (summary) ---------------------------------------------------------
+
+Vstart            Start             Stop              Length    Class     Name
+          8161A0            8161A0            816F60  00000DC0  progbits  .text
+
+-- Sections (detailed) --------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+class:     progbits
+length:                 DC0
+start:               8161A0
+align:                   10
+follows:   not defined
+vstart:              8161A0
+valign:    not defined
+vfollows:  not defined
+
+-- Symbols --------------------------------------------------------------------
+
+---- No Section ---------------------------------------------------------------
+
+Value     Name
+00000000  rule
+00000000  rule.condition
+00000002  rule.level
+00000003  rule.result
+00000004  rule.subject
+00000008  rule.subject_type
+00000009  rule.blend_mode
+0000000B  rule.operation
+0000000C  rule.colour
+00000014  rule_size
+
+
+---- Section .text ------------------------------------------------------------
+
+Real              Virtual           Name
+          8161A0            8161A0  blend_table
+          8161C0            8161C0  void
+          8161D0            8161D0  multiply
+          8161E0            8161E0  screen
+          816200            816200  darken
+          816210            816210  lighten
+          816220            816220  difference
+          816230            816230  operation_table
+          816240            816240  cast
+          816250            816250  addition
+          816260            816260  subtraction
+          816270            816270  jmp_0x448B5C
+          816275            816275  jmp_0x448B5C.loop
+          816292            816292  jmp_0x448B5C.condition
+          8162A0            8162A0  jmp_0x448B5C.check
+          8162B1            8162B1  jmp_0x448B5C.continue
+          8162D0            8162D0  jmp_0x451C92
+          8162D5            8162D5  jmp_0x451C92.loop
+          8162F2            8162F2  jmp_0x451C92.condition
+          8162FC            8162FC  jmp_0x451C92.continue
+          816320            816320  jmp_0x45202C
+          816325            816325  jmp_0x45202C.loop
+          816342            816342  jmp_0x45202C.condition
+          81634C            81634C  jmp_0x45202C.continue
+          816370            816370  jmp_0x409110
+          816390            816390  jmp_0x40A79B
+          8163B0            8163B0  jmp_0x40A82C
+          8163D0            8163D0  jmp_0x40FCEF
+          8163F0            8163F0  jmp_0x4158BA
+          816410            816410  jmp_0x41D222
+          816430            816430  jmp_0x41D2AA
+          816450            816450  jmp_0x41D2B8
+          816470            816470  jmp_0x41D57A
+          8164A0            8164A0  jmp_0x41D6DA
+          8164C0            8164C0  jmp_0x41D805
+          8164E0            8164E0  jmp_0x42077A
+          816500            816500  jmp_0x420788
+          816520            816520  jmp_0x420818
+          816540            816540  jmp_0x420831
+          816560            816560  jmp_0x432C10
+          816580            816580  jmp_0x432F59
+          8165A0            8165A0  jmp_0x438FBE
+          8165C0            8165C0  jmp_0x439691
+          8165F0            8165F0  jmp_0x43A051
+          816610            816610  jmp_0x43A152
+          816630            816630  jmp_0x43A389
+          816650            816650  jmp_0x44D0E4
+          816680            816680  jmp_0x44D535
+          8166B0            8166B0  jmp_0x44E980
+          8166C0            8166C0  jmp_0x44E997
+          8166E0            8166E0  jmp_0x44EAF8
+          816700            816700  jmp_0x44F1C0
+          816720            816720  jmp_0x44F27B
+          816750            816750  jmp_0x44F775
+          816780            816780  jmp_0x44F7BE
+          8167B0            8167B0  jmp_0x44F8E0
+          8167D0            8167D0  jmp_0x44F993
+          816800            816800  jmp_0x44F9DA
+          816830            816830  jmp_0x44FB33
+          816850            816850  jmp_0x463C4B
+          816870            816870  jmp_0x463CCE
+          816890            816890  jmp_0x470542
+          8168C0            8168C0  jmp_0x470542.resume
+          816940            816940  jmp_0x4707BD
+          816953            816953  jmp_0x4707BD.proceed
+          81696A            81696A  jmp_0x4707BD.resume
+          8169E0            8169E0  jmp_0x47086E
+          8169E5            8169E5  jmp_0x47086E.loop
+          816A04            816A04  jmp_0x47086E.flags
+          816A17            816A17  jmp_0x47086E.found
+          816A29            816A29  jmp_0x47086E.continue
+          816A40            816A40  jmp_0x4708A3
+          816A87            816A87  jmp_0x4708A3.change
+          816AE2            816AE2  jmp_0x4708A3.pack
+          816AF0            816AF0  jmp_0x470B13
+          816AF5            816AF5  jmp_0x470B13.loop
+          816B14            816B14  jmp_0x470B13.flags
+          816B27            816B27  jmp_0x470B13.found
+          816B3F            816B3F  jmp_0x470B13.continue
+          816B60            816B60  jmp_0x47B90F
+          816B72            816B72  jmp_0x47B90F.loop
+          816B91            816B91  jmp_0x47B90F.slot
+          816BA4            816BA4  jmp_0x47B90F.found
+          816BAF            816BAF  jmp_0x47B90F.continue
+          816BC0            816BC0  jmp_0x47B93C
+          816C10            816C10  jmp_0x47BA35
+          816C21            816C21  jmp_0x47BA35.start
+          816C26            816C26  jmp_0x47BA35.loop
+          816C45            816C45  jmp_0x47BA35.found
+          816C53            816C53  jmp_0x47BA35.continue
+          816C70            816C70  jmp_0x47BAAB
+          816CD0            816CD0  jmp_0x47BB2A
+          816CE0            816CE0  jmp_0x47BB30
+          816D00            816D00  jmp_0x47C950
+          816D20            816D20  jmp_0x4827C5
+          816D67            816D67  jmp_0x4827C5.change
+          816DC5            816DC5  jmp_0x4827C5.pack
+          816DD0            816DD0  jmp_0x487964
+          816DE9            816DE9  jmp_0x487964.loop
+          816DFB            816DFB  jmp_0x487964.continue
+          816E17            816E17  jmp_0x487964.else
+          816E1D            816E1D  jmp_0x487964.mesh
+          816E2C            816E2C  jmp_0x487964.slot
+          816E3B            816E3B  jmp_0x487964.found
+          816E60            816E60  jmp_0x487C52
+          816EB0            816EB0  jmp_0x487CF2
+          816F00            816F00  jmp_0x487D92
+          816F50            816F50  jmp_0x487DB2
+          816F60            816F60  text_end
+          816F60            816F60  target
+          816F64            816F64  temporary
+          816F66            816F66  process
+          816F68            816F68  node
+          816F6C            816F6C  list
+          81746C            81746C  list_end
+
