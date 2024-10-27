@@ -16246,7 +16246,7 @@ patchsetversion=1.1
   header=314
       enabled=1
       name=Mine Cart
-      description=Read the User Manual: https://raw.githubusercontent.com/asasas9500/flep/master/downloads/Manual_FLEP.pdf
+      description=Read the Manual that is included in the plugin package.
       category=
       dependencies=
       filename=patches.bin
@@ -16400,4 +16400,153 @@ patchsetversion=1.1
       datadefault=1,
       datamodified=1,E845280C000FBF0DE2295300E90E0DC0FF
       datacondbehave=1,1
-  footer=318  header=319      enabled=1      name=Fix unresponsive flare throw      description=Fixes the bug where Lara sometimes does not throw the flare she is holding.      category=      dependencies=      filename=patches.bin      dataoffset=0,2D88D      datadefault=0,8C      datamodified=0,34      datacondbehave=0,0  footer=319  header=320      enabled=1      name=Loose flare hold while running      description=Allows Lara's left arm to move if she is holding a flare while running, as in TR2 and TR3.      category=      dependencies=      filename=patches.bin      dataoffset=0,AB98A      datadefault=0,01      datamodified=0,02      datacondbehave=0,0  footer=320  header=321      enabled=1      name=Enable duckcrawl anim states      description=Enables "duckcrawl" animation states which replace the classic "on-all-fours" crawling. These animation states behave like a mix between the duck/crouch state (71) and the crawl states (80, 81, 84-86), effectively eliminating the distinction between ducking and crawling.////This allows for more fluid transitions between running, ducking and crawling, additionally permitting Lara to draw and shoot weapons or carry torches while in the duckcrawl anim states.////This patch also enables some extra state changes://- Enables CRAWL_IDLE (80) from LADDER_IDLE (56)//- Enables JUMP_FORWARD (3) from CRAWL_IDLE (80)//- Enables ROLL_FORWARD (45) from CRAWL_IDLE (80)//- Enables SPRINT (73) from CRAWL_IDLE (80)//- Enables RUN_FORWARD (1) from CRAWL_FORWARD (81)////In order to cooperate with the duckcrawl patch, the animations in the LARA object need to be set up in a specific way. Please read the User Manual for more info: https://raw.githubusercontent.com/asasas9500/flep/master/downloads/Manual_FLEP.pdf      category=      dependencies=Fix unresponsive flare throw      filename=patches.bin      dataoffset=0,21090      datadefault=0,66817E1402017509      datamodified=0,E81AF04E0090EB09      datacondbehave=0,0      dataoffset=1,21197      datadefault=1,5756E862550200      datamodified=1,E818EF4E00EB46      datacondbehave=1,0      dataoffset=2,2151C      datadefault=2,A1D8555300A801      datamodified=2,E898EB4E00EB6D      datacondbehave=2,0      dataoffset=3,21689      datadefault=3,5756E870500200      datamodified=3,E830EA4E00EB18      datacondbehave=3,0      dataoffset=4,2C3CA      datadefault=4,BD1300000066396E100F84B601000066C7461038008B4748      datamodified=4,E8F43C4E0085C00F85B8010000A0D8555300E9D900000090      datacondbehave=4,0      dataoffset=5,2D0F2      datadefault=5,8B7E448D9300FFFFFF03FA      datamodified=5,53E8D02F4E00E9CB000000      datacondbehave=5,0      dataoffset=6,570C8      datadefault=6,663D4700752D57566820DB4A00E80607FFFF      datamodified=6,56E8FF8F4B005E3C0174703C027467EB3090      datacondbehave=6,0      dataoffset=7,571CC      datadefault=7,0FBF91902D00008D5A163BC3744F83C2143BC27448      datamodified=7,E8018F4B0085C075540FBF47168B0D383953009090      datacondbehave=7,0      dataoffset=8,572F2      datadefault=8,66837F0E43756E66817F143801      datamodified=8,E8E08D4B0085C0752FEB6A9090      datacondbehave=8,0      dataoffset=9,259B0      datadefault=9,66833DC2DE8000007424668B0DC4DE80006685C9      datamodified=9,50E826A74E0085C05875238B15D8555300EB2290      datacondbehave=9,0      dataoffset=10,248ED      datadefault=10,66833DC2DE800000742266A1C4DE80006685C07417      datamodified=10,E8EFB74E0085C07523A1D8555300BB02000000EB23      datacondbehave=10,0      dataoffset=11,3E1D0      datadefault=11,668B410E      datamodified=11,EB4C9090      datacondbehave=11,0      dataoffset=12,75C1B      datadefault=12,668B470E      datamodified=12,EB3E9090      datacondbehave=12,0      dataoffset=13,2D683      datadefault=13,6683FA01      datamodified=13,EB289090      datacondbehave=13,0      parenabled=0,1      parname=0,Crawlspace jump pit depth      paroffset=0,FD7F0      parvalue=0,640      partype=0,6      parcondbehave=0,1      parenabled=1,1      parname=1,Crawlspace roll lookahead distance      paroffset=1,FD7F2      parvalue=1,1024      partype=1,6      parcondbehave=1,1      parenabled=2,1      parname=2,Crawlspace roll max step up      paroffset=2,FD7F4      parvalue=2,255      partype=2,3      parcondbehave=2,1      parenabled=3,1      parname=3,Crawlspace roll max step down      paroffset=3,FD7F5      parvalue=3,255      partype=3,3      parcondbehave=3,1      parenabled=4,1      parname=4,Crawlspace pickup anim      paroffset=4,FD7F6      parvalue=4,292      partype=4,6      parcondbehave=4,1      parenabled=5,1      parname=5,Crawlspace pickup frame      paroffset=5,FD7F8      parvalue=5,12      partype=5,3      parcondbehave=5,1      parenabled=6,1      parname=6,Crawlspace flare pickup anim      paroffset=6,FD7F9      parvalue=6,312      partype=6,6      parcondbehave=6,1      parenabled=7,1      parname=7,Crawlspace flare pickup frame      paroffset=7,FD7FB      parvalue=7,12      partype=7,3      parcondbehave=7,1      parenabled=8,1      parname=8,Crawlspace torch pickup anim      paroffset=8,FD7FC      parvalue=8,312      partype=8,6      parcondbehave=8,1      parenabled=9,1      parname=9,Crawlspace torch pickup frame      paroffset=9,FD7FE      parvalue=9,12      partype=9,3      parcondbehave=9,1  footer=321
+  footer=318
+  header=319
+      enabled=1
+      name=Fix unresponsive flare throw
+      description=Fixes the bug where Lara sometimes does not throw the flare she is holding.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,2D88D
+      datadefault=0,8C
+      datamodified=0,34
+      datacondbehave=0,0
+  footer=319
+  header=320
+      enabled=1
+      name=Loose flare hold while running
+      description=Allows Lara's left arm to move if she is holding a flare while running, as in TR2 and TR3.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,AB98A
+      datadefault=0,01
+      datamodified=0,02
+      datacondbehave=0,0
+  footer=320
+  header=321
+      enabled=1
+      name=Enable duckcrawl anim states
+      description=Enables "duckcrawl" animation states which replace the classic "on-all-fours" crawling. These animation states behave like a mix between the duck/crouch state (71) and the crawl states (80, 81, 84-86), effectively eliminating the distinction between ducking and crawling.////This allows for more fluid transitions between running, ducking and crawling, additionally permitting Lara to draw and shoot weapons or carry torches while in the duckcrawl anim states.////This patch also enables some extra state changes://- Enables CRAWL_IDLE (80) from LADDER_IDLE (56)//- Enables JUMP_FORWARD (3) from CRAWL_IDLE (80)//- Enables ROLL_FORWARD (45) from CRAWL_IDLE (80)//- Enables SPRINT (73) from CRAWL_IDLE (80)//- Enables RUN_FORWARD (1) from CRAWL_FORWARD (81)////In order to cooperate with the duckcrawl patch, the animations in the LARA object need to be set up in a specific way. Read the Manual that is included in the plugin package for more info.
+      category=
+      dependencies=Fix unresponsive flare throw
+      filename=patches.bin
+      dataoffset=0,21090
+      datadefault=0,66817E1402017509
+      datamodified=0,E81AF04E0090EB09
+      datacondbehave=0,0
+      dataoffset=1,21197
+      datadefault=1,5756E862550200
+      datamodified=1,E818EF4E00EB46
+      datacondbehave=1,0
+      dataoffset=2,2151C
+      datadefault=2,A1D8555300A801
+      datamodified=2,E898EB4E00EB6D
+      datacondbehave=2,0
+      dataoffset=3,21689
+      datadefault=3,5756E870500200
+      datamodified=3,E830EA4E00EB18
+      datacondbehave=3,0
+      dataoffset=4,2C3CA
+      datadefault=4,BD1300000066396E100F84B601000066C7461038008B4748
+      datamodified=4,E8F43C4E0085C00F85B8010000A0D8555300E9D900000090
+      datacondbehave=4,0
+      dataoffset=5,2D0F2
+      datadefault=5,8B7E448D9300FFFFFF03FA
+      datamodified=5,53E8D02F4E00E9CB000000
+      datacondbehave=5,0
+      dataoffset=6,570C8
+      datadefault=6,663D4700752D57566820DB4A00E80607FFFF
+      datamodified=6,56E8FF8F4B005E3C0174703C027467EB3090
+      datacondbehave=6,0
+      dataoffset=7,571CC
+      datadefault=7,0FBF91902D00008D5A163BC3744F83C2143BC27448
+      datamodified=7,E8018F4B0085C075540FBF47168B0D383953009090
+      datacondbehave=7,0
+      dataoffset=8,572F2
+      datadefault=8,66837F0E43756E66817F143801
+      datamodified=8,E8E08D4B0085C0752FEB6A9090
+      datacondbehave=8,0
+      dataoffset=9,259B0
+      datadefault=9,66833DC2DE8000007424668B0DC4DE80006685C9
+      datamodified=9,50E826A74E0085C05875238B15D8555300EB2290
+      datacondbehave=9,0
+      dataoffset=10,248ED
+      datadefault=10,66833DC2DE800000742266A1C4DE80006685C07417
+      datamodified=10,E8EFB74E0085C07523A1D8555300BB02000000EB23
+      datacondbehave=10,0
+      dataoffset=11,3E1D0
+      datadefault=11,668B410E
+      datamodified=11,EB4C9090
+      datacondbehave=11,0
+      dataoffset=12,75C1B
+      datadefault=12,668B470E
+      datamodified=12,EB3E9090
+      datacondbehave=12,0
+      dataoffset=13,2D683
+      datadefault=13,6683FA01
+      datamodified=13,EB289090
+      datacondbehave=13,0
+      parenabled=0,1
+      parname=0,Crawlspace jump pit depth
+      paroffset=0,FD7F0
+      parvalue=0,640
+      partype=0,6
+      parcondbehave=0,1
+      parenabled=1,1
+      parname=1,Crawlspace roll lookahead distance
+      paroffset=1,FD7F2
+      parvalue=1,1024
+      partype=1,6
+      parcondbehave=1,1
+
+      parenabled=2,1
+      parname=2,Crawlspace roll max step up
+      paroffset=2,FD7F4
+      parvalue=2,255
+      partype=2,3
+      parcondbehave=2,1
+      parenabled=3,1
+      parname=3,Crawlspace roll max step down
+      paroffset=3,FD7F5
+      parvalue=3,255
+      partype=3,3
+      parcondbehave=3,1
+      parenabled=4,1
+      parname=4,Crawlspace pickup anim
+      paroffset=4,FD7F6
+      parvalue=4,292
+      partype=4,6
+      parcondbehave=4,1
+      parenabled=5,1
+      parname=5,Crawlspace pickup frame
+      paroffset=5,FD7F8
+      parvalue=5,12
+      partype=5,3
+      parcondbehave=5,1
+      parenabled=6,1
+      parname=6,Crawlspace flare pickup anim
+      paroffset=6,FD7F9
+      parvalue=6,312
+      partype=6,6
+      parcondbehave=6,1
+      parenabled=7,1
+      parname=7,Crawlspace flare pickup frame
+      paroffset=7,FD7FB
+      parvalue=7,12
+      partype=7,3
+      parcondbehave=7,1
+      parenabled=8,1
+      parname=8,Crawlspace torch pickup anim
+      paroffset=8,FD7FC
+      parvalue=8,312
+      partype=8,6
+      parcondbehave=8,1
+      parenabled=9,1
+      parname=9,Crawlspace torch pickup frame
+      paroffset=9,FD7FE
+      parvalue=9,12
+      partype=9,3
+      parcondbehave=9,1
+  footer=321
