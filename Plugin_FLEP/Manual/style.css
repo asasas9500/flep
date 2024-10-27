@@ -50,3 +50,28 @@ img {
 	text-align: left;
 	font-weight: bold;
 }
+
+ul.disc {
+	list-style-type: disc;
+}
+
+ul.circle {
+	list-style-type: circle;
+	margin-left: 2.5em;
+	margin-bottom: 1.5em;
+}
+
+span.blue {
+	color: blue;
+	font-weight: bold;
+}
+
+span.green {
+	color: green;
+	font-weight: bold;
+}
+
+span.red {
+	color: red;
+	font-weight: bold;
+}

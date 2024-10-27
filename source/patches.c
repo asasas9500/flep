@@ -2257,6 +2257,43 @@ __declspec(naked) float fsqrt(float num)
 #define TRNGCustWeaponBalestraSizeShell	VAR_U_(0x104C570A, uchar)
 #define TRNGCustWeaponBalestraFrameToTakeWeapon	VAR_U_(0x104C570D, uchar)
 
+#define crawljump_pitdepth VAR_U_(0x0084D7F0, short)
+#define crawldash_lookahead VAR_U_(0x0084D7F2, short)
+#define crawldash_step_up VAR_U_(0x0084D7F4, uchar)
+#define crawldash_step_down VAR_U_(0x0084D7F5, uchar)
+#define crawlpickup_anim VAR_U_(0x0084D7F6, short)
+#define crawlpickup_frame VAR_U_(0x0084D7F8, uchar)
+#define crawlpickup_flare_anim VAR_U_(0x0084D7F9, short)
+#define crawlpickup_flare_frame VAR_U_(0x0084D7FB, uchar)
+#define crawlpickup_torch_anim VAR_U_(0x0084D7FC, short)
+#define crawlpickup_torch_frame VAR_U_(0x0084D7FE, uchar)
+#define PickUpPosition VAR_U_(0x004ADB20, PHD_VECTOR)
+#define lara_coll VAR_U_(0x004AB9B0, COLL_INFO*)
+#define lara_as_all4s ( (void(*)(ITEM_INFO*, COLL_INFO*)) 0x00421040 )
+#define lara_col_all4s ( (void(*)(ITEM_INFO*, COLL_INFO*)) 0x004210B0 )
+#define lara_as_crawl ( (void(*)(ITEM_INFO*, COLL_INFO*)) 0x004214D0 )
+#define lara_col_crawl ( (void(*)(ITEM_INFO*, COLL_INFO*)) 0x004215A0 )
+#define lara_as_climbstnc ( (void(*)(ITEM_INFO*, COLL_INFO*)) 0x0042C2E0 )
+#define lara_col_climbstnc ( (void(*)(ITEM_INFO*, COLL_INFO*)) 0x0042C390 )
+#define lara_as_climbing ( (void(*)(ITEM_INFO*, COLL_INFO*)) 0x0042D070 )
+#define lara_col_climbing ( (void(*)(ITEM_INFO*, COLL_INFO*)) 0x0042D090 )
+#define TestLaraSlide ( (long(*)(ITEM_INFO*, COLL_INFO*)) 0x00420CD0 )
+#define LaraFallen ( (long(*)(ITEM_INFO*, COLL_INFO*)) 0x00420E10 )
+#define LaraDeflectEdgeDuck ( (long(*)(ITEM_INFO*, COLL_INFO*)) 0x004216B0 )
+#define LaraTestClimbPos ( (long(*)(ITEM_INFO*, long, long, long, long, long*)) 0x0042BFF0 )
+#define LaraCheckForLetGo ( (long(*)(ITEM_INFO*, COLL_INFO*)) 0x0042C5A0 )
+#define LaraFloorFront ( (short(*)(ITEM_INFO*, short, long)) 0x00421450 )
+#define LaraCeilingFront ( (short(*)(ITEM_INFO*, short, long, long)) 0x004208B0 )
+#define LookUpDown ( (void(*)(void)) 0x004288F0 )
+#define AnimateLara ( (void(*)(ITEM_INFO*)) 0x004306D0 )
+#define LOS ( (long(*)(GAME_VECTOR*, GAME_VECTOR*)) 0x0044B260 )
+#define ObjectOnLOS2 ( (long(*)(GAME_VECTOR*, GAME_VECTOR*, PHD_VECTOR*, MESH_INFO**)) 0x0044C270 )
+#define TestLaraPosition ( (long(*)(short*, ITEM_INFO*, ITEM_INFO*)) 0x004476A0 )
+#define MoveLaraPosition ( (long(*)(PHD_VECTOR*, ITEM_INFO*, ITEM_INFO*)) 0x00447B50 )
+#define GetCollisionInfo ( (void(*)(COLL_INFO*, long, long, long, short, long)) 0x00445920)
+#define ShiftItem ( (void(*)(ITEM_INFO*, COLL_INFO*)) 0x00446700)
+#define PickupCollision ( (void(*)(short, ITEM_INFO*, COLL_INFO*)) 0x00456B90)
+
 short phd_sin(long angle)
 {
 	angle >>= 3;
@@ -4858,6 +4895,546 @@ void rotate_horizon(void)
 	horizon_rotation += horizon_rotation_speed;
 }
 
+void lara_as_duckcrouch(void)
+{
+	ITEM_INFO* item = lara_item;
+	
+	lara.IsDucked = 1;
+
+	if (item->anim_number == 217 || item->anim_number == 310 || item->anim_number == 311)
+		item->goal_anim_state = item->current_anim_state = 80;
+
+	if (input & IN_ROLL)
+		item->goal_anim_state = AS_ROLL;
+
+	if (item->goal_anim_state == AS_DASH && !(input & IN_SPRINT) || item->goal_anim_state == AS_ROLL && !(input & IN_ROLL))
+		item->goal_anim_state = AS_ALL4S;
+}
+
+void lara_col_duckcrouch(void)
+{
+	ITEM_INFO** itemlist;
+	MESH_INFO** meshlist;
+	MESH_INFO* StaticMesh;
+	GAME_VECTOR s, d;
+	PHD_VECTOR v;
+	long slope, x, z, collided, target;
+	short height, ceiling;
+	ITEM_INFO* item = lara_item;
+	COLL_INFO* coll = lara_coll;
+
+	slope = ABS(coll->left_floor2 - coll->right_floor2) >= 120;
+	lara.keep_ducked = coll->mid_ceiling >= -362;
+	ShiftItem(item, coll);
+
+	if (coll->mid_floor != NO_HEIGHT && coll->mid_floor > -256)
+		item->pos.y_pos += coll->mid_floor;
+
+	if ((input & IN_DUCK || lara.keep_ducked) && lara.water_status != LW_WADE)
+	{
+		if (item->anim_number == 263 || item->anim_number == 264)
+		{
+
+			if (input & IN_FORWARD)
+			{
+				height = LaraFloorFront(item, item->pos.y_rot, 256);
+
+				if (height < 255 && height > -255 && height_type != BIG_SLOPE)
+					item->goal_anim_state = AS_CRAWL;
+			}
+			else if (input & IN_BACK)
+			{
+				height = LaraCeilingFront(item, item->pos.y_rot, -300, 128);
+
+				if (height == NO_HEIGHT || height > 256)
+					return;
+
+				height = LaraFloorFront(item, item->pos.y_rot, -300);
+
+				if (height < 255 && height > -255 && height_type != BIG_SLOPE)
+					item->goal_anim_state = AS_CRAWLBACK;
+				else
+				{
+					if (input & IN_ACTION && lara.gun_status == LG_NO_ARMS && height > 768 && !slope)
+					{
+						x = item->pos.x_pos;
+						z = item->pos.z_pos;
+						item->pos.x_pos -= 100 * phd_sin(coll->facing) >> W2V_SHIFT;
+						item->pos.z_pos -= 100 * phd_cos(coll->facing) >> W2V_SHIFT;
+						itemlist = (ITEM_INFO**)&tsv_buffer[0];
+						meshlist = (MESH_INFO**)&tsv_buffer[1024];
+						collided = GetCollidedObjects(item, 100, 1, itemlist, meshlist, 0);
+						item->pos.x_pos = x;
+						item->pos.z_pos = z;
+
+						if (!collided)
+						{
+							switch ((ushort)(item->pos.y_rot + 0x2000) / 0x4000)
+							{
+							case 0:
+								item->pos.y_rot = 0;
+								item->pos.z_pos = (item->pos.z_pos & ~0x3FF) + 225;
+								break;
+
+							case 1:
+								item->pos.y_rot = 16384;
+								item->pos.x_pos = (item->pos.x_pos & ~0x3FF) + 225;
+								break;
+
+							case 2:
+								item->pos.y_rot = -32768;
+								item->pos.z_pos = (item->pos.z_pos | 0x3FF) - 225;
+								break;
+
+							case 3:
+								item->pos.y_rot = -16384;
+								item->pos.x_pos = (item->pos.x_pos | 0x3FF) - 225;
+								break;
+							}
+
+							item->goal_anim_state = AS_CRAWL2HANG;
+							lara.gun_status = LG_HANDS_BUSY;
+						}
+					}
+				}
+			}
+			else if (input & IN_LEFT)
+			{
+				item->anim_number = 269;
+				item->frame_number = anims[269].frame_base;
+				item->current_anim_state = AS_ALL4TURNL;
+				item->goal_anim_state = AS_ALL4TURNL;
+			}
+			else if (input & IN_RIGHT)
+			{
+				item->anim_number = 270;
+				item->frame_number = anims[270].frame_base;
+				item->current_anim_state = AS_ALL4TURNR;
+				item->goal_anim_state = AS_ALL4TURNR;
+			}
+
+			if (input & IN_JUMP && lara.gun_status == LG_NO_ARMS)
+			{
+				height = LaraFloorFront(item, item->pos.y_rot, 768);
+				ceiling = LaraCeilingFront(item, item->pos.y_rot, 768, 512);
+
+				if (height >= crawljump_pitdepth && ceiling != NO_HEIGHT && ceiling <= 0)
+				{
+					s.x = item->pos.x_pos;
+					s.y = item->pos.y_pos - 96;
+					s.z = item->pos.z_pos;
+					s.room_number = item->room_number;
+
+					d.x = s.x + ((phd_sin(item->pos.y_rot) * 768) >> W2V_SHIFT);
+					d.z = s.z + ((phd_cos(item->pos.y_rot) * 768) >> W2V_SHIFT);
+					d.y = s.y + 160;
+
+					if (LOS(&s, &d))
+					{
+						target = ObjectOnLOS2(&s, &d, &v, &StaticMesh);
+
+						if (target == 999)
+						{
+							item->goal_anim_state = AS_FORWARDJUMP;
+							lara.gun_status = LG_HANDS_BUSY;
+						}
+					}
+				}
+			}
+
+			if (input & IN_SPRINT)
+			{
+				height = LaraFloorFront(item, item->pos.y_rot, crawldash_lookahead);
+				ceiling = LaraCeilingFront(item, item->pos.y_rot, crawldash_lookahead, 512);
+
+				if (height > -crawldash_step_up && height < crawldash_step_down && ceiling < 112)
+				{
+					s.x = item->pos.x_pos;
+					s.y = item->pos.y_pos - 96;
+					s.z = item->pos.z_pos;
+					s.room_number = item->room_number;
+
+					d.x = s.x + ((phd_sin(item->pos.y_rot) * 1024) >> W2V_SHIFT);
+					d.z = s.z + ((phd_cos(item->pos.y_rot) * 1024) >> W2V_SHIFT);
+					d.y = s.y;
+
+					if (LOS(&s, &d))
+					{
+						target = ObjectOnLOS2(&s, &d, &v, &StaticMesh);
+
+						if (target == 999)
+							item->goal_anim_state = AS_DASH;
+					}
+				}
+			}
+		}
+	}
+	else
+		item->goal_anim_state = AS_DUCK;
+}
+
+void lara_as_duckcrawl()
+{
+	ITEM_INFO* item = lara_item;
+	COLL_INFO* coll = lara_coll;
+
+	camera.target_elevation = -4186;
+
+	if (input & IN_FORWARD && lara.water_status != LW_WADE)
+	{
+		if (input & IN_DUCK || lara.keep_ducked)
+		{
+			if (input & IN_LEFT)
+			{
+				lara.turn_rate -= 409;
+
+				if (lara.turn_rate < -546)
+					lara.turn_rate = -546;
+			}
+			else if (input & IN_RIGHT)
+			{
+				lara.turn_rate += 409;
+
+				if (lara.turn_rate > 546)
+					lara.turn_rate = 546;
+			}
+		}
+	}
+	else
+		item->goal_anim_state = AS_ALL4S;
+}
+
+void lara_col_duckcrawl(void)
+{
+	ITEM_INFO* item = lara_item;
+	COLL_INFO* coll = lara_coll;
+
+	ShiftItem(item, coll);
+
+	if (coll->mid_floor != NO_HEIGHT && coll->mid_floor > -256)
+		item->pos.y_pos += coll->mid_floor;
+
+	coll->radius *= 4;
+	GetCollisionInfo(coll, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, item->room_number, 400);
+
+	lara.keep_ducked = (coll->front_ceiling >= -362 || coll->mid_ceiling >= -362);
+
+	if (!(input & IN_DUCK) && !lara.keep_ducked)
+		item->goal_anim_state = AS_RUN;
+}
+
+long LaraTestClimbUpPosDuck(ITEM_INFO* item, long front, long right, long* shift, long* ledge, long* testDuck)
+{
+	FLOOR_INFO* floor;
+	long angle, x, y, z, xfront, zfront, h, c;
+	short room_number;
+
+	xfront = 0;
+	zfront = 0;
+	y = item->pos.y_pos - 768;
+	angle = (ushort)(item->pos.y_rot + 0x2000) / 0x4000;
+
+	switch (angle)
+	{
+	case 0:
+		x = right + item->pos.x_pos;
+		z = front + item->pos.z_pos;
+		zfront = 4;
+		break;
+
+	case 1:
+		x = front + item->pos.x_pos;
+		z = item->pos.z_pos - right;
+		xfront = 4;
+		break;
+
+	case 2:
+		x = item->pos.x_pos - right;
+		z = item->pos.z_pos - front;
+		zfront = -4;
+		break;
+
+	default:
+		x = item->pos.x_pos - front;
+		z = right + item->pos.z_pos;
+		xfront = -4;
+		break;
+	}
+
+	*shift = 0;
+	room_number = item->room_number;
+	floor = GetFloor(x, y, z, &room_number);
+	c = 256 - y + GetCeiling(floor, x, y, z);
+
+	if (c > 70)
+		return 0;
+
+	if (c > 0)
+		*shift = c;
+
+	floor = GetFloor(x + xfront, y, z + zfront, &room_number);
+	h = GetHeight(floor, x + xfront, y, z + zfront);
+
+	if (h == NO_HEIGHT)
+	{
+		*ledge = NO_HEIGHT;
+		return 1;
+	}
+
+	h -= y;
+	*ledge = h;
+
+	if (h > 128)
+	{
+		c = GetCeiling(floor, x + xfront, y, z + zfront) - y;
+
+		if (c >= 512)
+			return 1;
+
+		if (h - c > 762)
+		{
+			*shift = h;
+			*testDuck = 0;
+			return -1;
+		}
+		else if (h - c > 400)
+		{
+			*shift = h;
+			*testDuck = 1;
+			return -1;
+		}
+	}
+	else
+	{
+		if (h > 0 && h > * shift)
+			*shift = h;
+
+		room_number = item->room_number;
+		GetFloor(x, y + 512, z, &room_number);
+		floor = GetFloor(x + xfront, y + 512, z + zfront, &room_number);
+		c = GetCeiling(floor, x + xfront, y + 512, z + zfront) - y;
+
+		if (c <= h || c >= 512)
+			return 1;
+	}
+
+	return 0;
+}
+
+long lara_col_climbstnc_new(void)
+{
+	long result_r, result_l, shift_r, shift_l, ledge_r, ledge_l;
+	long testDuckR, testDuckL;
+	ITEM_INFO* item = lara_item;
+	COLL_INFO* coll = lara_coll;
+
+	if (item->goal_anim_state == AS_NULL || item->goal_anim_state == AS_ALL4S)
+		return;
+
+	item->goal_anim_state = AS_CLIMBSTNC;
+	result_r = LaraTestClimbUpPosDuck(item, coll->radius, coll->radius + 120, &shift_r, &ledge_r, &testDuckR);
+	result_l = LaraTestClimbUpPosDuck(item, coll->radius, coll->radius - 120, &shift_l, &ledge_l, &testDuckL);
+
+	if (!result_r || !result_l)
+		return;
+
+	if (result_r < 0 || result_l < 0)
+	{
+		if (testDuckR || testDuckL)
+		{
+			if (ABS(ledge_l - ledge_r) <= 120)
+			{
+				item->goal_anim_state = AS_ALL4S;
+				item->pos.y_pos += (ledge_l + ledge_r) / 2 - 256;
+				return 1;
+			}
+		}
+		if (ABS(ledge_l - ledge_r) <= 120)
+		{
+			item->goal_anim_state = AS_NULL;
+			item->pos.y_pos += (ledge_l + ledge_r) / 2 - 256;
+			return 1;
+		}
+	}
+
+	if (shift_r)
+	{
+		if (shift_l)
+		{
+			if (shift_r < 0 != shift_l < 0)
+				return 1;
+
+			if (shift_r < 0 && shift_r < shift_l)
+				shift_l = shift_r;
+			else if (shift_r > 0 && shift_r > shift_l)
+				shift_l = shift_r;
+		}
+		else
+			shift_l = shift_r;
+	}
+
+	item->goal_anim_state = AS_CLIMBING;
+	item->pos.y_pos += shift_l;
+	return 0;
+}
+
+void lara_col_climbing_new(long yshift)
+{
+	long result_r, result_l, shift_r, shift_l, ledge_r, ledge_l;
+	long testDuckR, testDuckL;
+	ITEM_INFO* item = lara_item;
+	COLL_INFO* coll = lara_coll;
+
+	item->pos.y_pos += yshift - 256;
+	result_r = LaraTestClimbUpPosDuck(item, coll->radius, coll->radius + 120, &shift_r, &ledge_r, &testDuckR);
+	result_l = LaraTestClimbUpPosDuck(item, coll->radius, -(coll->radius + 120), &shift_l, &ledge_l, &testDuckL);
+	item->pos.y_pos += 256;
+
+	if (result_r && result_l && input & IN_FORWARD)
+	{
+		if (result_r < 0 || result_l < 0)
+		{
+			item->goal_anim_state = AS_CLIMBSTNC;
+			AnimateLara(item);
+
+			if (testDuckR || testDuckL)
+			{
+				if (ABS(ledge_l - ledge_r) <= 120)
+				{
+					item->goal_anim_state = AS_ALL4S;
+					item->pos.y_pos += (ledge_l + ledge_r) / 2 - 256;
+					return;
+				}
+			}
+			if (ABS(ledge_r - ledge_l) <= 120)
+			{
+				item->goal_anim_state = AS_NULL;
+				item->pos.y_pos += (ledge_r + ledge_l) / 2 - 256;
+			}
+		}
+		else
+		{
+			item->goal_anim_state = AS_CLIMBING;
+			item->pos.y_pos -= yshift;
+		}
+	}
+	else
+	{
+		item->goal_anim_state = AS_CLIMBSTNC;
+
+		if (yshift)
+			AnimateLara(item);
+	}
+}
+
+long lara_as_run_torch(void)
+{
+	ITEM_INFO* item = lara_item;
+	
+	if (lara.gun_status == LG_NO_ARMS || lara.gun_type == WEAPON_NONE || lara.gun_type == WEAPON_PISTOLS ||
+			lara.gun_type == WEAPON_REVOLVER || lara.gun_type == WEAPON_UZI || lara.gun_type == WEAPON_FLARE ||
+			lara.gun_type == WEAPON_TORCH)
+	{
+		item->goal_anim_state = AS_DUCK;
+		return 1;
+	}
+
+	return 0;
+}
+
+long lara_as_stop_torch(void)
+{
+	ITEM_INFO* item = lara_item;
+
+	if (lara.gun_status == LG_NO_ARMS || lara.gun_type == WEAPON_NONE || lara.gun_type == WEAPON_PISTOLS ||
+			lara.gun_type == WEAPON_REVOLVER || lara.gun_type == WEAPON_UZI || lara.gun_type == WEAPON_FLARE ||
+			lara.gun_type == WEAPON_TORCH)
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
+long DuckCrawlPickupAnim(ITEM_INFO* item)
+{
+	ITEM_INFO* l = lara_item;
+
+	if (l->current_anim_state == AS_DUCK)
+	{
+		AlignLaraPosition(&PickUpPosition, item, l);
+
+		if (item->object_number == FLARE_ITEM)
+		{
+			l->anim_number = 312;
+			l->current_anim_state = AS_FLAREPICKUP;
+		}
+		else
+		{
+			l->anim_number = 291;
+			l->current_anim_state = AS_PICKUP;
+		}
+
+		return 2;
+	}
+	else if (l->current_anim_state == AS_ALL4S)
+	{
+		if (lara.gun_status == LG_NO_ARMS)
+		{
+			AlignLaraPosition(&PickUpPosition, item, l);
+
+			if (item->object_number == FLARE_ITEM)
+			{
+				l->anim_number = crawlpickup_flare_anim;
+				l->current_anim_state = AS_FLAREPICKUP;
+			}
+			else if (item->object_number == BURNING_TORCH_ITEM)
+			{
+				l->anim_number = crawlpickup_torch_anim;
+				l->current_anim_state = AS_PICKUP;
+			}
+			else
+			{
+				l->anim_number = crawlpickup_anim;
+				l->current_anim_state = AS_PICKUP;
+			}
+
+			return 2;
+		}
+		
+		return 1;
+	}
+
+	return 0;
+}
+
+long DuckCrawlPickupFrame(void)
+{
+	ITEM_INFO* l = lara_item;
+	
+	if (l->frame_number == anims[crawlpickup_torch_anim].frame_base + crawlpickup_torch_frame)
+		return 1;
+	else if (l->frame_number == anims[crawlpickup_anim].frame_base + crawlpickup_frame)
+		return 1;
+
+	return 0;
+}
+
+long DuckCrawlFlarePickupFrame(void)
+{
+	ITEM_INFO* l = lara_item;
+
+	if (l->current_anim_state == AS_FLAREPICKUP)
+	{
+		if (l->frame_number == anims[crawlpickup_flare_anim].frame_base + crawlpickup_flare_frame)
+			return 1;
+		else if (l->frame_number == anims[204].frame_base + 58)
+			return 1;
+	}
+
+	return 0;
+}
+
 #ifdef __TINYC__
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
@@ -5403,4 +5980,15 @@ void Inject(void)
 	INJECT(0x009100A0, SaveMineCart);
 	INJECT(0x009100A5, RestoreMineCart);
 	INJECT(0x009100AA, rotate_horizon);
+	INJECT(0x009100AF, lara_as_duckcrouch);
+	INJECT(0x009100B4, lara_col_duckcrouch);
+	INJECT(0x009100B9, lara_as_duckcrawl);
+	INJECT(0x009100BE, lara_col_duckcrawl);
+	INJECT(0x009100C3, lara_col_climbstnc_new);
+	INJECT(0x009100C8, lara_col_climbing_new);
+	INJECT(0x009100CD, DuckCrawlPickupAnim);
+	INJECT(0x009100D2, DuckCrawlPickupFrame);
+	INJECT(0x009100D7, DuckCrawlFlarePickupFrame);
+	INJECT(0x009100DC, lara_as_run_torch);
+	INJECT(0x009100E1, lara_as_stop_torch);
 }

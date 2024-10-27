@@ -9,7 +9,7 @@
 <body>
 <h1>Plugin_FLEP</h1>
 <h2>User manual</h2>
-<h4>by ChocolateFan and LoreRaider</h4>
+<h4>by ChocolateFan, LoreRaider and Krys</h4>
 <h3>About the plugin</h3>
 <p>This plugin it's the main source of fixes and additions along with FLEP.</p>
 <p>The new additions are the following:</p>
@@ -25,6 +25,7 @@
 <li><a href="#p9">Mine Cart</a></li>
 <li><a href="#p10">Old style trapdoors</a></li>
 <li><a href="#p11">Horizon rotation</a></li>
+<li><a href="#p12">Duckcrawl animation setup</a></li>
 </ul>
 <br>
 <br>
@@ -270,5 +271,107 @@ To use this, <strong>AssignSlot=</strong> command is needed.</p>
 Type <strong>DISABLED</strong> to not rotate the Horizon.<br />
 <strong>Note</strong>: 182 rotation units are equivalent to one degree.</p>
 <p><strong>Example</strong>: Customize=CUST_FLEP_HORIZON_ROTATE, 10</p>
+<br>
+<br>
+<h2 id="p12">Duckcrawl animation setup</h2>
+<p>The "duckcrawl" animation states replace the classic "on-all-fours" crawling. They are enabled with the <strong>Enable duckcrawl anim states</strong> FLEP patch. These animation states behave like a mix between the duck/crouch state (71) and the crawl states (80, 81, 84-86), effectively eliminating the distinction between ducking and crawling. This allows for more fluid transitions between running, ducking and crawling, additionally permitting Lara to draw and shoot weapons or carry torches while in the duckcrawl anim states.</p>
+<p>In order to cooperate with the duckcrawl patch, the animations in the LARA object need to be set up in a specific way. The existing animations in LARA will be marked with <span class="blue">BLUE</span>, while extra animations you have to add will be marked with <span class="red">RED</span>. StateID numbers will be marked with <span class="green">GREEN</span>.</p>
+<p>Here is the list of changes to make to the animations in your LARA. Unless stated otherwise, the listed changes are required:
+<ul class="disc">
+<li><span class="blue">LADDER_IDLE (#164):</span>
+<ul class="circle">
+<li>OPTIONAL: Add <span class="green">CRAWL_IDLE (80)</span> state change for <span class="red">LADDER_TO_CRAWL_IDLE</span></li>
+</ul></li>
+<li><span class="blue">STAND_TO_CROUCH (#217):</span>
+<ul class="circle">
+<li>Edit animation to lead to <span class="blue">CRAWL_IDLE (#263)</span></li>
+<li>Set StateID to <span class="green">CRAWL_IDLE (80)</span></li>
+<li>Set Next Anim to <span class="blue">CRAWL_IDLE (#263)</span></li>
+</ul></li>
+<li><span class="blue">CRAWL_FORWARD (#260):</span>
+<ul class="circle">
+<li>Add <span class="green">RUN_FORWARD (1)</span> state changes for <span class="red">CRAWL_FORWARD_TO_RUN_LEFT</span> and <span class="red">CRAWL_FORWARD_TO_RUN_RIGHT</span>, where appropriate</li>
+</ul></li>
+<li><span class="blue">CRAWL_IDLE (#263):</span>
+<ul class="circle">
+<li>Modify <span class="green">CROUCH_IDLE (71)</span> state change next anim to <span class="red">CRAWL_IDLE_TO_STAND</span></li>
+<li>OPTIONAL: Add <span class="green">JUMP_FORWARD (3)</span> state change for <span class="blue">CRAWL_JUMP_DOWN (#421)</span></li>
+<li>OPTIONAL: Add <span class="green">SPRINT (73)</span> state change for <span class="blue">CROUCH_ROLL_FORWARD_START_UNUSED (#218)</span></li>
+<li>OPTIONAL: Add <span class="green">ROLL_FORWARD (45)</span> state change for <span class="red">CRAWL_TURN_AROUND</span></li>
+</ul></li>
+<li><span class="blue">HANG_TO_CROUCH_START (#287)</span>:
+<ul class="circle">
+<li>Edit animation to lead to <span class="blue">CRAWL_IDLE (#263)</span></li>
+</ul></li>
+<li><span class="blue">HANG_TO_CROUCH_END (#288)</span>:
+<ul class="circle">
+<li>Edit animation to lead to <span class="blue">CRAWL_IDLE (#263)</span></li>
+<li>Set Next Anim to <span class="blue">CRAWL_IDLE (#263)</span></li>
+</ul></li>
+<li><span class="blue">RUN_TO_CROUCH_LEFT_START (#304)</span>:
+<ul class="circle">
+<li>Set StateID to <span class="green">CRAWL_FORWARD (81)</span></li>
+<li>Set Next Anim to <span class="blue">CRAWL_FORWARD (#260)</span> and appropriate Next Frame</li>
+</ul></li>
+<li><span class="blue">RUN_TO_CROUCH_RIGHT_START (#305)</span>:
+<ul class="circle">
+<li>Set StateID to <span class="green">CRAWL_FORWARD (81)</span></li>
+<li>Set Next Anim to <span class="blue">CRAWL_FORWARD (#260)</span> and appropriate Next Frame</li>
+</ul></li>
+<li><span class="blue">SPRINT_TO_CROUCH_LEFT (#310)</span>:
+<ul class="circle">
+<li>Set StateID to <span class="green">CRAWL_IDLE (80)</span></li>
+<li>Set Next Anim to <span class="blue">CRAWL_IDLE (#263)</span></li>
+</ul></li>
+<li><span class="blue">SPRINT_TO_CROUCH_RIGHT (#311)</span>:
+<ul class="circle">
+<li>Set StateID to <span class="green">CRAWL_IDLE (80)</span></li>
+<li>Set Next Anim to <span class="blue">CRAWL_IDLE (#263)</span></li>
+</ul></li>
+<li><span class="blue">CRAWL_PICKUP_UNUSED (#292)</span>:</li>
+<ul class="circle">
+<li>Set StateID to <span class="green">PICKUP (39)</span></li>
+</ul></li>
+<li>Add <span class="red">CRAWL_IDLE_TO_STAND</span>:</li>
+<ul class="circle">
+<li>Set StateID to <span class="green">STOP (2)</span></li>
+<li>Set Next Anim to <span class="blue">STAND_STILL (#11)</span></li>
+</ul></li>
+<li>Add <span class="red">CRAWL_FORWARD_TO_RUN_LEFT</span>:</li>
+<ul class="circle">
+<li>Set StateID to <span class="green">RUN_FORWARD (1)</span></li>
+<li>Set Next Anim to <span class="blue">RUN (#0)</span> and appropriate Next Frame</li>
+</ul></li>
+<li>Add <span class="red">CRAWL_FORWARD_TO_RUN_RIGHT</span>:</li>
+<ul class="circle">
+<li>Set StateID to <span class="green">RUN_FORWARD (1)</span></li>
+<li>Set Next Anim to <span class="blue">RUN (#0)</span> and appropriate Next Frame</li>
+</ul></li>
+<li>Add <span class="red">CRAWL_PICKUP_FLARE</span>:</li>
+<ul class="circle">
+<li>Set StateID to <span class="green">PICKUP_FLARE (67)</span></li>
+<li>Set Next Anim to <span class="blue">CRAWL_IDLE (#263)</span></li>
+</ul></li>
+<li>OPTIONAL: Add <span class="red">CRAWL_PICKUP_TORCH</span>:</li>
+<ul class="circle">
+<li>Set StateID to <span class="green">PICKUP (39)</span></li>
+<li>Set Next Anim to <span class="blue">CRAWL_IDLE (#263)</span></li>
+</ul></li>
+<li>OPTIONAL: Add <span class="red">LADDER_TO_CRAWL_IDLE</span>:</li>
+<ul class="circle">
+<li>Add Anim Command: <strong>Set Position &lt;X, Y, Z&gt; = &lt;0, -520, 0&gt;</strong>
+<li>Set StateID to <span class="green">CLIMB_TO_CRAWL (87)</span></li>
+<li>Set Next Anim to <span class="blue">HANG_TO_CROUCH_END (#288)</span></li>
+</ul></li>
+<li>OPTIONAL: Add <span class="red">CRAWL_TURN_AROUND</span>:</li>
+<ul class="circle">
+<li>Add Anim Command: <strong>Play FlipEffect(0)</strong> on last frame of animation (rotate last frame by 180 degrees in the animation editor)
+<li>Set StateID to <span class="green">CRAWL_IDLE (80)</span></li>
+<li>Set Next Anim to <span class="blue">CRAWL_IDLE (#263)</span></li>
+</ul></li>
+</ul></p>
+<br>
+<p>A set of animations which adhere to the above list has been made by GeckoKid. They can be downloaded from <strong><a href="https://drive.google.com/file/d/1KqVr_00Nx1BWLfnOU6Q1nge2JqXKhjGq/view?usp=sharing">this link</strong></a>.</p>
+<p>GeckoKid has kindly given permission to use these animations in your custom levels, but <strong><u>please give credits to him if you do so</u></strong>!
 </body>
 </html>
