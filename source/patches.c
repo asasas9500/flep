@@ -5229,14 +5229,14 @@ long lara_col_climbstnc_new(void)
 	COLL_INFO* coll = lara_coll;
 
 	if (item->goal_anim_state == AS_NULL || item->goal_anim_state == AS_ALL4S)
-		return;
+		return 0;
 
 	item->goal_anim_state = AS_CLIMBSTNC;
 	result_r = LaraTestClimbUpPosDuck(item, coll->radius, coll->radius + 120, &shift_r, &ledge_r, &testDuckR);
 	result_l = LaraTestClimbUpPosDuck(item, coll->radius, coll->radius - 120, &shift_l, &ledge_l, &testDuckL);
 
 	if (!result_r || !result_l)
-		return;
+		return 0;
 
 	if (result_r < 0 || result_l < 0)
 	{
