@@ -4035,6 +4035,7 @@ long TestHeight(ITEM_INFO* item, long x, long z)
 void DoUserInput(ITEM_INFO* item, ITEM_INFO* l, CARTINFO* cart)
 {
 	ITEM_INFO* item2;
+	OBJECT_INFO* obj;
 	ITEM_INFO** itemlist;
 	MESH_INFO** meshlist;
 	PHD_VECTOR pos;
@@ -4359,7 +4360,9 @@ void DoUserInput(ITEM_INFO* item, ITEM_INFO* l, CARTINFO* cart)
 			{
 				item2 = itemlist[i];
 
-				if (objects[item2->object_number].draw_routine && !objects[item2->object_number].intelligent && item2->object_number != mine_cart_slot_animating2)
+				obj = &objects[item2->object_number];
+
+				if (obj->draw_routine && !obj->intelligent && obj->collision != PickupCollision && item2->object_number != mine_cart_slot_animating2)
 				{
 					flag = 0;
 

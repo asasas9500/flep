@@ -87,10 +87,12 @@ TriggerGroup=<TriggerGroupId>,$012000,9,$0
 Old style trapdoors
 ===================
 
-Provides the trapdoors from TR1/2/3.
+Provides the trapdoors from TR1/2/3 and also the drawbridges from TR2.
 
 To assign a slot:
 
 AssignSlot=<MyUsedSlot>,<Trapdoor>
 
 Where <Trapdoor> is OBJ_FLEP_TRAPDOOR{1..16}.
+
+These trapdoors and drawbridges work like bridges, in other words, they need dummy trigger beneath them.
