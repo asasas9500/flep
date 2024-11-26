@@ -11,7 +11,7 @@
 <h2>User manual</h2>
 <h4>by ChocolateFan, LoreRaider and Krys</h4>
 <h3>About the plugin</h3>
-<p>This plugin it's the main source of fixes and additions along with FLEP.</p>
+<p>This plugin is the main source of fixes and additions along with FLEP.</p>
 <p>The new additions are the following:</p>
 <ul>
 <li><a href="#p1">Original bridges</a></li>
@@ -20,146 +20,124 @@
 <li><a href="#p4">Sprite objects</a></li>
 <li><a href="#p5">Old style rollingballs</a></li>
 <li><a href="#p6">Meshswap of Lara meshes</a></li>
-<li><a href="#p7">Exiting game</a></li>
-<li><a href="#p8">Grenadegun</a></li>
+<li><a href="#p7">Exit game</a></li>
+<li><a href="#p8">Grenadegun ammo and animations</a></li>
 <li><a href="#p9">Mine Cart</a></li>
 <li><a href="#p10">Old style trapdoors</a></li>
 <li><a href="#p11">Horizon rotation</a></li>
 <li><a href="#p12">Duckcrawl animation setup</a></li>
+<li><a href="#p13">SPEEDUP</a></li>
+<li><a href="#p14">SPEEDDN</a></li>
 </ul>
-<br>
-<br>
+<hr />
 <h2 id="p1">Original Bridges</h2>
-<p>Brings back the original bridges used in TR4, as TRNG bridges have incompatible behaviour.<br />
-To use this, <strong>AssignSlot=</strong> command is needed.</p>
-<p><strong>Syntax</strong>: AssignSlot=&lt;MyUsedSlot&gt;, &lt;Bridge&gt;</p>
-<p>Where <strong>&lt;MyUsedSlot&gt;</strong> is the slot that should be used for the bridge and <strong>&lt;Bridge&gt;</strong> is either <strong>OBJ_FLEP_BRIDGE_FLAT</strong>, <strong>OBJ_FLEP_BRIDGE_TILT1</strong> or <strong>OBJ_FLEP_BRIDGE_TILT2</strong>.</p>
-<p><strong>Example</strong>: AssignSlot=ANIMATING1, OBJ_FLEP_BRIDGE_FLAT</p>
-<br>
-<br>
+<p>Brings back the original bridges used in TR4, as TRNG bridges have incompatible behaviour.</p>
+<p>To assign a slot:</p>
+<code>AssignSlot=&lt;MyUsedSlot&gt;,&lt;Bridge&gt;</code>
+<p>Where <strong>&lt;Bridge&gt;</strong> is either <strong>OBJ_FLEP_BRIDGE_FLAT</strong>, <strong>OBJ_FLEP_BRIDGE_TILT1</strong> or <strong>OBJ_FLEP_BRIDGE_TILT2</strong>.</p>
+<hr />
 <h2 id="p2">Lift doors</h2>
-<p>Implements the lift doors from TR5.<br />
-To use this, <strong>AssignSlot=</strong> command is needed.</p>
-<p><strong>Syntax</strong>: AssignSlot=&lt;MyUsedSlot&gt;, &lt;LiftDoor&gt;</p>
-<p>Where <strong>&lt;MyUsedSlot&gt;</strong> is the slot that should be used for the lift door and <strong>&lt;LiftDoor&gt;</strong> is either <strong>OBJ_FLEP_LIFT_DOORS1</strong> or <strong>OBJ_FLEP_LIFT_DOORS2</strong>.</p>
-<p><strong>Example</strong>: AssignSlot=ANIMATING1, <strong>OBJ_FLEP_LIFT_DOORS1</strong>.</p>
+<p>Implements the lift doors from TR5.</p>
+<p>To assign a slot:</p>
+<code>AssignSlot=&lt;MyUsedSlot&gt;,&lt;LiftDoor&gt;</code>
+<p>Where <strong>&lt;LiftDoor&gt;</strong> is either <strong>OBJ_FLEP_LIFT_DOORS1</strong> or <strong>OBJ_FLEP_LIFT_DOORS2</strong>.</p>
 <p>Additional customization can be done by the command <strong>Customize=CUST_FLEP_LIFT_DOORS</strong>.</p>
-<p><strong>Syntax</strong>: Customize=CUST_FLEP_LIFT_DOORS, LiftDoorsSound</p>
-<p><strong>LiftDoorsSound</strong>: this parameter sets the sound that plays when the lift doors open or close.<br />
-Type <strong>IGNORE</strong> or <strong>-1</strong> to not play any sound.</p>
-<p><strong>Example</strong>: Customize=CUST_FLEP_LIFT_DOORS, 64</p>
-<br>
-<br>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_LIFT_DOORS, LiftDoorsSound</code>
+<p><strong>LiftDoorsSound</strong>:<br />
+The sound that plays when the lift doors open or close.<br />
+Type <strong>IGNORE</strong> to not play any sound.</p>
+<hr />
 <h2 id="p3">HK Gun</h2>
 <p>Replaces Crossbow with HK Gun from TR5.</p>
 <p><strong>Important</strong>: make sure to enable <strong>HK Gun</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
-<p><strong>Syntax</strong>: Customize=CUST_FLEP_HK, GunFlashSlot, FireSound, StopSound, SniperOrder, BurstOrder, RapidOrder, FirstModeSlot, SecondModeSlot, ThirdModeSlot, StillHipsFire</p>
-<p><strong>GunFlashSlot</strong>: this parameter sets the slot of the gunflash.<br />
-Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default value (<strong>GUN_FLASH</strong>).</p>
-<p><strong>FireSound</strong>, <strong>StopSound</strong>: these parameters sets the sounds that play when HK is firing and when it stops firing, respectively.<br />
-Type <strong>IGNORE</strong> or <strong>-1</strong> to not play any sound. The <strong>FireSound</strong> must have <strong>L</strong> flag set.</p>
-<p><strong>SniperOrder</strong>, <strong>BurstOrder</strong>, <strong>RapidOrder</strong>: these parameters sets the sequence in which the modes should be selected in the Choose Weapon Mode menu.<br />
-Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default values (1 for <strong>SniperOrder</strong>, 2 for <strong>BurstOrder</strong> and 3 for <strong>RapidOrder</strong>).</p>
-<p><strong>FirstModeSlot</strong>, <strong>SecondModeSlot</strong>, <strong>ThirdModeSlot</strong>: thes parameters sets the slots that should be used for the modes in the Choose Weapon Mode menu.<br />
-Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default values (<strong>CROSSBOW_AMMO1_ITEM</strong> for <strong>FirstModeSlot</strong>, <strong>CROSSBOW_AMMO2_ITEM</strong> for <strong>SecondModeSlot</strong> and <strong>CROSSBOW_AMMO3_ITEM</strong> for <strong>ThirdModeSlot</strong>).</p>
-<p><strong>StillHipsFire</strong>: this parameter allows <strong>ENABLED</strong> or <strong>DISABLED</strong>.<br />
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_HK, GunFlashSlot, FireSound, StopSound, SniperOrder, BurstOrder, RapidOrder, FirstModeSlot, SecondModeSlot, ThirdModeSlot, StillHipsFire</code>
+<p><strong>GunFlashSlot</strong>:<br />
+The slot of the gunflash.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>GUN_FLASH</strong>).</p>
+<p><strong>FireSound</strong>, <strong>StopSound</strong>:<br />
+The sounds that play when HK is firing and when it stops firing, respectively.<br />
+Type <strong>IGNORE</strong> to not play any sound.<br />
+<strong>Note</strong>: the <strong>FireSound</strong> must have <strong>L</strong> flag set.</p>
+<p><strong>SniperOrder</strong>, <strong>BurstOrder</strong>, <strong>RapidOrder</strong>:<br />
+The sequence in which the modes should be selected in the Choose Weapon Mode menu.<br />
+Type <strong>IGNORE</strong> to use the default values (1 for <strong>SniperOrder</strong>, 2 for <strong>BurstOrder</strong> and 3 for <strong>RapidOrder</strong>).</p>
+<p><strong>FirstModeSlot</strong>, <strong>SecondModeSlot</strong>, <strong>ThirdModeSlot</strong>:<br />
+The slots that should be used for the modes in the Choose Weapon Mode menu.<br />
+Type <strong>IGNORE</strong> to use the default values (<strong>CROSSBOW_AMMO1_ITEM</strong> for <strong>FirstModeSlot</strong>, <strong>CROSSBOW_AMMO2_ITEM</strong> for <strong>SecondModeSlot</strong> and <strong>CROSSBOW_AMMO3_ITEM</strong> for <strong>ThirdModeSlot</strong>).</p>
+<p><strong>StillHipsFire</strong>:<br />
 <strong>ENABLED</strong>: if Lara stops moving while shooting from her hips, she does not change the HK to her shoulder.<br />
 <strong>DISABLED</strong>: if Lara stops moving while shooting from her hips, she changes the HK to her shoulder.<br />
 Type <strong>IGNORE</strong> to use the default value (<strong>DISABLED</strong>).</p>
-<p><strong>Example</strong>: Customize=CUST_FLEP_HK, NEW_SLOT10, 370, 371, -1, -1, -1, -1, -1, -1, ENABLED</p>
+<hr />
 <h2 id="p4">Sprite objects</h2>
-<p>Implements objects that always face the camera, as sprites do.<br />
-To use this, <strong>AssignSlot=</strong> command is needed.</p>
-<p><strong>Syntax</strong>: AssignSlot=&lt;MyUsedSlot&gt;, &lt;Sprite&gt;</p>
-<p>Where <strong>&lt;MyUsedSlot&gt;</strong> is the slot that should be used for the sprite and <strong>&lt;Sprite&gt;</strong> is <strong>OBJ_FLEP_SPRITE{1..16}</strong>.</p>
+<p>Implements objects that always face the camera, as sprites do.</p>
+<p>To assign a slot:</p>
+<code>AssignSlot=&lt;MyUsedSlot&gt;,&lt;Sprite&gt;</code>
+<p>Where <strong>&lt;Sprite&gt;</strong> is <strong>OBJ_FLEP_SPRITE{1..16}</strong>.</p>
 <p>If the object has more than one mesh, they will be cycled through, like animated sprites.</p>
-<p><strong>Example</strong>: AssignSlot=ANIMATING1, OBJ_FLEP_SPRITE1</p>
-<br>
-<br>
+<hr />
 <h2 id="p5">Old style rollingballs</h2>
 <p>Provides the rollingballs from TR1/2/3.</p>
-<p><strong>Important</strong>: the rollingballs from original levels will not work, use these ones instead: <a href="https://www.trsearch.org/item/5823">https://www.trsearch.org/item/5823</a>.</p>
-<p>To use this, <strong>AssignSlot=</strong> command is needed.</p>
-<p><strong>Syntax</strong>: AssignSlot=&lt;MyUsedSlot&gt;, &lt;Rollingball&gt;</p>
-<p>Where <strong>&lt;MyUsedSlot&gt;</strong> is the slot that should be used for the rollingball and <strong>&lt;Rollingball&gt;</strong> is <strong>OBJ_FLEP_ROLLINGBALL{1..16}</strong>.</p>
-<p><strong>Example</strong>: AssignSlot=NEW_SLOT5, OBJ_FLEP_ROLLINGBALL1</p>
-<p>Additional settings can be used, you can also sum these together:</p>
-<p>Use OCB 1 to disable the camera bounce effect.<br />
-Use OCB 32 to produce a splash if the rollingball falls into water.</p>
-<p>Note that the rotation of the rollingball determines their rolling direction.</p>
-<br>
-<br>
+<p>To assign a slot:</p>
+<code>AssignSlot=&lt;MyUsedSlot&gt;,&lt;Rollingball&gt;</code>
+<p>Where <strong>&lt;Rollingball&gt;</strong> is <strong>OBJ_FLEP_ROLLINGBALL{1..16}</strong>.</p>
+<p>Use OCB 1 to disable the camera bounce effect. Add 32 to the OCB to produce a splash if the rollingball falls into water.<br />
+Note that the rotation of the rollingball determines their rolling direction.</p>
+<p>The rollingballs from original levels will not work, use these ones instead: <a href="https://www.trsearch.org/item/5823">https://www.trsearch.org/item/5823</a>.</p>
+<hr />
 <h2 id="p6">Meshswap of Lara meshes</h2>
-<p>Allows Lara meshes to be swapped.<br />
-To use this, <strong>Parameters=PARAM_FLEP_LARA_MESHSWAP</strong> command is needed.</p>
-<p><strong>Syntax</strong>: Parameters=PARAM_FLEP_LARA_MESHSWAP, IdParamList, LaraMesh, SourceSlot, SourceMesh</p>
-<p><strong>IdParamList</strong>: this parameter sets the ID of the meshswap command, which is then used in the trigger.<br />
-The ID range goes from 1 to 256.</p>
-<p><strong>LaraMesh</strong>: this parameter sets the mesh to be swapped, see <strong>LARA_MESH_</strong> constants or type the mesh number.</p>
-<p><strong>SourceSlot</strong>: this parameter sets the slot that supplies the new mesh. Both the slot name or number can be typed.</p>
-<p><strong>SourceMesh</strong>: this parameter sets the the number of the new mesh.</p>
-<p><strong>Example</strong>: Parameters=PARAM_FLEP_LARA_MESHSWAP, 1, LARA_MESH_HEAD, NEW_SLOT10, 0</p>
-<p>To trigger a meshswap:</p>
-<code>#define @Plugin_FLEP 1
-TriggerGroup=&lt;TriggerGroupId&gt;,$012000,7,&lt;IdParamList&gt;
-#define @plugins CLEAR</code>
-<p>Where <strong>&lt;TriggerGroupId&gt;</strong> is the ID of the TriggerGroup (for example 1,10,25...) and <strong>&lt;IdParamList&gt;</strong> is the Id of the command <strong>Parameters=PARAM_FLEP_LARA_MESHSWAP</strong>.</p>
-<p><strong>Example</strong>:</p>
-<code>#define @Plugin_FLEP 1
-TriggerGroup=1,$012000,7,1
-#define @plugins CLEAR</code>
-<p>And to revert a meshswap:</p>
-<code>#define @Plugin_FLEP 1
-TriggerGroup=&lt;TriggerGroupId&gt;,$012000,8,&lt;LaraMesh&gt;
-#define @plugins CLEAR</code>
-<p>Where <strong>&lt;LaraMesh&gt;</strong> is a <strong>LARA_MESH_</strong> constant, the mesh number can be also typed.</p>
-<p><strong>Example</strong>:</p>
-<code>#define @Plugin_FLEP 1
-TriggerGroup=2,$012000,8,14
-#define @plugins CLEAR</code>
+<p>Allows Lara meshes to be swapped.</p>
+<p>To do a meshswap, use flipeffect 7 together with the command <strong>Parameters=PARAM_FLEP_LARA_MESHSWAP</strong>.<br />
+And to revert a meshswap, use flipeffect 8.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Parameters=PARAM_FLEP_LARA_MESHSWAP, IdParamList, LaraMesh, SourceSlot, SourceMesh</code>
+<p><strong>IdParamList</strong>:<br />
+The Id to be used in the trigger.<br />
+Note: the minimum Id is 1 and the maximum is 255.</p>
+<p><strong>LaraMesh</strong>:<br />
+The mesh to be swapped.<br />
+See the <strong>LARA_MESH_</strong> constants.</p>
+<p><strong>SourceSlot</strong>:<br />
+The slot that supplies the new mesh.</p>
+<p><strong>SourceMesh</strong>:<br />
+The number of the new mesh.</p>
+<hr />
 <h2 id="p7">Exit game</h2>
 <p>Exits the game in the same moment it is called.</p>
-<p>To exit the game:</p>
-<code>#define @Plugin_FLEP 1
-TriggerGroup=&lt;TriggerGroupId&gt;,$012000,9,$0
-#define @plugins CLEAR</code>
-<p>Where <strong>&lt;TriggerGroupId&gt;</strong> is the ID of the TriggerGroup (for example 1,10,25...)</p>
-<p><strong>Example</strong>:</p>
-<code>#define @Plugin_FLEP 1
-TriggerGroup=1,$012000,9,$0
-#define @plugins CLEAR</code>
-<br>
-<br>
-<h2 id="p8">Grenadegun</h2>
-<p>Modifies the Grenadegun to shoot different types of grenades or crossbow bolts, also its animations.</p>
-<p><strong>Important</strong>: make sure to enable <strong>Grenadegun and ammo animations</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
-<p>To use this, <strong>Customize=CUST_FLEP_GRENADEGUN</strong> command is needed.</p>
-<p><strong>Syntax</strong>: Customize=CUST_FLEP_GRENADEGUN, GrenadegunAnimations, FirstAmmoWeapon, SecondAmmoWeapon, ThirdAmmoWeapon, FirstAmmoType, SecondAmmoType, ThirdAmmoType, FirstAmmoSlot, SecondAmmoSlot, ThirdAmmoSlot, FirstAmmoSound, SecondAmmoSound, ThirdAmmoSound, FirstAmmoSmoke, SecondAmmoSmoke, ThirdAmmoSmoke</p>
-<p><strong>GrenadegunAnimations</strong>: this parameter sets the usage or not of Grenadegun animations<br />
+<p>To exit the game, use flipeffect 9.</p>
+<hr />
+<h2 id="p8">Grenadegun ammo and animations</h2>
+<p>Modifies the Grenadegun to shoot different types of grenades or crossbow bolts, and also its animations.</p>
+<p><strong>Important</strong>: make sure to enable <strong>Grenadegun ammo and animations</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_GRENADEGUN, GrenadegunAnimations, FirstAmmoWeapon, SecondAmmoWeapon, ThirdAmmoWeapon, FirstAmmoType, SecondAmmoType, ThirdAmmoType, FirstAmmoSlot, SecondAmmoSlot, ThirdAmmoSlot, FirstAmmoSound, SecondAmmoSound, ThirdAmmoSound, FirstAmmoSmoke, SecondAmmoSmoke, ThirdAmmoSmoke</code>
+<p><strong>GrenadegunAnimations</strong>:<br />
 <strong>ENABLED</strong>: allows the usage of Grenadegun animations.<br />
 <strong>DISABLED</strong>: allows the usage of Crossbow, Shotgun or HK animations.<br />
-Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default value (<strong>ENABLED</strong>).</p>
-<p><strong>FirstAmmoWeapon</strong>, <strong>SecondAmmoWeapon</strong>, <strong>ThirdAmmoWeapon</strong>: these parameters sets the type of bolt.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>ENABLED</strong>).</p>
+<p><strong>FirstAmmoWeapon</strong>, <strong>SecondAmmoWeapon</strong>, <strong>ThirdAmmoWeapon</strong>:<br />
 <strong>HOLD_CROSSBOW</strong>: the ammo is a bolt.<br />
 <strong>HOLD_GRENADEGUN</strong>: the ammo is a grenade.<br />
-Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default value (<strong>HOLD_GRENADEGUN</strong>).</p>
-<p><strong>FirstAmmoType</strong>, <strong>SecondAmmoType</strong>, <strong>ThirdAmmoType</strong>: these parameters sets the type of ammo.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>HOLD_GRENADEGUN</strong>).</p>
+<p><strong>FirstAmmoType</strong>, <strong>SecondAmmoType</strong>, <strong>ThirdAmmoType</strong>:<br />
 1: Normal ammo.<br />
 2: Poison/Super ammo.<br />
 3: Explosive/Flash ammo.<br />
-Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default values (1 for <strong>FirstAmmoType</strong>, 2 for <strong>SecondAmmoType</strong> and 3 for <strong>ThirdAmmoType</strong>).</p>
-<p><strong>FirstAmmoSlot</strong>, <strong>SecondAmmoSlot</strong>, <strong>ThirdAmmoSlot</strong>: these parameters sets the slots containing the meshes of the ammos.<br />
-Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default value (<strong>CROSSBOW_BOLT</strong>/<strong>GRENADE</strong>).<br />
+Type <strong>IGNORE</strong> to use the default values (1 for <strong>FirstAmmoType</strong>, 2 for <strong>SecondAmmoType</strong> and 3 for <strong>ThirdAmmoType</strong>).</p>
+<p><strong>FirstAmmoSlot</strong>, <strong>SecondAmmoSlot</strong>, <strong>ThirdAmmoSlot</strong>:<br />
+The slots containing the meshes of the ammos.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>CROSSBOW_BOLT</strong> if the ammo is a bolt/<strong>GRENADE</strong> if the ammo is a grenade).<br />
 <strong>Note</strong>: <strong>CROSSBOW_BOLT</strong> is forbidden if the ammo is a grenade and <strong>GRENADE</strong> is forbidden if the ammo is a bolt.</p>
-<p><strong>FirstAmmoSound</strong>, <strong>SecondAmmoSound</strong>, <strong>ThirdAmmoSound</strong>: these parameters sets the sounds that play when shooting the ammos.<br />
-Type <strong>IGNORE</strong> or <strong>-1</strong> to not play any sound.</p>
-<p><strong>FirstAmmoSmoke</strong>, <strong>SecondAmmoSmoke</strong>, <strong>ThirdAmmoSmoke</strong>: these parameters sets whether the Grenadegun smoke is produced or not when shooting.<br />
+<p><strong>FirstAmmoSound</strong>, <strong>SecondAmmoSound</strong>, <strong>ThirdAmmoSound</strong>:<br />
+The sounds that play when shooting the ammos.<br />
+Type <strong>IGNORE</strong> to not play any sound.</p>
+<p><strong>FirstAmmoSmoke</strong>, <strong>SecondAmmoSmoke</strong>, <strong>ThirdAmmoSmoke</strong>:<br />
 <strong>ENABLED</strong>: Grenadegun smoke is produced when shooting.<br />
 <strong>DISABLED</strong>: no smoke is produced.<br />
-Type <strong>IGNORE</strong> or <strong>-1</strong> to use the default value (<strong>ENABLED</strong>).</p>
-<p><strong>Example</strong>: Customize=CUST_FLEP_GRENADEGUN, ENABLED, HOLD_CROSSBOW, -1, -1, 3, 2, 1, -1, CROSSBOW_BOLT, -1, -1, -1, -1, ENABLED, ENABLED, DISABLED</p>
-<br>
-<br>
+Type <strong>IGNORE</strong> to use the default value (<strong>ENABLED</strong>).</p>
+<hr />
 <h2 id="p9">Mine Cart</h2>
 <p>Allows to use the Minecart object like TR3 with some additions.</p>
 <p><strong>Important</strong>: make sure to enable <strong>Mine Cart</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
@@ -215,15 +193,15 @@ Lara's health is measured in 1000 units, so setting it to the max amount will ma
 <br>
 <p class="smallParagraphs">Minecart triggers</h3>
 <p>You can check whether Lara is in the minecart or not by using the following inside your script:</p>
-<code>#define @Plugin_FLEP 1
-TriggerGroup=&lt;TriggerGroupId&gt;,$018000,0,$2,&lt;ExportedTrigger&gt;
+<code>#define @Plugin_FLEP 1<br />
+TriggerGroup=&lt;TriggerGroupId&gt;,$018000,0,$2,&lt;ExportedTrigger&gt;<br />
 #define @plugins CLEAR</code>
 <p>Where <strong>&lt;TriggerGroupId&gt;</strong> is the ID of your TriggerGroup (for example 1,10,25...) and where <strong>&lt;ExportedTrigger&gt;</strong> is the trigger or group of triggers that needs to activate when the condition it's true (for example the track that plays in TR3 when you get in the minecart).</p>
 <p>You can of course also use this inside a GlobalTrigger, here's an example:</p>
-<code>#define @Plugin_FLEP 1
-TriggerGroup=1,$018000,0,$2 ;lara is inside the minecart
-TriggerGroup=2,$2000,129,$79 ;play track
-GlobalTrigger=1,FGT_SINGLE_SHOT,GT_CONDITION_GROUP,IGNORE,1,2,IGNORE
+<code>#define @Plugin_FLEP 1<br />
+TriggerGroup=1,$018000,0,$2 ;lara is inside the minecart<br />
+TriggerGroup=2,$2000,129,$79 ;play track<br />
+GlobalTrigger=1,FGT_SINGLE_SHOT,GT_CONDITION_GROUP,IGNORE,1,2,IGNORE<br />
 #define @plugins CLEAR</code>
 <br>
 <p class="smallParagraphs">Setting up the minecart</h3>
@@ -250,29 +228,24 @@ In these situations, there are two options you can look forward to:</p>
 <li>extend the switch trigger forward the <strong>SwitchSlot</strong></li>
 <li>reduce the animation length of the <strong>SwitchSlot</strong> item, default animation has ID 1 (and 3 is reset animation)</li>
 </ul>
-<br>
-<br>
+<hr />
 <h2 id="p10">Old style trapdoors</h2>
-<p>Brings back the original trapdoors behavior used in TR1-3, they can be also placed away from portals.<br />
-Drawbridges (or trapdoors of 1x2 squares) are included.<br />
-In order to activate their collision, a <strong>Dummy</strong> trigger type is needed under the trapdoor object.<br />
-To use this, <strong>AssignSlot=</strong> command is needed.</p>
-<p><strong>Syntax</strong>: AssignSlot=&lt;MyUsedSlot&gt;, &lt;Trapdoor&gt;</p>
-<p>Where <strong>&lt;MyUsedSlot&gt;</strong> is the slot that should be used for the bridge and <strong>&lt;Trapdoor&gt;</strong> is <strong>OBJ_FLEP_TRAPDOOR{1..16}</strong>.</p>
-<p><strong>Example</strong>: AssignSlot=ANIMATING1, OBJ_FLEP_TRAPDOOR1</p>
-<br>
-<br>
+<p>Provides the trapdoors from TR1/2/3 and also the drawbridges from TR2.</p>
+<p>To assign a slot:</p>
+<code>AssignSlot=&lt;MyUsedSlot&gt;,&lt;Trapdoor&gt;</code>
+<p>Where <strong>&lt;Trapdoor&gt;</strong> is <strong>OBJ_FLEP_TRAPDOOR{1..16}</strong>.</p>
+<p>These trapdoors and drawbridges work like bridges, in other words, they need dummy triggers beneath them.</p>
+<hr />
 <h2 id="p11">Horizon rotation</h2>
-<p>Allows the continuous rotation of the horizon.</p>
-<p><strong>Important</strong>: make sure to enable <strong>Horizon rotation</strong> patch inside <strong>FLEP</strong> or the following command won't work.</p>
-<p>To use this, Customize=CUST_FLEP_HORIZON_ROTATE command is needed.</p>
-<p><strong>Syntax</strong>: CUSTOMIZE=CUST_FLEP_HORIZON_ROTATE, Speed</p>
-<p><strong>Speed</strong>: the speed (in rotation units) at which the Horizon rotates. Positive values are clockwise.<br />
+<p>Rotates continuously the Horizon.</p>
+<p><strong>Important</strong>: make sure to enable <strong>Horizon rotation</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_HORIZON_ROTATE, Speed</code>
+<p><strong>Speed</strong>:<br />
+The speed (in rotation units) at which the Horizon rotates. Positive values are clockwise.<br />
 Type <strong>DISABLED</strong> to not rotate the Horizon.<br />
 <strong>Note</strong>: 182 rotation units are equivalent to one degree.</p>
-<p><strong>Example</strong>: Customize=CUST_FLEP_HORIZON_ROTATE, 10</p>
-<br>
-<br>
+<hr />
 <h2 id="p12">Duckcrawl animation setup</h2>
 <p>The "duckcrawl" animation states replace the classic "on-all-fours" crawling. They are enabled with the <strong>Enable duckcrawl anim states</strong> FLEP patch. These animation states behave like a mix between the duck/crouch state (71) and the crawl states (80, 81, 84-86), effectively eliminating the distinction between ducking and crawling. This allows for more fluid transitions between running, ducking and crawling, additionally permitting Lara to draw and shoot weapons or carry torches while in the duckcrawl anim states.</p>
 <p>In order to cooperate with the duckcrawl patch, the animations in the LARA object need to be set up in a specific way. The existing animations in LARA will be marked with <span class="blue">BLUE</span>, while extra animations you have to add will be marked with <span class="red">RED</span>. StateID numbers will be marked with <span class="green">GREEN</span>.</p>
@@ -373,5 +346,16 @@ Type <strong>DISABLED</strong> to not rotate the Horizon.<br />
 <br>
 <p>A set of animations which adhere to the above list has been made by GeckoKid. They can be downloaded from <strong><a href="https://drive.google.com/file/d/1KqVr_00Nx1BWLfnOU6Q1nge2JqXKhjGq/view?usp=sharing">this link</strong></a>.</p>
 <p>GeckoKid has kindly given permission to use these animations in your custom levels, but <strong><u>please give credits to him if you do so</u></strong>!
+<hr />
+<h2 id="p13">SPEEDUP</h2>
+<p>This nifty command will double speed of engine timers (except UV Rotate graphical method and certain other visual effects, like gunfire animation).<br />
+You can't use two or more such commands in a row, because then engine will hang.</p>
+<p>This command is used by means of flipeffect 10.</p>
+<hr />
+<h2 id="p14">SPEEDDN</h2>
+<p>Slows down engine. Can be used to simulate slo-mo effect (like in Max Payne).<br />
+You can use two or more commands in a row, and engine will act slower and slower in specified flipeffect sectors.<br />
+But note that it will also slow down camera timer, so it won't look smooth.</p>
+<p>This command is used by means of flipeffect 11.</p>
 </body>
 </html>

@@ -58,31 +58,15 @@ Meshswap of Lara meshes
 
 Allows Lara meshes to be swapped.
 
-To do a meshswap:
-
-#define @Plugin_FLEP 1
-TriggerGroup=<TriggerGroupId>,$012000,7,<IdParamList>
-#define @plugins CLEAR
-
-Where <IdParamList> is the Id of the command Parameters=PARAM_FLEP_LARA_MESHSWAP.
-And to revert a meshswap:
-
-#define @Plugin_FLEP 1
-TriggerGroup=<TriggerGroupId>,$012000,8,<LaraMesh>
-#define @plugins CLEAR
-
-Where <LaraMesh> is a LARA_MESH_ constant.
+To do a meshswap, use flipeffect 7 together with the command Parameters=PARAM_FLEP_LARA_MESHSWAP.
+And to revert a meshswap, use flipeffect 8.
 
 Exit game
 =========
 
 Exits the game in the same moment it is called.
 
-To exit the game:
-
-#define @Plugin_FLEP 1
-TriggerGroup=<TriggerGroupId>,$012000,9,$0
-#define @plugins CLEAR
+To exit the game, use flipeffect 9.
 
 Old style trapdoors
 ===================
@@ -95,4 +79,21 @@ AssignSlot=<MyUsedSlot>,<Trapdoor>
 
 Where <Trapdoor> is OBJ_FLEP_TRAPDOOR{1..16}.
 
-These trapdoors and drawbridges work like bridges, in other words, they need dummy trigger beneath them.
+These trapdoors and drawbridges work like bridges, in other words, they need dummy triggers beneath them.
+
+SPEEDUP
+=======
+
+This nifty command will double speed of engine timers (except UV Rotate graphical method and certain other visual effects, like gunfire animation).
+You can't use two or more such commands in a row, because then engine will hang.
+
+This command is used by means of flipeffect 10.
+
+SPEEDDN
+=======
+
+Slows down engine. Can be used to simulate slo-mo effect (like in Max Payne).
+You can use two or more commands in a row, and engine will act slower and slower in specified flipeffect sectors.
+But note that it will also slow down camera timer, so it won't look smooth.
+
+This command is used by means of flipeffect 11.

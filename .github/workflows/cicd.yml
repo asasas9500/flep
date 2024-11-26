@@ -66,11 +66,12 @@ jobs:
           Copy-Item -Path flep\source -Destination FlexiblePatcher -Recurse
           Remove-Item -Path FlexiblePatcher\Plugin_FlexiblePatcher\source\plugin_patcher\patches.cpp
           Move-Item -Path FlexiblePatcher\source\patches.c -Destination FlexiblePatcher\Plugin_FlexiblePatcher\source\plugin_patcher\patches.cpp
-          Copy-Item -Path flep\Plugin_FLEP\Plugin_FLEP.txt -Destination FlexiblePatcher\Plugin_FlexiblePatcher\Plugin_FlexiblePatcher.txt
-          Copy-Item -Path flep\Plugin_FLEP\Plugin_FLEP.script -Destination FlexiblePatcher\Plugin_FlexiblePatcher\Plugin_FlexiblePatcher.script
+          foreach ($extension in 'script', 'txt', 'trg') {
+              Copy-Item -Path "flep\Plugin_FLEP\Plugin_FLEP.${extension}" -Destination "FlexiblePatcher\Plugin_FlexiblePatcher\Plugin_FlexiblePatcher.${extension}"
+          }
           Remove-Item -Path FlexiblePatcher\Plugin_FlexiblePatcher\Manual -Recurse
           Copy-Item -Path flep\Plugin_FLEP\Manual -Destination FlexiblePatcher\Plugin_FlexiblePatcher -Recurse
-          py tools\rename.py FlexiblePatcher\patches.flp FlexiblePatcher\Plugin_FlexiblePatcher\Plugin_FlexiblePatcher.txt FlexiblePatcher\Plugin_FlexiblePatcher\Manual\Manual.html
+          py tools\rename.py FlexiblePatcher\Plugin_FlexiblePatcher\Manual\Manual.html
           $message = git -C flep show -s --format=%B | Out-String
           git -C FlexiblePatcher config user.name github-actions[bot]
           git -C FlexiblePatcher config user.email 41898282+github-actions[bot]@users.noreply.github.com

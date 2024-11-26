@@ -76,5 +76,5 @@ LARA_MESH_LEFT_OUTER_ARM:12
 LARA_MESH_LEFT_HAND:13
 LARA_MESH_HEAD:14
 
-PARAM_FLEP_LARA_MESHSWAP:1 ;Used with Parameters command.>Syntax: Parameters=PARAM_FLEP_LARA_MESHSWAP, IdParamList, LaraMesh, SourceSlot, SourceMesh>>IdParamList>----------->The Id to be used in the trigger.>>Note: the minimum Id is 1 and the maximum is 256.>>LaraMesh>-------->The mesh to be swapped.>>See the LARA_MESH_ constants.>>SourceSlot>---------->The slot that supplies the new mesh.>>SourceMesh>---------->The number of the new mesh.
+PARAM_FLEP_LARA_MESHSWAP:1 ;Used with Parameters command.>Syntax: Parameters=PARAM_FLEP_LARA_MESHSWAP, IdParamList, LaraMesh, SourceSlot, SourceMesh>>IdParamList>----------->The Id to be used in the trigger.>>Note: the minimum Id is 1 and the maximum is 255.>>LaraMesh>-------->The mesh to be swapped.>>See the LARA_MESH_ constants.>>SourceSlot>---------->The slot that supplies the new mesh.>>SourceMesh>---------->The number of the new mesh.
 <END>

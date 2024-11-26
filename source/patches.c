@@ -874,7 +874,8 @@ typedef enum
 {
 	ANIM_BACKSTEPD_LEFT = 61,
 	ANIM_BACKSTEPD_RIGHT = 62,
-	ANIM_RBALL_DEATH = 139
+	ANIM_RBALL_DEATH = 139,
+	ANIM_CRAWLPICKUP = 292
 } lara_anim;
 
 typedef enum
@@ -1958,6 +1959,13 @@ typedef struct
 
 typedef struct
 {
+	float x;
+	float y;
+	float z;
+} FVECTOR;
+
+typedef struct
+{
 	char Text[80];
 } StrText80;
 
@@ -2294,6 +2302,13 @@ __declspec(naked) float fsqrt(float num)
 #define ShiftItem ( (void(*)(ITEM_INFO*, COLL_INFO*)) 0x00446700)
 #define PickupCollision ( (void(*)(short, ITEM_INFO*, COLL_INFO*)) 0x00456B90)
 
+#define framecount	VAR_U_(0x004BF2F8, long)
+
+#define tiltyoff	VAR_U_(0x007FE0F4, long)
+#define tiltxoff	VAR_U_(0x007FE0EC, long)
+
+#define GetLaraCollisionInfo ( (void(*)(ITEM_INFO*, COLL_INFO*)) 0x00422180)
+
 short phd_sin(long angle)
 {
 	angle >>= 3;
@@ -2342,9 +2357,9 @@ short crossbow_grenade_ammo_slot[3];
 short crossbow_grenade_ammo_sound[3];
 char crossbow_grenade_ammo_smoke[3];
 char in_fire_crossbow_grenade;
-short lara_meshswap_target[256];
-short lara_meshswap_source_slot[256];
-short lara_meshswap_source[256];
+short lara_meshswap_target[255];
+short lara_meshswap_source_slot[255];
+short lara_meshswap_source[255];
 short mine_cart_slot_minecart;
 short mine_cart_slot_vehicle_anim;
 short mine_cart_slot_mapper;
@@ -5438,6 +5453,141 @@ long DuckCrawlFlarePickupFrame(void)
 	return 0;
 }
 
+void speedup(void)
+{
+	framecount++;
+}
+
+void speeddn(void)
+{
+	framecount--;
+}
+
+void TiltHer(ITEM_INFO* item, long rad, long height)
+{
+	FLOOR_INFO* floor;
+	FVECTOR plane;
+	long wy[4];
+	long yT, y, wx, wz, dy;
+	short room_number, rotX, rotZ;
+
+	yT = item->pos.y_pos - height - 162;
+	room_number = item->room_number;
+	floor = GetFloor(item->pos.x_pos, yT, item->pos.z_pos, &room_number);
+	y = GetHeight(floor, item->pos.x_pos, yT, item->pos.z_pos);
+
+	if (!OnObject)
+	{
+		plane.x = -(float)tiltyoff / 4;
+		plane.y = -(float)tiltxoff / 4;
+	}
+	else
+	{
+		wx = item->pos.x_pos & 0xFFFFFC00 | 0xFF;
+		wz = item->pos.z_pos & 0xFFFFFC00 | 0xFF;
+		room_number = item->room_number;
+		floor = GetFloor(wx, yT, wz, &room_number);
+		wy[0] = GetHeight(floor, wx, yT, wz);
+		wx = item->pos.x_pos & 0xFFFFFC00 | 0x2FF;
+		wz = item->pos.z_pos & 0xFFFFFC00 | 0xFF;
+		room_number = item->room_number;
+		floor = GetFloor(wx, yT, wz, &room_number);
+		wy[1] = GetHeight(floor, wx, yT, wz);
+		wx = item->pos.x_pos & 0xFFFFFC00 | 0xFF;
+		wz = item->pos.z_pos & 0xFFFFFC00 | 0x2FF;
+		room_number = item->room_number;
+		floor = GetFloor(wx, yT, wz, &room_number);
+		wy[2] = GetHeight(floor, wx, yT, wz);
+		plane.x = (float)(wy[1] - wy[0]) / 512;
+		plane.y = (float)(wy[2] - wy[0]) / 512;
+	}
+
+	plane.z = item->pos.y_pos - plane.x * item->pos.x_pos - plane.y * item->pos.z_pos;
+
+	for (int i = 0; i < 4; i++)
+	{
+		wx = item->pos.x_pos + (rad * phd_sin(item->pos.y_rot + 16384 * i) >> W2V_SHIFT);
+		wz = item->pos.z_pos + (rad * phd_cos(item->pos.y_rot + 16384 * i) >> W2V_SHIFT);
+		room_number = item->room_number;
+		floor = GetFloor(wx, yT, wz, &room_number);
+		wy[i] = GetHeight(floor, wx, yT, wz);
+
+		if (ABS(y - wy[i]) > rad / 2)
+			wy[i] = (long)(plane.x * wx + plane.y * wz + plane.z);
+	}
+
+	dy = wy[0] - wy[2];
+	rotX = (short)phd_atan(2 * rad, dy);
+
+	if (dy > 0 && rotX > 0 || dy < 0 && rotX < 0)
+		rotX = -rotX;
+
+	dy = wy[3] - wy[1];
+	rotZ = (short)phd_atan(2 * rad, dy);
+
+	if (dy > 0 && rotZ > 0 || dy < 0 && rotZ < 0)
+		rotZ = -rotZ;
+
+	if (ABS(rotX - item->pos.x_rot) < 546)
+		item->pos.x_rot = rotX;
+	else if (rotX > item->pos.x_rot)
+		item->pos.x_rot += 546;
+	else if (rotX < item->pos.x_rot)
+		item->pos.x_rot -= 546;
+
+	if (item->pos.x_rot > 8192)
+		item->pos.x_rot = 8192;
+	else if (item->pos.x_rot < -8192)
+		item->pos.x_rot = -8192;
+
+	if (ABS(rotZ - item->pos.z_rot) < 546)
+		item->pos.z_rot = rotZ;
+	else if (rotZ > item->pos.z_rot)
+		item->pos.z_rot += 546;
+	else if (rotZ < item->pos.z_rot)
+		item->pos.z_rot -= 546;
+
+	if (item->pos.z_rot > 8192)
+		item->pos.z_rot = 8192;
+	else if (item->pos.z_rot < -8192)
+		item->pos.z_rot = -8192;
+}
+
+void GetCollisionInfoAndTiltHer(COLL_INFO* coll, long x, long y, long z, short room_number, long hite)
+{
+	GetCollisionInfo(coll, x, y, z, room_number, hite);
+	TiltHer(lara_item, 140, 400);
+}
+
+void AlignCrawlPickupPosition(PHD_VECTOR* pos, ITEM_INFO* item, ITEM_INFO* l)
+{
+	short xrot, zrot;
+
+	if (pPatchMap[332])
+	{
+		xrot = item->pos.x_rot;
+		zrot = item->pos.x_rot;
+		item->pos.x_rot = l->pos.x_rot;
+		item->pos.z_rot = l->pos.z_rot;
+	}
+
+	AlignLaraPosition(pos, item, l);
+
+	if (pPatchMap[332])
+	{
+		item->pos.x_rot = xrot;
+		item->pos.z_rot = zrot;
+	}
+}
+
+void GetLaraCollisionInfoAndTiltHer(ITEM_INFO* item, COLL_INFO* coll)
+{
+	GetLaraCollisionInfo(item, coll);
+
+	if (item->current_anim_state == AS_PICKUP && item->anim_number == ANIM_CRAWLPICKUP && (pPatchMap[34] || pPatchMap[216]))
+		TiltHer(lara_item, 140, 400);
+}
+
 #ifdef __TINYC__
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
@@ -5521,7 +5671,7 @@ void pcbInitLoadNewLevel(void)
 
 	in_fire_crossbow_grenade = 0;
 
-	for (int i = 0; i < 256; i++)
+	for (int i = 0; i < 255; i++)
 	{
 		lara_meshswap_target[i] = -1;
 		lara_meshswap_source_slot[i] = -1;
@@ -5600,6 +5750,16 @@ long pcbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort Acti
 
 	case 9:
 		exit_game();
+		break;
+
+	case 10:
+		speedup();
+		RetValue = ActivationMode & 0x400 ? 2 : 0;
+		break;
+
+	case 11:
+		speeddn();
+		RetValue = ActivationMode & 0x400 ? 2 : 0;
 		break;
 	}
 
@@ -5994,4 +6154,7 @@ void Inject(void)
 	INJECT(0x009100D7, DuckCrawlFlarePickupFrame);
 	INJECT(0x009100DC, lara_as_run_torch);
 	INJECT(0x009100E1, lara_as_stop_torch);
+	INJECT(0x009100E6, GetCollisionInfoAndTiltHer);
+	INJECT(0x009100EB, AlignCrawlPickupPosition);
+	INJECT(0x009100F0, GetLaraCollisionInfoAndTiltHer);
 }
