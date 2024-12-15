@@ -97,3 +97,16 @@ You can use two or more commands in a row, and engine will act slower and slower
 But note that it will also slow down camera timer, so it won't look smooth.
 
 This command is used by means of flipeffect 11.
+
+Train
+=====
+
+Implements the train trap from the TR3 level Aldwych.
+
+To assign a slot:
+
+AssignSlot=<MyUsedSlot>,<Train>
+
+Where <Train> is either OBJ_FLEP_TRAIN{1..16}.
+
+Additional customization can be done by the command Customize=CUST_FLEP_TRAIN.

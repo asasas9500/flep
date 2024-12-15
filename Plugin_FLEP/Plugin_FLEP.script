@@ -52,6 +52,22 @@ OBJ_FLEP_TRAPDOOR13:50
 OBJ_FLEP_TRAPDOOR14:51
 OBJ_FLEP_TRAPDOOR15:52
 OBJ_FLEP_TRAPDOOR16:53
+OBJ_FLEP_TRAIN1:54
+OBJ_FLEP_TRAIN2:55
+OBJ_FLEP_TRAIN3:56
+OBJ_FLEP_TRAIN4:57
+OBJ_FLEP_TRAIN5:58
+OBJ_FLEP_TRAIN6:59
+OBJ_FLEP_TRAIN7:60
+OBJ_FLEP_TRAIN8:61
+OBJ_FLEP_TRAIN9:62
+OBJ_FLEP_TRAIN10:63
+OBJ_FLEP_TRAIN11:64
+OBJ_FLEP_TRAIN12:65
+OBJ_FLEP_TRAIN13:66
+OBJ_FLEP_TRAIN14:67
+OBJ_FLEP_TRAIN15:68
+OBJ_FLEP_TRAIN16:69
 
 CUST_FLEP_HK:1 ;Used with Customize command.>Syntax: Customize=CUST_FLEP_HK, GunFlashSlot, FireSound, StopSound, SniperOrder, BurstOrder, RapidOrder, FirstModeSlot, SecondModeSlot, ThirdModeSlot, StillHipsFire>>GunFlashSlot>------------>The slot of the gunflash.>>Type IGNORE to use the default value (GUN_FLASH).>>FireSound, StopSound>-------------------->The sounds that play when HK is firing and when it stops firing, respectively.>>Type IGNORE to not play any sound.>>Note: the FireSound must have L flag set.>>SniperOrder, BurstOrder, RapidOrder>----------------------------------->The sequence in which the modes should be selected in the Choose Weapon Mode menu.>>Type IGNORE to use the default values (1 for SniperOrder, 2 for BurstOrder and 3 for RapidOrder).>>FirstModeSlot, SecondModeSlot, ThirdModeSlot>-------------------------------------------->The slots that should be used for the modes in the Choose Weapon Mode menu.>>Type IGNORE to use the default values (CROSSBOW_AMMO1_ITEM for FirstModeSlot, CROSSBOW_AMMO2_ITEM for SecondModeSlot and CROSSBOW_AMMO3_ITEM for ThirdModeSlot).>>StillHipsFire>------------->ENABLED : if Lara stops moving while shooting from her hips, she does not change the HK to her shoulder.>DISABLED: if Lara stops moving while shooting from her hips, she changes the HK to her shoulder.>>Type IGNORE to use the default value (DISABLED).
 CUST_FLEP_LIFT_DOORS:2 ;Used with Customize command.>Syntax: Customize=CUST_FLEP_LIFT_DOORS, LiftDoorsSound>>LiftDoorsSound>-------------->The sound that plays when the lift doors open or close.>>Type IGNORE to not play any sound.
@@ -59,6 +75,7 @@ CUST_FLEP_GRENADEGUN:3 ;Used with Customize command.>Syntax: Customize=CUST_FLEP
 CUST_FLEP_MINE_CART:4 ;Used with Customize command.>Syntax: Customize=CUST_FLEP_MINE_CART, CartSlot, LaraSlot, ControllerSlot, SwitchSlot, ClunkStartSound, FrontImpactSound, SreechBrakeSound, TrackLoopSound, PullyLoopSound, Alignment>>Read the Manual that is included in the plugin package.
 CUST_FLEP_MINE_CART_TRAPS:5 ;Used with Customize command.>Syntax: Customize=CUST_FLEP_MINE_CART_TRAPS, TrapSlot, HealthLoss, {TrapSlot, HealthLoss array}>>Read the Manual that is included in the plugin package.
 CUST_FLEP_HORIZON_ROTATE:6 ;Used with Customize command.>Syntax: Customize=CUST_FLEP_HORIZON_ROTATE, Speed>>Speed>----->The speed (in rotation units) at which the Horizon rotates. Positive values are clockwise.>>Type DISABLED to not rotate the Horizon.>>Note: 182 rotation units are equivalent to one degree.
+CUST_FLEP_TRAIN:7 ;Used with Customize command.>Syntax: Customize=CUST_FLEP_TRAIN, TubeLoopSound, TrainKillAnimation, DeathCameraDistance>>TubeLoopSound>------------->The sound that plays when the train is moving.>>Type IGNORE to not play any sound.>>Note: the sound must have L flag set.>>TrainKillAnimation>------------------>The animation that Lara does when she is killed by the train.>>Type IGNORE to not force any animation.>>Note: the animation must have state ID 8.>>DeathCameraDistance>------------------->The distance (in units) from the train at which the camera is placed to look at Lara.>>Type IGNORE to use the default value (8192).
 
 LARA_MESH_HIPS:0
 LARA_MESH_LEFT_THIGH:1

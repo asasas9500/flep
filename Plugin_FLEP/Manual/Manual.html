@@ -28,6 +28,7 @@
 <li><a href="#p12">Duckcrawl animation setup</a></li>
 <li><a href="#p13">SPEEDUP</a></li>
 <li><a href="#p14">SPEEDDN</a></li>
+<li><a href="#p15">Train</a></li>
 </ul>
 <hr />
 <h2 id="p1">Original Bridges</h2>
@@ -357,5 +358,25 @@ You can't use two or more such commands in a row, because then engine will hang.
 You can use two or more commands in a row, and engine will act slower and slower in specified flipeffect sectors.<br />
 But note that it will also slow down camera timer, so it won't look smooth.</p>
 <p>This command is used by means of flipeffect 11.</p>
+<hr />
+<h2 id="p15">Train</h2>
+<p>Implements the train trap from the TR3 level Aldwych.</p>
+<p>To assign a slot:</p>
+<code>AssignSlot=&lt;MyUsedSlot&gt;,&lt;Train&gt;</code>
+<p>Where <strong>&lt;Train&gt;</strong> is <strong>OBJ_FLEP_TRAIN{1..16}</strong>.</p>
+<p>Additional customization can be done by the command <strong>Customize=CUST_FLEP_TRAIN</strong>.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_TRAIN, TubeLoopSound, TrainKillAnimation, DeathCameraDistance</code>
+<p><strong>TubeLoopSound</strong>:<br />
+The sound that plays when the train is moving.<br />
+Type <strong>IGNORE</strong> to not play any sound.<br />
+Note: the sound must have L flag set.</p>
+<p><strong>TrainKillAnimation</strong>:<br />
+The animation that Lara does when she is killed by the train.<br />
+Type <strong>IGNORE</strong> to not force any animation.<br />
+Note: the animation must have state ID 8.</p>
+<p><strong>DeathCameraDistance</strong>:<br />
+The distance (in units) from the train at which the camera is placed to look at Lara.<br />
+Type <strong>IGNORE</strong> to use the default value (8192).</p>
 </body>
 </html>
