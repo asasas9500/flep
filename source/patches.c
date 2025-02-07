@@ -2342,6 +2342,19 @@ typedef struct
 
 typedef struct
 {
+	long x;
+	long y;
+	long z;
+	short angle;
+	short speed;
+	uchar WingYoff;
+	uchar flags;
+	uchar life;
+	uchar pad;
+} BAT_STRUCT;
+
+typedef struct
+{
 	char Text[80];
 } StrText80;
 
@@ -2761,6 +2774,12 @@ short train_object[16];
 short train_sfx_tube_loop;
 short train_animation_trainkill;
 short train_distance_camera;
+short bat_emitter_object[16];
+short bat_mesh_object[16];
+short bat_mesh_sound[16];
+BAT_STRUCT bat_effect[64];
+short springboard_object[16];
+short springboard_fallspeed[16];
 
 long check_flep(long number)
 {
@@ -6128,6 +6147,234 @@ void setup_trains(void)
 	}
 }
 
+ushort GetBatEmitter(BAT_STRUCT* bat)
+{
+	ushort emitter;
+	
+	emitter = bat->flags;
+	emitter |= bat->pad << 8;
+	return emitter;
+}
+
+void SetBatEmitter(BAT_STRUCT* bat, ushort emitter)
+{
+	bat->flags = emitter & 0xFF;
+	bat->pad = emitter >> 8;
+}
+
+long UpdateBats(short item_number)
+{
+	BAT_STRUCT* bat;
+	ITEM_INFO* item;
+	long on;
+
+	item = &items[item_number];
+	
+	if (item->room_number != camera.pos.room_number)
+		ItemNewRoom(item_number, camera.pos.room_number);
+	
+	on = 0;
+
+	for (int i = 0; i < 64; i++)
+	{
+		bat = &bat_effect[i];
+
+		if (!bat->life || GetBatEmitter(bat) != item_number)
+			continue;
+
+		on = 1;
+
+		for (int j = 0; j < 16; j++)
+		{
+			if (bat_emitter_object[j] == item->object_number)
+			{
+				if (bat_mesh_sound[j] != -1 && !(i & 3) && !(GetRandomControl() & 7))
+					SoundEffect(bat_mesh_sound[j], (PHD_3DPOS*)&bat->x, SFX_DEFAULT);
+				
+				bat->WingYoff = (bat->WingYoff + 1) % objects[bat_mesh_object[j]].nmeshes;
+				break;
+			}
+		}
+
+		bat->x -= (bat->speed * rcossin_tbl[(bat->angle << 1) + 1]) >> W2V_SHIFT;
+		bat->y -= GetRandomControl() & 3;
+		bat->z += (bat->speed * rcossin_tbl[bat->angle << 1]) >> W2V_SHIFT;
+
+		if (bat->life < 128)
+		{
+			bat->y += -4 - (i >> 1);
+
+			if (!(GetRandomControl() & 3))
+			{
+				bat->angle = (bat->angle + (GetRandomControl() & 0xFF) - 128) & 0xFFF;
+				bat->speed += GetRandomControl() & 3;
+			}
+		}
+
+		bat->speed += 12;
+
+		if (bat->speed > 300)
+			bat->speed = 300;
+
+		if (wibble & 4)
+			bat->life--;
+	}
+	
+	return on;
+}
+
+void DrawBats(ITEM_INFO* item)
+{
+	BAT_STRUCT* bat;
+	short** meshpp;
+	short item_number;
+
+	item_number = item - items;
+
+	for (int i = 0; i < 64; i++)
+	{
+		bat = &bat_effect[i];
+
+		if (!bat->life || GetBatEmitter(bat) != item_number)
+			continue;
+
+		phd_PushMatrix();
+		phd_TranslateAbs(bat->x, bat->y, bat->z);
+		phd_RotY(bat->angle << 4);
+		
+		for (int j = 0; j < 16; j++)
+		{
+			if (bat_emitter_object[j] == item->object_number)
+			{
+				meshpp = &meshes[objects[bat_mesh_object[j]].mesh_index + 2 * bat->WingYoff];
+				phd_PutPolygons(*meshpp, 0);
+				break;
+			}
+		}
+		
+		phd_PopMatrix();
+	}
+}
+
+void TriggerBats(short item_number)
+{
+	BAT_STRUCT* bat;
+	ITEM_INFO* item;
+	short ang;
+
+	item = &items[item_number];
+	ang = ((item->pos.y_rot >> 4) - 1024) & 0xFFF;
+
+	for (int i = 0; i < item->trigger_flags && i < 64; i++)
+	{
+		bat = &bat_effect[i];
+		bat->x = (GetRandomControl() & 0x1FF) + item->pos.x_pos - 256;
+		bat->y = item->pos.y_pos - (GetRandomControl() & 0xFF) + 256;
+		bat->z = (GetRandomControl() & 0x1FF) + item->pos.z_pos - 256;
+		bat->angle = ((GetRandomControl() & 0x7F) + ang - 64) & 0xFFF;
+		bat->speed = (GetRandomControl() & 0x1F) + 64;
+		bat->WingYoff = GetRandomControl() & 0x3F;
+		bat->life = (GetRandomControl() & 7) + 144;
+		SetBatEmitter(bat, item_number);
+	}
+}
+
+void BatEmitterControl(short item_number)
+{
+	ITEM_INFO* item;
+
+	item = &items[item_number];
+
+	if (!TriggerActive(item))
+		return;
+
+	if (!item->item_flags[0])
+	{
+		TriggerBats(item_number);
+		item->item_flags[0] = 1;
+	}
+
+	if (!UpdateBats(item_number))
+		KillItem(item_number);
+}
+
+void setup_bats(void)
+{
+	OBJECT_INFO* obj;
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (bat_emitter_object[i] != -1 && bat_mesh_object[i] != -1)
+		{
+			obj = &objects[bat_emitter_object[i]];
+			obj->initialise = 0;
+			obj->collision = 0;
+			obj->control = BatEmitterControl;
+			obj->draw_routine = DrawBats;
+			obj->using_drawanimating_item = 0;
+			obj->save_flags = 1;
+		}
+	}
+}
+
+void SpringBoardControl(short item_number) {
+	ITEM_INFO *item;
+
+	item = &items[item_number];
+	if (!item->current_anim_state &&
+		item->pos.y_pos == lara_item->pos.y_pos &&
+		!((item->pos.x_pos ^ lara_item->pos.x_pos) & 0xFFFFFC00) &&
+		!((item->pos.z_pos ^ lara_item->pos.z_pos) & 0xFFFFFC00))
+	{
+		if (lara_item->hit_points > 0)
+		{
+			if (lara_item->current_anim_state == AS_BACK || lara_item->current_anim_state == AS_FASTBACK)
+				lara_item->speed = -lara_item->speed;
+			
+			for (int i = 0; i < 16; i++)
+			{
+				if (springboard_object[i] == item->object_number)
+				{
+					if (springboard_fallspeed[i] == -1)
+						lara_item->fallspeed = -240;
+					else
+						lara_item->fallspeed = -springboard_fallspeed[i];
+
+					break;
+				}
+			}
+			
+			lara_item->gravity_status = 1;
+			lara_item->anim_number = 34;
+			lara_item->frame_number = anims[lara_item->anim_number].frame_base;
+			lara_item->current_anim_state = AS_FORWARDJUMP;
+			lara_item->goal_anim_state = AS_FORWARDJUMP;
+			item->goal_anim_state = 1;
+			AnimateItem(item);
+		}
+	}
+	else
+		AnimateItem(item);
+}
+
+void setup_springboards(void)
+{
+	OBJECT_INFO* obj;
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (springboard_object[i] != -1)
+		{
+			obj = &objects[springboard_object[i]];
+			obj->initialise = 0;
+			obj->collision = 0;
+			obj->control = SpringBoardControl;
+			obj->save_anim = 1;
+			obj->save_flags = 1;
+		}
+	}
+}
+
 #ifdef __TINYC__
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
@@ -6247,6 +6494,22 @@ void pcbInitLoadNewLevel(void)
 	train_sfx_tube_loop = -1;
 	train_animation_trainkill = -1;
 	train_distance_camera = 8192;
+
+	for (int i = 0; i < 16; i++)
+	{
+		bat_emitter_object[i] = -1;
+		bat_mesh_object[i] = -1;
+		bat_mesh_sound[i] = -1;
+	}
+
+	for (int i = 0; i < 64; i++)
+		bat_effect[i].life = 0;
+
+	for (int i = 0; i < 16; i++)
+	{
+		springboard_object[i] = -1;
+		springboard_fallspeed[i] = -1;
+	}
 }
 
 #ifdef __TINYC__
@@ -6362,6 +6625,8 @@ void cbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArra
 void pcbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArray)
 #endif
 {
+	long index;
+
 	switch (CustomizeValue)
 	{
 	case 1:
@@ -6511,6 +6776,35 @@ void pcbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArr
 			train_distance_camera = pItemArray[2];
 
 		break;
+
+	case 8:
+
+		for (int i = 0; i < 48; i++)
+		{
+			if (NumberOfItems > i && pItemArray[i] != -1)
+			{
+				if (!(i % 3))
+					bat_emitter_object[i / 3] = pItemArray[i];
+				else if (i % 3 == 1)
+					bat_mesh_object[i / 3] = pItemArray[i];
+				else
+					bat_mesh_sound[i / 3] = pItemArray[i];
+			}
+		}
+
+		break;
+
+	case 9:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 70;
+
+			if (NumberOfItems > 1 && pItemArray[1] != -1)
+				springboard_fallspeed[index] = (short)phd_sqrt(3072 * pItemArray[1]);
+		}
+
+		break;
 	}
 }
 
@@ -6526,12 +6820,18 @@ void pcbParametersMine(ushort ParameterValue, long NumberOfItems, short* pItemAr
 	{
 	case 1:
 
-		if (NumberOfItems == 4)
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
 		{
 			index = pItemArray[0] - 1;
-			lara_meshswap_target[index] = pItemArray[1];
-			lara_meshswap_source_slot[index] = pItemArray[2];
-			lara_meshswap_source[index] = pItemArray[3];
+
+			if (NumberOfItems > 1 && pItemArray[1] != -1)
+				lara_meshswap_target[index] = pItemArray[1];
+
+			if (NumberOfItems > 2 && pItemArray[2] != -1)
+				lara_meshswap_source_slot[index] = pItemArray[2];
+
+			if (NumberOfItems > 3 && pItemArray[3] != -1)
+				lara_meshswap_source[index] = pItemArray[3];
 		}
 
 		break;
@@ -6632,6 +6932,25 @@ void pcbAssignSlotMine(ushort Slot, ushort ObjType)
 	case 69:
 		train_object[ObjType - 54] = Slot;
 		break;
+
+	case 70:
+	case 71:
+	case 72:
+	case 73:
+	case 74:
+	case 75:
+	case 76:
+	case 77:
+	case 78:
+	case 79:
+	case 80:
+	case 81:
+	case 82:
+	case 83:
+	case 84:
+	case 85:
+		springboard_object[ObjType - 70] = Slot;
+		break;
 	}
 }
 
@@ -6649,6 +6968,8 @@ void pcbInitObjects(void)
 	setup_mine_cart();
 	setup_trapdoors();
 	setup_trains();
+	setup_bats();
+	setup_springboards();
 }
 
 #ifdef __TINYC__

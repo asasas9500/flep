@@ -29,6 +29,8 @@
 <li><a href="#p13">SPEEDUP</a></li>
 <li><a href="#p14">SPEEDDN</a></li>
 <li><a href="#p15">Train</a></li>
+<li><a href="#p16">Bats</a></li>
+<li><a href="#p17">Springboard</a></li>
 </ul>
 <hr />
 <h2 id="p1">Original Bridges</h2>
@@ -378,5 +380,35 @@ Note: the animation must have state ID 8.</p>
 <p><strong>DeathCameraDistance</strong>:<br />
 The distance (in units) from the train at which the camera is placed to look at Lara.<br />
 Type <strong>IGNORE</strong> to use the default value (8192).</p>
+<hr />
+<h2 id="p16">Bats</h2>
+<p>Implements the bats that are present in TR3. They just fly away and are not harmful.</p>
+<p>The setup is based on TR4 locusts. The OCB of the emitter nullmesh tells how many bats to spawn, up to 64. The bats fly along the direction of the point of the nullmesh.<br />
+Also like the locusts, each mesh in the mesh slot should be the whole bat in a different pose.</p>
+<p>The customization can be done by the command <strong>Customize=CUST_FLEP_BATS</strong>.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_BATS, EmitterSlot, MeshSlot, Sound, {Emitter, Mesh, Sound array}</code>
+<p><strong>EmitterSlot</strong>:<br />
+The slot of the bat emitter.</p>
+<p><strong>MeshSlot</strong>:<br />
+The slot that contains the bat meshes.</p>
+<p><strong>Sound</strong>:<br />
+The sound the bats do while they fly.<br />
+Type <strong>IGNORE</strong> to not play any sound.</p>
+<hr />
+<h2 id="p17">Springboard</h2>
+<p>Implements the springboard (bounce pad) from TR2.</p>
+<p>To assign a slot:</p>
+<code>AssignSlot=&lt;MyUsedSlot&gt;,&lt;Springboard&gt;</code>
+<p>Where <strong>&lt;Springboard&gt;</strong> is <strong>OBJ_FLEP_SPRINGBOARD{1..16}</strong>.</p>
+<p>Additional customization can be done by the command <strong>Customize=CUST_FLEP_SPRINGBOARD</strong>.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_SPRINGBOARD, ObjType, PeakHeight</code>
+<p><strong>ObjType</strong>:<br />
+The springboard to be customized.<br />
+See the <strong>OBJ_FLEP_SPRINGBOARD</strong> constants.</p>
+<p><strong>PeakHeight</strong>:<br />
+The peak height (in clicks) of the jump given by the springboard.<br />
+Type <strong>IGNORE</strong> to use the default value (19).</p>
 </body>
 </html>

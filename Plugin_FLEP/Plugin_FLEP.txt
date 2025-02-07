@@ -107,6 +107,29 @@ To assign a slot:
 
 AssignSlot=<MyUsedSlot>,<Train>
 
-Where <Train> is either OBJ_FLEP_TRAIN{1..16}.
+Where <Train> is OBJ_FLEP_TRAIN{1..16}.
 
 Additional customization can be done by the command Customize=CUST_FLEP_TRAIN.
+
+Bats
+====
+
+Implements the bats that are present in TR3. They just fly away and are not harmful.
+
+The setup is based on TR4 locusts. The OCB of the emitter nullmesh tells how many bats to spawn, up to 64. The bats fly along the direction of the point of the nullmesh.
+Also like the locusts, each mesh in the mesh slot should be the whole bat in a different pose.
+
+The customization can be done by the command Customize=CUST_FLEP_BATS.
+
+Springboard
+===========
+
+Implements the springboard (bounce pad) from TR2.
+
+To assign a slot:
+
+AssignSlot=<MyUsedSlot>,<Springboard>
+
+Where <Springboard> is OBJ_FLEP_SPRINGBOARD{1..16}.
+
+Additional customization can be done by the command Customize=CUST_FLEP_SPRINGBOARD.
