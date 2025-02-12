@@ -16793,3 +16793,15 @@ patchsetversion=1.1
       datamodified=9,668B464C663D4AFF7D066605B600EB0F663DB6007E06662DB600EB036631C06689464C66A162DF8000E9BC30BDFF
       datacondbehave=9,1
   footer=332
+  header=333
+      enabled=1
+      name=Fix Spot Light
+      description=By default, the Spot Light calculations only take into account the outer cone, resulting in sharp and sudden light transitions, as objects enter the Spot Light. This patch fixes the calculations. Now the inner cone is taken into consideration, which creates a smooth transition.
+      category=
+      dependencies=
+      filename=patches.bin
+      dataoffset=0,76F40
+      datadefault=0,28
+      datamodified=0,24
+      datacondbehave=0,0
+  footer=333
