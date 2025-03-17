@@ -7289,21 +7289,46 @@ void reset_hk_lasersight(void)
 		LSHKTimer--;
 }
 
+void bounce_hk_lasersight(char Fire, short* ammo)
+{
+	if (inputBusy & IN_ACTION && !HKTimer && *ammo)
+	{
+		if (!Fire && lara.crossbow_type_carried & hk_ammo2 || lara.crossbow_type_carried & hk_ammo3)
+			camera.bounce = -16 - (GetRandomControl() & 0x1F);
+	}
+	else if (!(inputBusy & IN_ACTION))
+		camera.bounce = 0;
+}
+
 void wait_hk_lasersight(void)
 {
-	if (lara.gun_type == WEAPON_CROSSBOW && !(inputBusy & IN_ACTION))
+	if (lara.gun_type == WEAPON_CROSSBOW)
 	{
-		WeaponDelay = 0;
-		LSHKShotsFired = 0;
-		camera.bounce = 0;
+		if (pPatchMap[336])
+			bounce_hk_lasersight(0, get_current_ammo_pointer(WEAPON_CROSSBOW));
+		else if (!(inputBusy & IN_ACTION))
+		{
+			WeaponDelay = 0;
+			LSHKShotsFired = 0;
+			camera.bounce = 0;
+		}
 	}
 }
 
 void fire_hk_lasersight(char* Fire, short* ammo)
 {
-	if (lara.gun_type != WEAPON_CROSSBOW)
+	if (!pPatchMap[273] || lara.gun_type != WEAPON_CROSSBOW)
 	{
-		WeaponDelay = 32;
+		if (!pPatchMap[336])
+			WeaponDelay = 32;
+
+		if (*ammo != -1)
+			(*ammo)--;
+	}
+	else if (pPatchMap[336])
+	{
+		bounce_hk_lasersight(1, ammo);
+		savegame.Game.AmmoUsed++;
 
 		if (*ammo != -1)
 			(*ammo)--;
@@ -10456,6 +10481,7 @@ void DrawBats(ITEM_INFO* item)
 void TriggerBats(short item_number)
 {
 	BAT_STRUCT* bat;
+	BAT_STRUCT* bat2;
 	ITEM_INFO* item;
 	short ang;
 
@@ -10464,7 +10490,16 @@ void TriggerBats(short item_number)
 
 	for (int i = 0; i < item->trigger_flags && i < 64; i++)
 	{
-		bat = &bat_effect[i];
+		bat = &bat_effect[0];
+
+		for (int j = 1; bat->life && j < 64; j++)
+		{
+			bat2 = &bat_effect[j];
+
+			if (bat2->life < bat->life)
+				bat = bat2;
+		}
+
 		bat->x = (GetRandomControl() & 0x1FF) + item->pos.x_pos - 256;
 		bat->y = item->pos.y_pos - (GetRandomControl() & 0xFF) + 256;
 		bat->z = (GetRandomControl() & 0x1FF) + item->pos.z_pos - 256;
@@ -11813,6 +11848,34 @@ void DrawLara_load(long* matrix)
 	}
 }
 
+void draw_pistol_mesh_right(ITEM_INFO* item)
+{
+	if (lara.mesh_ptrs[LM_RHAND] == meshes[objects[LARA].mesh_index + 2 * LM_RHAND])
+	{
+		lara.holster = LARA_HOLSTERS;
+		lara.mesh_ptrs[LM_RHAND] = meshes[objects[PISTOLS_ANIM].mesh_index + 2 * LM_RHAND];
+	}
+	else
+	{
+		lara.holster = LARA_HOLSTERS_PISTOLS;
+		lara.mesh_ptrs[LM_RHAND] = meshes[objects[LARA].mesh_index + 2 * LM_RHAND];
+	}
+}
+
+void draw_pistol_mesh_left(ITEM_INFO* item)
+{
+	if (lara.mesh_ptrs[LM_LHAND] == meshes[objects[LARA].mesh_index + 2 * LM_LHAND])
+	{
+		lara.holster = LARA_HOLSTERS;
+		lara.mesh_ptrs[LM_LHAND] = meshes[objects[PISTOLS_ANIM].mesh_index + 2 * LM_LHAND];
+	}
+	else
+	{
+		lara.holster = LARA_HOLSTERS_PISTOLS;
+		lara.mesh_ptrs[LM_LHAND] = meshes[objects[LARA].mesh_index + 2 * LM_LHAND];
+	}
+}
+
 #ifdef __TINYC__
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
@@ -12522,4 +12585,6 @@ void Inject(void)
 	INJECT(0x0091015E, DrawLara_load);
 	INJECT(0x00910163, mInterpolateMatrix);
 	INJECT(0x00910168, mInterpolateArmMatrix);
+	INJECT(0x0091016D, draw_pistol_mesh_right);
+	INJECT(0x00910172, draw_pistol_mesh_left);
 }
