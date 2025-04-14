@@ -46,6 +46,7 @@
 <START_TRIGGERTYPE_12_T_H>
 1:FLEP number. The <#> number is equal to the secret number
 2:Mine Cart. Lara is in the Mine Cart
+3:Quad Bike. Lara is in the Quad Bike
 <END>
 
 <START_CONDITION_1_O_H>

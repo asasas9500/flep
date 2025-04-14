@@ -16293,8 +16293,8 @@ patchsetversion=1.1
   footer=313
   header=314
       enabled=1
-      name=Mine Cart
-      description=Read the Manual that is included in the plugin package.
+      name=Classic vehicles
+      description=Allows the usage of classic vehicles, like the Mine Cart.
       category=
       dependencies=
       filename=patches.bin
@@ -16316,7 +16316,7 @@ patchsetversion=1.1
       datacondbehave=3,0
       dataoffset=4,FD740
       datadefault=4,
-      datamodified=4,6683FAFF0F84B832BDFFE847290C0085C00F847232BDFFE835290C005F5E5BC3E836290C00A1D8555300E92C32BDFF8D46C050E828290C0083C40466837ECC1F0F8522C8C0FFE90FC8C0FF56E814290C0083C40466837E0C1F0F85DED5C0FFE9CBD5C0FF
+      datamodified=4,6683FAFF0F84B832BDFFE847290C0085C07C510F84A932BDFF5F5E5BC3909090E836290C00A1D8555300E92C32BDFF8D46C050E828290C0083C40466837ECC1F0F8522C8C0FFE90FC8C0FF56E814290C0083C40466837E0C1F0F85DED5C0FFE9CBD5C0FF0FBF15E8DE8000E91932BDFF
       datacondbehave=4,1
   footer=314
   header=315

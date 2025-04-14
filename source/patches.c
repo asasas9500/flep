@@ -791,6 +791,7 @@ typedef enum
 typedef enum
 {
 	ROOM_UNDERWATER =	0x1,
+	ROOM_SWAMP =		0x4,
 	ROOM_OUTSIDE =		0x8,
 	ROOM_DYNAMIC_LIT =	0x10,
 	ROOM_NOT_INSIDE =	0x20,
@@ -874,6 +875,9 @@ typedef enum
 
 typedef enum
 {
+	ANIM_STOP = 11,
+	ANIM_FASTFALL = 23,
+	ANIM_FALLDOWN = 34,
 	ANIM_BACKSTEPD_LEFT = 61,
 	ANIM_BACKSTEPD_RIGHT = 62,
 	ANIM_RBALL_DEATH = 139,
@@ -1436,6 +1440,51 @@ typedef enum
 
     NumSamples
 } sound_effect_names;
+
+typedef enum
+{
+	QS_0,
+	QS_DRIVE,
+	QS_TURNL,
+	QS_3,
+	QS_4,
+	QS_SLOW,
+	QS_BRAKE,
+	QS_BIKEDEATH,
+	QS_FALL,
+	QS_GETONR,
+	QS_GETOFFR,
+	QS_HITBACK,
+	QS_HITFRONT,
+	QS_HITLEFT,
+	QS_HITRIGHT,
+	QS_STOP,
+	QS_16,
+	QS_LAND,
+	QS_STOPSLOWLY,
+	QS_FALLDEATH,
+	QS_FALLOFF,
+	QS_WHEELIE,
+	QS_TURNR,
+	QS_GETONL,
+	QS_GETOFFL
+} QUAD_STATES;
+
+typedef enum
+{
+	SF_NONE =			0x0,
+	SF_BURN =			0x1,
+	SF_SCALE =			0x2,	//scale using sptr->Scalar
+	SF_DEF =			0x8,	//use sptr->Def for the drawn sprite (otherwise do flat quad)
+	SF_ROTATE =			0x10,	//rotate the drawn sprite (only supported for sparks with SF_DEF)
+	SF_FX =				0x40,	//spark is attached to an effect
+	SF_ITEM =			0x80,	//spark is attached to an item
+	SF_OUTSIDE =		0x100,	//spark is affected by wind
+	SF_DEADLY =			0x400,
+	SF_UNWATER =		0x800,	//for underwater explosions to create bubbles etc.
+	SF_ATTACHEDNODE =	0x1000,	//spark is attached to an item node, uses NodeOffsets
+	SF_GREEN =			0x2000,	//turns the spark into a green-ish blue (for explosions only)
+} spark_flags;
 
 typedef struct
 {
@@ -2373,6 +2422,24 @@ typedef struct
 
 typedef struct
 {
+	short joint_rotation[4];
+	long Velocity;
+	short FrontRot;
+	short RearRot;
+	long Revs;
+	long EngineRevs;
+	short track_mesh;
+	long skidoo_turn;
+	long left_fallspeed;
+	long right_fallspeed;
+	short momentum_angle;
+	short extra_rotation;
+	long pitch;
+	uchar Flags;
+} QUADINFO;
+
+typedef struct
+{
 	char Text[80];
 } StrText80;
 
@@ -2791,6 +2858,16 @@ __declspec(naked) float fsin(float angle)
 #define phd_RotY_raw	( (void(*)(short)) 0x0084DAF2 )
 #define phd_RotZ_raw	( (void(*)(short)) 0x0084DB11 )
 #define phd_RotYXZpack_raw	( (void(*)(long)) 0x0084DB30 )
+
+#define ExplodingDeath2	( (long(*)(short, long, short)) 0x0043A030 )
+#define TriggerUnderwaterExplosion	( (void(*)(ITEM_INFO*, long)) 0x0042B080 )
+#define TriggerExplosionSparks	( (void(*)(long, long, long, long, long, long, short)) 0x00434480 )
+#define GetFreeSpark	( (long(*)(void)) 0x00433830 )
+#define GetJointAbsPosition	( (void(*)(ITEM_INFO*, PHD_VECTOR*, long)) 0x0045F160 )
+#define GetWaterHeight	( (long(*)(long, long, long, short)) 0x00449A50 )
+
+#define spark	ARRAY_(VAR_U_(0x0043383F, long), SPARKS, [2048])
+#define bones	VAR_U_(0x00533958, long*)
 
 short phd_sin(long angle)
 {
@@ -6977,6 +7054,20 @@ long mMatrixStack[20 * indices_count];
 long miMatrixStack[20 * indices_count];
 long mlara_matrices[180];
 long in_draw_loop;
+short quad_bike_slot_quadbike[16];
+short quad_bike_slot_vehicle_anim[16];
+short quad_bike_slot_avalanche[16][16];
+short quad_bike_health[16][16];
+short quad_bike_sfx_quad_front_impact[16];
+short quad_bike_sfx_quad_move[16];
+short quad_bike_sfx_quad_idle[16];
+short quad_bike_mesh_wheel[16][4];
+char quad_bike_mesh_wheel_index[16][4];
+short quad_bike_deadly_fallspeed[16];
+short quad_bike_deadly_water_depth[16];
+short quad_bike_frame_fall_death_detach[16];
+char quad_bike_index[NUMBER_OBJECTS];
+short baddie_collision_roomies[1024];
 
 long check_flep(long number)
 {
@@ -8507,7 +8598,7 @@ void MineCartCollision(short item_number, ITEM_INFO* l, COLL_INFO* coll)
 	item->flags |= IFL_TRIGGERED;
 }
 
-long CanGetOut(long lr)
+long MineCartCanGetOut(long lr)
 {
 	ITEM_INFO* item;
 	FLOOR_INFO* floor;
@@ -8539,31 +8630,56 @@ long CanGetOut(long lr)
 	return 0;
 }
 
+short CollectBaddieCollisionRoomies(short room_number)
+{
+	short* doors;
+	long flag;
+	short room_count;
+
+	room_count = 1;
+	baddie_collision_roomies[0] = room_number;
+	doors = room[room_number].door;
+
+	if (doors)
+	{
+		for (int i = *doors++; i > 0; i--)
+		{
+			flag = 0;
+
+			for (int j = 0; j < room_count; j++)
+			{
+				if (baddie_collision_roomies[j] == *doors)
+				{
+					flag = 1;
+					break;
+				}
+			}
+
+			if (!flag)
+			{
+				baddie_collision_roomies[room_count] = *doors;
+				room_count++;
+			}
+
+			doors += 16;
+		}
+	}
+
+	return room_count;
+}
+
 void CartToBaddieCollision(ITEM_INFO* cart)
 {
 	ITEM_INFO* item;
 	OBJECT_INFO* obj;
-	short* doors;
 	long dx, dy, dz, flag;
-	short roomies[20];
 	short room_count, item_number, frame;
 
-	room_count = 1;
-	roomies[0] = cart->room_number;
-	doors = room[cart->room_number].door;
-
-	if (doors)
-	{
-		for (int i = *doors++; i > 0; i--, doors += 16)
-		{
-			roomies[room_count] = *doors;
-			room_count++;
-		}
-	}
+	room_count = CollectBaddieCollisionRoomies(cart->room_number);
 
 	for (int i = 0; i < room_count; i++)
 	{
-		for (item_number = room[roomies[i]].item_number; item_number != NO_ITEM; item_number = item->next_item)
+		for (item_number = room[baddie_collision_roomies[i]].item_number; item_number != NO_ITEM; item_number = item->next_item)
 		{
 			item = &items[item_number];
 
@@ -8636,7 +8752,7 @@ void CartToBaddieCollision(ITEM_INFO* cart)
 	}
 }
 
-short GetCollision(ITEM_INFO* item, short ang, long dist, short* c)
+short MineCartGetCollision(ITEM_INFO* item, short ang, long dist, short* c)
 {
 	FLOOR_INFO* floor;
 	long x, y, z, h;
@@ -8656,7 +8772,7 @@ short GetCollision(ITEM_INFO* item, short ang, long dist, short* c)
 	return (short)h;
 }
 
-long TestHeight(ITEM_INFO* item, long x, long z)
+long MineCartTestHeight(ITEM_INFO* item, long x, long z)
 {
 	PHD_VECTOR pos;
 	FLOOR_INFO* floor;
@@ -8674,7 +8790,7 @@ long TestHeight(ITEM_INFO* item, long x, long z)
 	return h;
 }
 
-void DoUserInput(ITEM_INFO* item, ITEM_INFO* l, CARTINFO* cart)
+void MineCartDoUserInput(ITEM_INFO* item, ITEM_INFO* l, CARTINFO* cart)
 {
 	ITEM_INFO* item2;
 	OBJECT_INFO* obj;
@@ -8776,12 +8892,12 @@ void DoUserInput(ITEM_INFO* item, ITEM_INFO* l, CARTINFO* cart)
 
 		if (input & (IN_ROLL | IN_JUMP) && cart->Flags & 0x20)
 		{
-			if (input & IN_LEFT && CanGetOut(-1))
+			if (input & IN_LEFT && MineCartCanGetOut(-1))
 			{
 				l->goal_anim_state = 1;
 				cart->Flags &= ~8;
 			}
-			else if (input & IN_RIGHT && CanGetOut(1))
+			else if (input & IN_RIGHT && MineCartCanGetOut(1))
 			{
 				l->goal_anim_state = 1;
 				cart->Flags |= 8;
@@ -8888,7 +9004,7 @@ void DoUserInput(ITEM_INFO* item, ITEM_INFO* l, CARTINFO* cart)
 	case 14:
 		camera.target_elevation = -8190;
 		camera.target_distance = 2048;
-		h = GetCollision(item, item->pos.y_rot, 512, &c);
+		h = MineCartGetCollision(item, item->pos.y_rot, 512, &c);
 
 		if (h > -256 && h < 256)
 		{
@@ -8972,7 +9088,7 @@ void DoUserInput(ITEM_INFO* item, ITEM_INFO* l, CARTINFO* cart)
 		return;
 	}
 
-	h = GetCollision(item, item->pos.y_rot, 512, &c);
+	h = MineCartGetCollision(item, item->pos.y_rot, 512, &c);
 
 	if (h < -512)
 	{
@@ -9270,11 +9386,11 @@ void MoveCart(ITEM_INFO* item, ITEM_INFO* l, CARTINFO* cart)
 		item->pos.z_pos += (item->speed * phd_cos(item->pos.y_rot)) >> W2V_SHIFT;
 	}
 
-	cart->MidPos = TestHeight(item, 0, 0);
+	cart->MidPos = MineCartTestHeight(item, 0, 0);
 
 	if (!cart->YVel)
 	{
-		cart->FrontPos = TestHeight(item, 0, 256);
+		cart->FrontPos = MineCartTestHeight(item, 0, 256);
 		cart->Gradient = (short)(cart->MidPos - cart->FrontPos);
 		item->pos.y_pos = cart->MidPos;
 	}
@@ -9312,7 +9428,7 @@ void MoveCart(ITEM_INFO* item, ITEM_INFO* l, CARTINFO* cart)
 	item->pos.z_rot = item->item_flags[0];
 
 	if (mine_cart_alignment)
-		item->pos.z_rot += (short)(TestHeight(item, 128, 0) - TestHeight(item, -128, 0)) << 5;
+		item->pos.z_rot += (short)(MineCartTestHeight(item, 128, 0) - MineCartTestHeight(item, -128, 0)) << 5;
 }
 
 long MineCartControl(void)
@@ -9326,7 +9442,7 @@ long MineCartControl(void)
 	l = lara_item;
 	item = &items[lara.vehicle];
 	cart = (CARTINFO*)item->data;
-	DoUserInput(item, l, cart);
+	MineCartDoUserInput(item, l, cart);
 
 	if (cart->Flags & 0x10)
 		MoveCart(item, l, cart);
@@ -9363,49 +9479,19 @@ long MineCartControl(void)
 	return lara.vehicle != NO_ITEM;
 }
 
-long IsInMineCart(void)
-{
-	return mine_cart_slot_minecart != -1 && mine_cart_slot_vehicle_anim != -1 && mine_cart_slot_mapper != -1 && items[lara.vehicle].object_number == mine_cart_slot_minecart;
-}
-
-void MineCartLook(void)
-{
-	if (lara.vehicle != -1 && IsInMineCart() && input & IN_LOOK && lara.look)
-	{
-		camera.type = LOOK_CAMERA;
-
-		if (input & IN_LEFT)
-		{
-			input -= IN_LEFT;
-
-			if (lara.head_y_rot > -8008)
-				lara.head_y_rot -= 364;
-		}
-		else if (input & IN_RIGHT)
-		{
-			input -= IN_RIGHT;
-
-			if (lara.head_y_rot < 8008)
-				lara.head_y_rot += 364;
-		}
-	}
-}
-
-void SaveMineCart(ITEM_INFO* item)
-{
-	if (mine_cart_slot_minecart != -1 && mine_cart_slot_vehicle_anim != -1 && mine_cart_slot_mapper != -1 && item->object_number == mine_cart_slot_minecart)
-		WriteSG(item->data, sizeof(CARTINFO));
-}
-
-void RestoreMineCart(ITEM_INFO* item)
-{
-	if (mine_cart_slot_minecart != -1 && mine_cart_slot_vehicle_anim != -1 && mine_cart_slot_mapper != -1 && item->object_number == mine_cart_slot_minecart)
-		ReadSG(item->data, sizeof(CARTINFO));
-}
-
 void MineCartMapperInitialise(short item_number)
 {
 	items[item_number].flags |= IFL_CODEBITS;
+}
+
+long IsMineCartAssigned(void)
+{
+	return mine_cart_slot_minecart != -1 && mine_cart_slot_vehicle_anim != -1 && mine_cart_slot_mapper != -1;
+}
+
+long IsInMineCart(void)
+{
+	return IsMineCartAssigned() && items[lara.vehicle].object_number == mine_cart_slot_minecart;
 }
 
 long IsDrivingMineCart(void)
@@ -9417,7 +9503,7 @@ void setup_mine_cart(void)
 {
 	OBJECT_INFO* obj;
 
-	if (mine_cart_slot_minecart != -1 && mine_cart_slot_vehicle_anim != -1 && mine_cart_slot_mapper != -1)
+	if (IsMineCartAssigned())
 	{
 		obj = &objects[mine_cart_slot_minecart];
 		obj->initialise = MineCartInitialise;
@@ -9453,6 +9539,1496 @@ void setup_mine_cart(void)
 			obj->save_hitpoints = 0;
 			obj->save_flags = 1;
 			obj->save_anim = 1;
+		}
+	}
+}
+
+void InitialiseQuadBike(short item_number)
+{
+	ITEM_INFO* item;
+	QUADINFO* quad;
+
+	item = &items[item_number];
+	quad = (QUADINFO*)game_malloc(sizeof(QUADINFO));
+	item->data = quad;
+	quad->Velocity = 0;
+	quad->skidoo_turn = 0;
+	quad->right_fallspeed = 0;
+	quad->left_fallspeed = 0;
+	quad->momentum_angle = item->pos.y_rot;
+	quad->extra_rotation = 0;
+	quad->track_mesh = 0;
+	quad->pitch = 0;
+	quad->Flags = 0;
+	quad->FrontRot = 0;
+	quad->RearRot = 0;
+	quad->Revs = 0;
+	quad->EngineRevs = 0;
+
+	for (int i = 0; i < 4; i++)
+		quad->joint_rotation[i] = 0;
+}
+
+long GetOnQuadBike(short item_number, COLL_INFO* coll)
+{
+	ITEM_INFO* item;
+	FLOOR_INFO* floor;
+	long dx, dy, dz, dist, h;
+	ushort uang;
+	short room_number, ang;
+
+	item = &items[item_number];
+
+	if (!(input & IN_ACTION) || item->flags & IFL_INVISIBLE || lara.gun_status != LG_NO_ARMS || lara_item->gravity_status)
+		return 0;
+
+	dx = lara_item->pos.x_pos - item->pos.x_pos;
+	dy = ABS(item->pos.y_pos - lara_item->pos.y_pos);
+	dz = lara_item->pos.z_pos - item->pos.z_pos;
+	dist = SQUARE(dx) + SQUARE(dz);
+
+	if (dy > 256 || dist > 170000)
+		return 0;
+
+	room_number = item->room_number;
+	floor = GetFloor(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, &room_number);
+	h = GetHeight(floor, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+
+	if (h < -32000)
+		return 0;
+
+	ang = (short)phd_atan(item->pos.z_pos - lara_item->pos.z_pos, item->pos.x_pos - lara_item->pos.x_pos) - item->pos.y_rot;
+	uang = lara_item->pos.y_rot - item->pos.y_rot;
+
+	if (ang > -0x1FFE && ang < 0x5FFA)
+	{
+		if (uang <= 0x1FFE || uang >= 0x5FFA)
+			return 0;
+	}
+	else
+	{
+		if (uang <= 0x9FF6 || uang >= 0xDFF2)
+			return 0;
+	}
+
+	return 1;
+}
+
+void QuadBikeCollision(short item_number, ITEM_INFO* l, COLL_INFO* coll)
+{
+	ITEM_INFO* item;
+	QUADINFO* quad;
+	short ang;
+
+	if (l->hit_points < 0 || lara.vehicle != NO_ITEM)
+		return;
+
+	if (!GetOnQuadBike(item_number, coll))
+		return ObjectCollision(item_number, l, coll);
+
+	lara.vehicle = item_number;
+
+	if (lara.gun_type == WEAPON_FLARE)
+	{
+		CreateFlare(FLARE_ITEM, 0);
+		undraw_flare_meshes();
+		lara.flare_control_left = 0;
+		lara.gun_type = WEAPON_NONE;
+		lara.request_gun_type = WEAPON_NONE;
+	}
+
+	lara.gun_status = LG_HANDS_BUSY;
+	item = &items[item_number];
+	ang = (short)phd_atan(item->pos.z_pos - l->pos.z_pos, item->pos.x_pos - l->pos.x_pos) - item->pos.y_rot;
+
+	if (ang > -0x1FFE && ang < 0x5FFA)
+	{
+		l->anim_number = objects[quad_bike_slot_vehicle_anim[quad_bike_index[item->object_number]]].anim_index + 23;
+		l->current_anim_state = QS_GETONL;
+		l->goal_anim_state = QS_GETONL;
+	}
+	else
+	{
+		l->anim_number = objects[quad_bike_slot_vehicle_anim[quad_bike_index[item->object_number]]].anim_index + 9;
+		l->current_anim_state = QS_GETONR;
+		l->goal_anim_state = QS_GETONR;
+	}
+
+	l->frame_number = anims[l->anim_number].frame_base;
+	l->pos.x_pos = item->pos.x_pos;
+	l->pos.y_pos = item->pos.y_pos;
+	l->pos.z_pos = item->pos.z_pos;
+	l->pos.y_rot = item->pos.y_rot;
+	lara.head_y_rot = 0;
+	lara.head_x_rot = 0;
+	lara.torso_y_rot = 0;
+	lara.torso_x_rot = 0;
+	lara.hit_direction = -1;
+	AnimateItem(l);
+
+	quad = (QUADINFO*)item->data;
+	quad->Revs = 0;
+
+	item->flags |= IFL_TRIGGERED;
+}
+
+void QuadbikeExplode(ITEM_INFO* item)
+{
+	if (room[item->room_number].flags & ROOM_UNDERWATER)
+		TriggerUnderwaterExplosion(item, 0);
+	else
+	{
+		TriggerExplosionSparks(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, 3, -2, 0, item->room_number);
+
+		for (int i = 0; i < 3; i++)
+			TriggerExplosionSparks(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, 3, -1, 0, item->room_number);
+	}
+
+	ExplodingDeath2(lara.vehicle, -2, 0);
+	KillItem(lara.vehicle);
+	item->status = ITEM_DEACTIVATED;
+	SoundEffect(SFX_EXPLOSION1, 0, SFX_DEFAULT);
+	SoundEffect(SFX_EXPLOSION2, 0, SFX_DEFAULT);
+	lara.vehicle = NO_ITEM;
+}
+
+long QuadBikeCheckGetOff(void)
+{
+	ITEM_INFO* item;
+	QUADINFO* quad;
+
+	item = &items[lara.vehicle];
+
+	if ((lara_item->current_anim_state == QS_GETOFFR || lara_item->current_anim_state == QS_GETOFFL) &&
+		lara_item->frame_number == anims[lara_item->anim_number].frame_end)
+	{
+		if (lara_item->current_anim_state == QS_GETOFFL)
+			lara_item->pos.y_rot += 0x4000;
+		else
+			lara_item->pos.y_rot -= 0x4000;
+
+		lara_item->anim_number = ANIM_STOP;
+		lara_item->frame_number = anims[ANIM_STOP].frame_base;
+		lara_item->current_anim_state = AS_STOP;
+		lara_item->goal_anim_state = AS_STOP;
+		lara_item->pos.x_pos -= (512 * phd_sin(lara_item->pos.y_rot)) >> W2V_SHIFT;
+		lara_item->pos.z_pos -= (512 * phd_cos(lara_item->pos.y_rot)) >> W2V_SHIFT;
+		lara_item->pos.x_rot = 0;
+		lara_item->pos.z_rot = 0;
+		lara.vehicle = NO_ITEM;
+		lara.gun_status = LG_NO_ARMS;
+		return 1;
+	}
+
+	quad = (QUADINFO*)item->data;
+
+	if (lara_item->current_anim_state == QS_FALLDEATH && lara_item->frame_number == anims[lara_item->anim_number].frame_base + quad_bike_frame_fall_death_detach[quad_bike_index[item->object_number]])
+	{
+		lara_item->pos.x_rot = 0;
+		lara_item->pos.z_rot = 0;
+		lara_item->speed = 0;
+		quad->Flags |= 0x80;
+	}
+
+	return 1;
+}
+
+long QuadBikeTestHeight(ITEM_INFO* item, long x, long z, PHD_VECTOR* pos)
+{
+	FLOOR_INFO* floor;
+	long s, c;
+	short room_number;
+
+	s = phd_sin(item->pos.y_rot);
+	c = phd_cos(item->pos.y_rot);
+	pos->x = item->pos.x_pos + ((z * c + x * s) >> W2V_SHIFT);
+	pos->y = item->pos.y_pos + ((z * phd_sin(item->pos.z_rot)) >> W2V_SHIFT) - ((x * phd_sin(item->pos.x_rot)) >> W2V_SHIFT);
+	pos->z = item->pos.z_pos + ((x * c - z * s) >> W2V_SHIFT);
+
+	room_number = item->room_number;
+	floor = GetFloor(pos->x, pos->y, pos->z, &room_number);
+	c = GetCeiling(floor, pos->x, pos->y, pos->z);
+
+	if (c == NO_HEIGHT || pos->y - 762 < c)
+		return NO_HEIGHT;
+
+	return GetHeight(floor, pos->x, pos->y, pos->z);
+}
+
+void QuadBikeTriggerExhaustSmoke(long x, long y, long z, short angle, long speed, long moving)
+{
+	SPARKS* sptr;
+
+	sptr = &spark[GetFreeSpark()];
+	sptr->On = 1;
+	sptr->sR = 0;
+	sptr->sG = 0;
+	sptr->sB = 0;
+
+	if (moving)
+	{
+		sptr->dR = (uchar)((96 * speed) >> 5);
+		sptr->dG = (uchar)((96 * speed) >> 5);
+		sptr->dB = (uchar)((128 * speed) >> 5);
+	}
+	else
+	{
+		sptr->dR = 96;
+		sptr->dG = 96;
+		sptr->dB = 128;
+	}
+
+	sptr->ColFadeSpeed = 4;
+	sptr->FadeToBlack = 4;
+	sptr->Life = (uchar)((GetRandomControl() & 3) - (speed >> 12) + 20);
+	sptr->sLife = sptr->Life;
+
+	if (sptr->Life < 9)
+	{
+		sptr->Life = 9;
+		sptr->sLife = 9;
+	}
+
+	sptr->TransType = 2;
+	sptr->extras = 0;
+	sptr->Dynamic = -1;
+	sptr->x = (GetRandomControl() & 0xF) + x - 8;
+	sptr->y = (GetRandomControl() & 0xF) + y - 8;
+	sptr->z = (GetRandomControl() & 0xF) + z - 8;
+	sptr->Xvel = (GetRandomControl() & 0xFF) + ((speed * phd_sin(angle)) >> 16) - 128;
+	sptr->Yvel = -8 - (GetRandomControl() & 7);
+	sptr->Zvel = (GetRandomControl() & 0xFF) + ((speed * phd_cos(angle)) >> 16) - 128;
+	sptr->Friction = 4;
+
+	if (GetRandomControl() & 1)
+	{
+		sptr->Flags = SF_ROTATE | SF_DEF | SF_SCALE;
+		sptr->RotAng = GetRandomControl() & 0xFFF;
+
+		if (GetRandomControl() & 1)
+			sptr->RotAdd = -24 - (GetRandomControl() & 7);
+		else
+			sptr->RotAdd = (GetRandomControl() & 7) + 24;
+	}
+	else
+		sptr->Flags = SF_DEF | SF_SCALE;
+
+	sptr->Scalar = 2;
+	sptr->Def = (uchar)objects[DEFAULT_SPRITES].mesh_index;
+	sptr->Gravity = -4 - (GetRandomControl() & 3);
+	sptr->MaxYvel = -8 - (GetRandomControl() & 7);
+	sptr->dSize = (uchar)((GetRandomControl() & 7) + (speed >> 7) + 32);
+	sptr->sSize = sptr->dSize >> 1;
+	sptr->Size = sptr->dSize >> 1;
+}
+
+long QuadBikeCanGetOff(long lr)
+{
+	ITEM_INFO* item;
+	FLOOR_INFO* floor;
+	long x, y, z, h, c;
+	short angle, room_number;
+
+	item = &items[lara.vehicle];
+
+	if (lr >= 0)
+		angle = item->pos.y_rot + 0x4000;
+	else
+		angle = item->pos.y_rot - 0x4000;
+
+	x = item->pos.x_pos + ((512 * phd_sin(angle)) >> W2V_SHIFT);
+	y = item->pos.y_pos;
+	z = item->pos.z_pos + ((512 * phd_cos(angle)) >> W2V_SHIFT);
+
+	room_number = item->room_number;
+	floor = GetFloor(x, y, z, &room_number);
+	h = GetHeight(floor, x, y, z);
+	c = GetCeiling(floor, x, y, z);
+
+	if (height_type != BIG_SLOPE && height_type != DIAGONAL &&
+		h != NO_HEIGHT && ABS(h - item->pos.y_pos) <= 512 &&
+		c - item->pos.y_pos <= -762 && h - c >= 762)
+		return 1;
+
+	return 0;
+}
+
+long QuadBikeGetCollisionAnim(ITEM_INFO* item, PHD_VECTOR* pos)
+{
+	long s, c, fb, lr;
+
+	pos->x = item->pos.x_pos - pos->x;
+	pos->z = item->pos.z_pos - pos->z;
+
+	if (!pos->x && !pos->z)
+		return 0;
+
+	s = phd_sin(item->pos.y_rot);
+	c = phd_cos(item->pos.y_rot);
+	fb = (pos->x * s + pos->z * c) >> W2V_SHIFT;
+	lr = (pos->x * c - pos->z * s) >> W2V_SHIFT;
+
+	if (ABS(fb) > ABS(lr))
+	{
+		if (fb > 0)
+			return 14;
+		else
+			return 13;
+	}
+	else
+	{
+		if (lr > 0)
+			return 11;
+		else
+			return 12;
+	}
+}
+
+long QuadBikeDoDynamics(long height, long fallspeed, long* ypos)
+{
+	long bounce;
+
+	if (height <= *ypos)
+	{
+		bounce = (height - *ypos) << 2;
+
+		if (bounce < -80)
+			bounce = -80;
+
+		fallspeed += ((bounce - fallspeed) >> 3);
+
+		if (*ypos > height)
+			*ypos = height;
+	}
+	else
+	{
+		*ypos += fallspeed;
+
+		if (*ypos <= height - 80)
+				fallspeed += 6;
+		else
+		{
+			*ypos = height;
+			fallspeed = 0;
+		}
+	}
+
+	return fallspeed;
+}
+
+long QuadBikeDoShift(ITEM_INFO* item, PHD_VECTOR* newPos, PHD_VECTOR* oldPos)	//from boat.cpp
+{
+	FLOOR_INFO* floor;
+	long x, z, nX, nZ, oX, oZ, sX, sZ, h;
+	short room_number;
+
+	nX = newPos->x >> WALL_SHIFT;
+	nZ = newPos->z >> WALL_SHIFT;
+	oX = oldPos->x >> WALL_SHIFT;
+	oZ = oldPos->z >> WALL_SHIFT;
+	sX = newPos->x & WALL_MASK;
+	sZ = newPos->z & WALL_MASK;
+
+	if (nX == oX)
+	{
+		if (nZ == oZ)
+		{
+			item->pos.z_pos += (oldPos->z - newPos->z);
+			item->pos.x_pos += (oldPos->x - newPos->x);
+			return 0;
+		}
+		else if (nZ <= oZ)
+		{
+			item->pos.z_pos += WALL_SIZE - sZ;
+			return item->pos.x_pos - newPos->x;
+		}
+		else
+		{
+			item->pos.z_pos -= 1 + sZ;
+			return newPos->x - item->pos.x_pos;
+		}
+	}
+
+	if (nZ == oZ)
+	{
+		if (nX <= oX)
+		{
+			item->pos.x_pos += WALL_SIZE - sX;
+			return newPos->z - item->pos.z_pos;
+		}
+		else
+		{
+			item->pos.x_pos -= 1 + sX;
+			return item->pos.z_pos - newPos->z;
+		}
+	}
+
+	x = 0;
+	z = 0;
+	room_number = item->room_number;
+	floor = GetFloor(oldPos->x, newPos->y, newPos->z, &room_number);
+	h = GetHeight(floor, oldPos->x, newPos->y, newPos->z);
+
+	if (h < oldPos->y - 256)
+	{
+		if (newPos->z > oldPos->z)
+			z = -1 - sZ;
+		else
+			z = WALL_SIZE - sZ;
+	}
+
+	room_number = item->room_number;
+	floor = GetFloor(newPos->x, newPos->y, oldPos->z, &room_number);
+	h = GetHeight(floor, newPos->x, newPos->y, oldPos->z);
+
+	if (h < oldPos->y - 256)
+	{
+		if (newPos->x > oldPos->x)
+			x = -1 - sX;
+		else
+			x = WALL_SIZE - sX;
+	}
+
+	if (x && z)
+	{
+		item->pos.x_pos += x;
+		item->pos.z_pos += z;
+		return 0;
+	}
+
+	if (z)
+	{
+		item->pos.z_pos += z;
+
+		if (z > 0)
+			return item->pos.x_pos - newPos->x;
+		else
+			return newPos->x - item->pos.x_pos;
+	}
+
+	if (x)
+	{
+		item->pos.x_pos += x;
+
+		if (x > 0)
+			return newPos->z - item->pos.z_pos;
+		else
+			return item->pos.z_pos - newPos->z;
+	}
+
+	item->pos.x_pos += oldPos->x - newPos->x;
+	item->pos.z_pos += oldPos->z - newPos->z;
+	return 0;
+}
+
+long QuadBikeIsAvalanche(ITEM_INFO* quad, short objnum)
+{
+	for (int i = 0; i < 16; i++)
+	{
+		if (quad_bike_slot_avalanche[quad_bike_index[quad->object_number]][i] == objnum)
+			return i;
+	}
+
+	return -1;
+}
+
+void QuadBikeBaddieCollision(ITEM_INFO* quad)
+{
+	ITEM_INFO* item;
+	OBJECT_INFO* obj;
+	long dx, dy, dz, avalanche;
+	short room_count, item_number;
+
+	room_count = CollectBaddieCollisionRoomies(quad->room_number);
+
+	for (int i = 0; i < room_count; i++)
+	{
+		for (item_number = room[baddie_collision_roomies[i]].item_number; item_number != NO_ITEM; item_number = item->next_item)
+		{
+			item = &items[item_number];
+
+			if (item->collidable && item->status != ITEM_INVISIBLE && item != lara_item && item != quad)
+			{
+				obj = &objects[item->object_number];
+				avalanche = QuadBikeIsAvalanche(quad, item->object_number);
+
+				if (obj->collision && (obj->intelligent || avalanche != -1))
+				{
+					dx = quad->pos.x_pos - item->pos.x_pos;
+					dy = quad->pos.y_pos - item->pos.y_pos;
+					dz = quad->pos.z_pos - item->pos.z_pos;
+
+					if (dx > -2048 && dx < 2048 && dz > -2048 && dz < 2048 && dy > -2048 && dy < 2048 && TestBoundsCollide(item, quad, 500))
+					{
+						if (avalanche != -1)
+						{
+							lara_item->hit_status = 1;
+							lara_item->hit_points -= quad_bike_health[quad_bike_index[quad->object_number]][avalanche];
+							continue;
+						}
+
+						DoLotsOfBlood(item->pos.x_pos, quad->pos.y_pos - 256, item->pos.z_pos, quad->speed, quad->pos.y_rot, item->room_number, 3);
+						item->hit_points = 0;
+					}
+				}
+			}
+		}
+	}
+}
+
+long QuadBikeDynamics(ITEM_INFO* item)
+{
+	QUADINFO* quad;
+	FLOOR_INFO* floor;
+	PHD_VECTOR oldPos, newPos;
+	PHD_VECTOR flPos, frPos, blPos, brPos, mlPos, mrPos, bmlPos, bmrPos, fmlPos, fmrPos;
+	PHD_VECTOR flPos2, bmlPos2, mlPos2, fmlPos2, blPos2, frPos2, bmrPos2, mrPos2, fmrPos2, brPos2;
+	long front_left, front_right, back_left, back_right, mid_left, mid_right, bm_left, bm_right, fm_left, fm_right;
+	long front_left2, bm_left2, mid_left2, fm_left2, back_left2, front_right2, bm_right2, mid_right2, fm_right2, back_right2;
+	long h, speed, slip, anim, dx, dz;
+	short vel, ang, room_number, shift, shift2;
+
+	quad = (QUADINFO*)item->data;
+	quad->Flags &= ~0x1;
+	oldPos.x = item->pos.x_pos;
+	oldPos.y = item->pos.y_pos;
+	oldPos.z = item->pos.z_pos;
+
+	front_left = QuadBikeTestHeight(item, 550, -260, &flPos);
+	front_right = QuadBikeTestHeight(item, 550, 260, &frPos);
+	back_left = QuadBikeTestHeight(item, -550, -260, &blPos);
+	back_right = QuadBikeTestHeight(item, -550, 260, &brPos);
+	mid_left = QuadBikeTestHeight(item, 0, -260, &mlPos);
+	mid_right = QuadBikeTestHeight(item, 0, 260, &mrPos);
+	bm_left = QuadBikeTestHeight(item, 275, -260, &bmlPos);
+	bm_right = QuadBikeTestHeight(item, 275, 260, &bmrPos);
+	fm_left = QuadBikeTestHeight(item, -275, -260, &fmlPos);
+	fm_right = QuadBikeTestHeight(item, -275, 260, &fmrPos);
+
+	if (blPos.y > back_left)
+		blPos.y = back_left;
+
+	if (brPos.y > back_right)
+		brPos.y = back_right;
+
+	if (flPos.y > front_left)
+		flPos.y = front_left;
+
+	if (frPos.y > front_right)
+		frPos.y = front_right;
+
+	if (fmlPos.y > fm_left)
+		fmlPos.y = fm_left;
+
+	if (fmrPos.y > fm_right)
+		fmrPos.y = fm_right;
+
+	if (bmlPos.y > bm_left)
+		bmlPos.y = bm_left;
+
+	if (bmrPos.y > bm_right)
+		bmrPos.y = bm_right;
+
+	if (mlPos.y > mid_left)
+		mlPos.y = mid_left;
+
+	if (mrPos.y > mid_right)
+		mrPos.y = mid_right;
+
+	if (item->pos.y_pos <= item->floor - 256)
+		item->pos.y_rot += (short)(quad->extra_rotation + quad->skidoo_turn);
+	else
+	{
+		if (quad->skidoo_turn < -364)
+			quad->skidoo_turn += 364;
+		else if (quad->skidoo_turn > 364)
+			quad->skidoo_turn -= 364;
+		else
+			quad->skidoo_turn = 0;
+
+		item->pos.y_rot += (short)(quad->extra_rotation + quad->skidoo_turn);
+		vel = (short)(546 - (quad->Velocity >> 8));
+		ang = item->pos.y_rot - quad->momentum_angle;
+
+		if (!(input & IN_ACTION) && quad->Velocity > 0)
+			vel += vel >> 2;
+
+		if (ang < -273)
+		{
+			if (ang >= -27300)
+				quad->momentum_angle -= vel;
+			else
+				quad->momentum_angle = item->pos.y_rot + 27300;
+		}
+		else if (ang > 273)
+		{
+			if (ang <= 27300)
+				quad->momentum_angle += vel;
+			else
+				quad->momentum_angle = item->pos.y_rot - 27300;
+		}
+		else
+			quad->momentum_angle = item->pos.y_rot;
+	}
+
+	room_number = item->room_number;
+	floor = GetFloor(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, &room_number);
+	h = GetHeight(floor, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+
+	if (item->pos.y_pos < h)
+		speed = item->speed;
+	else
+		speed = (item->speed * phd_cos(item->pos.x_rot)) >> W2V_SHIFT;
+
+	item->pos.x_pos += (speed * phd_sin(quad->momentum_angle)) >> W2V_SHIFT;
+	item->pos.z_pos += (speed * phd_cos(quad->momentum_angle)) >> W2V_SHIFT;
+
+	slip = (100 * phd_sin(item->pos.x_rot)) >> W2V_SHIFT;
+
+	if (ABS(slip) > 50)
+	{
+		quad->Flags |= 0x1;
+
+		if (slip > 0)
+			slip -= 10;
+		else
+			slip += 10;
+
+		item->pos.x_pos -= (slip * phd_sin(item->pos.y_rot)) >> W2V_SHIFT;
+		item->pos.z_pos -= (slip * phd_cos(item->pos.y_rot)) >> W2V_SHIFT;
+	}
+
+	slip = (50 * phd_sin(item->pos.z_rot)) >> W2V_SHIFT;
+
+	if (ABS(slip) > 25)
+	{
+		quad->Flags |= 0x1;
+		item->pos.x_pos += (slip * phd_cos(item->pos.y_rot)) >> W2V_SHIFT;
+		item->pos.z_pos -= (slip * phd_sin(item->pos.y_rot)) >> W2V_SHIFT;
+	}
+
+	newPos.x = item->pos.x_pos;
+	newPos.z = item->pos.z_pos;
+
+	if (!(item->flags & IFL_INVISIBLE))
+		QuadBikeBaddieCollision(item);
+
+	shift = 0;
+
+	front_left2 = QuadBikeTestHeight(item, 550, -260, &flPos2);
+
+	if (front_left2 < flPos.y - 256)
+		shift = (short)QuadBikeDoShift(item, &flPos2, &flPos);
+
+	bm_left2 = QuadBikeTestHeight(item, 275, -260, &bmlPos2);
+
+	if (bm_left2 < bmlPos.y - 256)
+		QuadBikeDoShift(item, &bmlPos2, &bmlPos);
+
+	mid_left2 = QuadBikeTestHeight(item, 0, -260, &mlPos2);
+
+	if (mid_left2 < mlPos.y - 256)
+		QuadBikeDoShift(item, &mlPos2, &mlPos);
+
+	fm_left2 = QuadBikeTestHeight(item, -275, -260, &fmlPos2);
+
+	if (fm_left2 < fmlPos.y - 256)
+		QuadBikeDoShift(item, &fmlPos2, &fmlPos);
+
+	back_left2 = QuadBikeTestHeight(item, -550, -260, &blPos2);
+
+	if (back_left2 < blPos.y - 256)
+	{
+		shift2 = (short)QuadBikeDoShift(item, &blPos2, &blPos);
+
+		if ((shift2 > 0 && shift >= 0) || (shift2 < 0 && shift <= 0))
+			shift += shift2;
+	}
+
+	front_right2 = QuadBikeTestHeight(item, 550, 260, &frPos2);
+
+	if (front_right2 < frPos.y - 256)
+	{
+		shift2 = (short)QuadBikeDoShift(item, &frPos2, &frPos);
+
+		if ((shift2 > 0 && shift >= 0) || (shift2 < 0 && shift <= 0))
+			shift += shift2;
+	}
+
+	bm_right2 = QuadBikeTestHeight(item, 275, 260, &bmrPos2);
+
+	if (bm_right2 < bmrPos.y - 256)
+		QuadBikeDoShift(item, &bmrPos2, &bmrPos);
+
+	mid_right2 = QuadBikeTestHeight(item, 0, 260, &mrPos2);
+
+	if (mid_right2 < mrPos.y - 256)
+		QuadBikeDoShift(item, &mrPos2, &mrPos);
+
+	fm_right2 = QuadBikeTestHeight(item, -275, 260, &fmrPos2);
+
+	if (fm_right2 < fmrPos.y - 256)
+		QuadBikeDoShift(item, &fmrPos2, &fmrPos);
+
+	back_right2 = QuadBikeTestHeight(item, -550, 260, &brPos2);
+
+	if (back_right2 < brPos.y - 256)
+	{
+		shift2 = (short)QuadBikeDoShift(item, &brPos2, &brPos);
+
+		if ((shift2 > 0 && shift >= 0) || (shift2 < 0 && shift <= 0))
+			shift += shift2;
+	}
+
+	room_number = item->room_number;
+	floor = GetFloor(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, &room_number);
+	h = GetHeight(floor, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+
+	if (h < item->pos.y_pos - 256)
+		QuadBikeDoShift(item, (PHD_VECTOR*)&item->pos, &oldPos);
+
+	quad->extra_rotation = shift;
+	anim = QuadBikeGetCollisionAnim(item, &newPos);
+
+	if (anim)
+	{
+		dx = item->pos.x_pos - oldPos.x;
+		dz = item->pos.z_pos - oldPos.z;
+		speed = (dx * phd_sin(quad->momentum_angle) + dz * phd_cos(quad->momentum_angle)) >> W2V_SHIFT;
+		speed <<= 8;
+
+		if (&items[lara.vehicle] == item && quad->Velocity == 0xA000 && speed < 0x9FF6)
+		{
+			lara_item->hit_points -= (short)((0xA000 - speed) >> 7);
+			lara_item->hit_status = 1;
+		}
+
+		if (quad->Velocity > 0 && speed < quad->Velocity)
+			quad->Velocity = speed < 0 ? 0 : speed;
+		else if (quad->Velocity < 0 && speed > quad->Velocity)
+			quad->Velocity = speed > 0 ? 0 : speed;
+
+		if (quad->Velocity < -0x3000)
+			quad->Velocity = -0x3000;
+	}
+
+	return anim;
+}
+
+void AnimateQuadBike(ITEM_INFO* item, long hitWall, long killed)
+{
+	QUADINFO* quad;
+	short state;
+
+	quad = (QUADINFO*)item->data;
+	state = lara_item->current_anim_state;
+
+	if (item->pos.y_pos != item->floor && state != QS_FALL && state != QS_LAND && state != QS_FALLOFF && !killed)
+	{
+		if (quad->Velocity < 0)
+			lara_item->anim_number = objects[quad_bike_slot_vehicle_anim[quad_bike_index[item->object_number]]].anim_index + 6;
+		else
+			lara_item->anim_number = objects[quad_bike_slot_vehicle_anim[quad_bike_index[item->object_number]]].anim_index + 25;
+
+		lara_item->frame_number = anims[lara_item->anim_number].frame_base;
+		lara_item->current_anim_state = 8;
+		lara_item->goal_anim_state = 8;
+	}
+	else if (hitWall &&
+		state != QS_HITFRONT && state != QS_HITBACK && state != QS_HITLEFT && state != QS_HITRIGHT && state != QS_FALLOFF &&
+		quad->Velocity > 0x3555 && !killed)
+	{
+		switch (hitWall)
+		{
+		case 13:
+			lara_item->anim_number = objects[quad_bike_slot_vehicle_anim[quad_bike_index[item->object_number]]].anim_index + 12;
+			lara_item->current_anim_state = QS_HITFRONT;
+			lara_item->goal_anim_state = QS_HITFRONT;
+			break;
+
+		case 14:
+			lara_item->anim_number = objects[quad_bike_slot_vehicle_anim[quad_bike_index[item->object_number]]].anim_index + 11;
+			lara_item->current_anim_state = QS_HITBACK;
+			lara_item->goal_anim_state = QS_HITBACK;
+			break;
+
+		case 11:
+			lara_item->anim_number = objects[quad_bike_slot_vehicle_anim[quad_bike_index[item->object_number]]].anim_index + 14;
+			lara_item->current_anim_state = QS_HITLEFT;
+			lara_item->goal_anim_state = QS_HITLEFT;
+			break;
+
+		default:
+			lara_item->anim_number = objects[quad_bike_slot_vehicle_anim[quad_bike_index[item->object_number]]].anim_index + 13;
+			lara_item->current_anim_state = QS_HITRIGHT;
+			lara_item->goal_anim_state = QS_HITRIGHT;
+			break;
+		}
+
+		lara_item->frame_number = anims[lara_item->anim_number].frame_base;
+
+		if (quad_bike_sfx_quad_front_impact[quad_bike_index[item->object_number]] != -1)
+			SoundEffect(quad_bike_sfx_quad_front_impact[quad_bike_index[item->object_number]], &item->pos, SFX_DEFAULT);
+	}
+	else
+	{
+		switch (lara_item->current_anim_state)
+		{
+		case QS_DRIVE:
+
+			if (killed)
+			{
+				if (quad->Velocity <= 0x5000)
+					lara_item->goal_anim_state = QS_BIKEDEATH;
+				else
+					lara_item->goal_anim_state = QS_FALLDEATH;
+			}
+			else if (!(quad->Velocity & 0xFFFFFF00) && !(input & (IN_JUMP | IN_ACTION)))
+				lara_item->goal_anim_state = QS_STOP;
+			else if (input & IN_LEFT && !(quad->Flags & 0x2))
+				lara_item->goal_anim_state = QS_TURNL;
+			else if (input & IN_RIGHT && !(quad->Flags & 0x2))
+				lara_item->goal_anim_state = QS_TURNR;
+			else if (input & IN_JUMP)
+			{
+				if (quad->Velocity <= 0x6AAA)
+					lara_item->goal_anim_state = QS_SLOW;
+				else
+					lara_item->goal_anim_state = QS_BRAKE;
+			}
+
+			break;
+
+		case 2:
+
+			if (!(quad->Velocity & 0xFFFFFF00))
+				lara_item->goal_anim_state = QS_STOP;
+			else if (input & IN_RIGHT)
+			{
+				lara_item->anim_number = objects[quad_bike_slot_vehicle_anim[quad_bike_index[item->object_number]]].anim_index + 20;
+				lara_item->frame_number = anims[lara_item->anim_number].frame_base;
+				lara_item->current_anim_state = QS_TURNR;
+				lara_item->goal_anim_state = QS_TURNR;
+			}
+			else if (!(input & IN_LEFT))
+				lara_item->goal_anim_state = QS_DRIVE;
+
+			break;
+
+		case 5:
+		case 6:
+		case 18:
+
+			if (!(quad->Velocity & 0xFFFFFF00))
+				lara_item->goal_anim_state = QS_STOP;
+			else if (input & IN_LEFT)
+				lara_item->goal_anim_state = QS_TURNL;
+			else if (input & IN_RIGHT)
+				lara_item->goal_anim_state = QS_TURNR;
+
+			break;
+
+		case 8:
+
+			if (item->pos.y_pos == item->floor)
+				lara_item->goal_anim_state = QS_LAND;
+
+			break;
+
+		case 11:
+		case 12:
+		case 13:
+		case 14:
+
+			if (input & (IN_JUMP | IN_ACTION))
+				lara_item->goal_anim_state = QS_DRIVE;
+
+			break;
+
+		case 15:
+
+			if (killed)
+			{
+				lara_item->goal_anim_state = QS_BIKEDEATH;
+				break;
+			}
+
+			if (input & IN_ROLL && !quad->Velocity && !(quad->Flags & 0x1))
+			{
+				if (input & IN_RIGHT && QuadBikeCanGetOff(1))
+					lara_item->goal_anim_state = QS_GETOFFR;
+				else if (input & IN_LEFT && QuadBikeCanGetOff(-1))
+					lara_item->goal_anim_state = QS_GETOFFL;
+			}
+			else if (input & (IN_JUMP | IN_ACTION))
+				lara_item->goal_anim_state = QS_DRIVE;
+
+			break;
+
+		case 22:
+
+			if (!(quad->Velocity & 0xFFFFFF00))
+				lara_item->goal_anim_state = QS_STOP;
+			else if (input & IN_LEFT)
+			{
+				lara_item->anim_number = objects[quad_bike_slot_vehicle_anim[quad_bike_index[item->object_number]]].anim_index + 3;
+				lara_item->frame_number = anims[lara_item->anim_number].frame_base;
+				lara_item->current_anim_state = QS_TURNL;
+				lara_item->goal_anim_state = QS_TURNL;
+			}
+			else if (!(input & IN_RIGHT))
+				lara_item->goal_anim_state = QS_DRIVE;
+
+			break;
+		}
+	}
+
+	if (item->fallspeed > quad_bike_deadly_fallspeed[quad_bike_index[item->object_number]])
+		quad->Flags |= 0x40;
+}
+
+long QuadBikeUserControl(ITEM_INFO* item, long height, long* pitch)
+{
+	QUADINFO* quad;
+	long revs;
+
+	quad = (QUADINFO*)item->data;
+
+	if (!quad->Velocity && !(input & IN_SPRINT) && !(quad->Flags & 0x4))
+		quad->Flags |= 0x4;
+	else if (quad->Velocity)
+		quad->Flags &= ~0x4;
+
+	if (!(input & IN_SPRINT))
+		quad->Flags &= ~0x2;
+
+	if (!(quad->Flags & 0x2))
+	{
+		if (quad->Revs > 16)
+		{
+			quad->Velocity += quad->Revs >> 4;
+			quad->Revs -= quad->Revs >> 3;
+		}
+		else
+			quad->Revs = 0;
+	}
+
+	if (item->pos.y_pos < height - 256)
+	{
+		if (quad->EngineRevs < 0xA000)
+			quad->EngineRevs += (0xA000 - quad->EngineRevs) >> 3;
+	}
+	else
+	{
+		if (!quad->Velocity && input & IN_LOOK)
+		{
+			camera.type = LOOK_CAMERA;
+
+			if (input & IN_FORWARD)
+			{
+				input -= IN_FORWARD;
+
+				if (lara.head_x_rot > -6370)
+					lara.head_x_rot -= 364;
+			}
+			else if (input & IN_BACK)
+			{
+				input -= IN_BACK;
+
+				if (lara.head_x_rot < 5460)
+					lara.head_x_rot += 364;
+			}
+		}
+
+		if (quad->Velocity > 0)
+		{
+			if (input & IN_SPRINT && !(quad->Flags & 0x2) && quad->Velocity > 0x3000)
+			{
+				if (input & IN_LEFT)
+				{
+					quad->skidoo_turn -= 500;
+
+					if (quad->skidoo_turn < -0x5B0)
+						quad->skidoo_turn = -0x5B0;
+				}
+				else if (input & IN_RIGHT)
+				{
+					quad->skidoo_turn += 500;
+
+					if (quad->skidoo_turn > 0x5B0)
+						quad->skidoo_turn = 0x5B0;
+				}
+			}
+			else
+			{
+				if (input & IN_LEFT)
+				{
+					quad->skidoo_turn -= 455;
+
+					if (quad->skidoo_turn < -910)
+						quad->skidoo_turn = -910;
+				}
+				else if (input & IN_RIGHT)
+				{
+					quad->skidoo_turn += 455;
+
+					if (quad->skidoo_turn > 910)
+						quad->skidoo_turn = 910;
+				}
+			}
+		}
+		else if (quad->Velocity < 0)
+		{
+			if (input & IN_SPRINT && !(quad->Flags & 0x2) && quad->Velocity < -0x2800)
+			{
+				if (input & IN_RIGHT)
+				{
+					quad->skidoo_turn -= 500;
+
+					if (quad->skidoo_turn < -0x5B0)
+						quad->skidoo_turn = -0x5B0;
+				}
+				else if (input & IN_LEFT)
+				{
+					quad->skidoo_turn += 500;
+
+					if (quad->skidoo_turn > 0x5B0)
+						quad->skidoo_turn = 0x5B0;
+				}
+			}
+			else
+			{
+				if (input & IN_RIGHT)
+				{
+					quad->skidoo_turn -= 455;
+
+					if (quad->skidoo_turn < -910)
+						quad->skidoo_turn = -910;
+				}
+				else if (input & IN_LEFT)
+				{
+					quad->skidoo_turn += 455;
+
+					if (quad->skidoo_turn > 910)
+						quad->skidoo_turn = 910;
+				}
+			}
+		}
+
+		if (input & IN_JUMP)
+		{
+			if (input & IN_SPRINT && quad->Flags & 0x6)
+			{
+				quad->Flags |= 0x2;
+				quad->Revs -= 512;
+
+				if (quad->Revs < -0x3000)
+					quad->Revs = -0x3000;
+			}
+			else if (quad->Velocity > 0)
+				quad->Velocity -= 640;
+			else  if (quad->Velocity > -0x3000)
+				quad->Velocity -= 768;
+		}
+		else if (input & IN_ACTION)
+		{
+			if (input & IN_SPRINT && quad->Flags & 0x6)
+			{
+				quad->Flags |= 0x2;
+				quad->Revs += 512;
+
+				if (quad->Revs >= 0xA000)
+					quad->Revs = 0xA000;
+			}
+			else if (quad->Velocity < 0xA000)
+			{
+				if (quad->Velocity < 0x4000)
+					quad->Velocity += ((0x4800 - quad->Velocity) >> 3) + 8;
+				else if (quad->Velocity < 0x7000)
+					quad->Velocity += ((0x7800 - quad->Velocity) >> 4) + 4;
+				else
+					quad->Velocity += ((0xA000 - quad->Velocity) >> 3) + 2;
+			}
+			else
+				quad->Velocity = 0xA000;
+		}
+		else if (quad->Velocity > 256)
+			quad->Velocity -= 256;
+		else if (quad->Velocity < -256)
+			quad->Velocity += 256;
+		else
+			quad->Velocity = 0;
+
+		if (quad->Flags & 0x2 && quad->Revs && !(input & (IN_JUMP | IN_ACTION)))
+		{
+			if (quad->Revs > 8)
+				quad->Revs -= quad->Revs >> 3;
+			else
+				quad->Revs = 0;
+		}
+
+		item->speed = (short)(quad->Velocity >> 8);
+
+		if (quad->EngineRevs > 0x7000)
+			quad->EngineRevs = -0x2000;
+
+		revs = 0;	//originally uninitialized
+
+		if (quad->Velocity < 0)
+			revs = ABS(quad->Revs) + ABS(quad->Velocity >> 1);
+		else if (quad->Velocity < 0x7000)
+			revs = ABS(quad->Revs) + 0x8800 * quad->Velocity / 0x7000 - 0x2000;
+		else if (quad->Velocity <= 0xA000)
+			revs = ABS(quad->Revs) + 0x9800 * (quad->Velocity - 0x7000) / 0x3000 - 0x2800;
+		else
+			revs += ABS(quad->Revs);
+
+		quad->EngineRevs += (revs - quad->EngineRevs) >> 3;
+	}
+
+	*pitch = quad->EngineRevs;
+	return 0;
+}
+
+long QuadBikeControl(void)
+{
+	ITEM_INFO* item;
+	QUADINFO* quad;
+	FLOOR_INFO* floor;
+	PHD_VECTOR flPos, frPos, pos;
+	long front_left, front_right, wh;
+	long killed, hitWall, h, driving, pitch, smokeVel;
+	short room_number, rot, xrot, zrot, state;
+
+	item = &items[lara.vehicle];
+	quad = (QUADINFO*)item->data;
+	hitWall = QuadBikeDynamics(item);
+	killed = 0;
+	pitch = 0;	//originally uninitialized
+
+	front_left = QuadBikeTestHeight(item, 550, -260, &flPos);
+	front_right = QuadBikeTestHeight(item, 550, 260, &frPos);
+
+	room_number = item->room_number;
+	floor = GetFloor(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, &room_number);
+	h = GetHeight(floor, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+	TestTriggers(trigger_index, 1, 0);
+	TestTriggers(trigger_index, 0, 0);
+
+	if (lara_item->hit_points <= 0)
+	{
+		killed = 1;
+		input &= ~(IN_FORWARD | IN_BACK | IN_LEFT | IN_RIGHT | IN_ACTION | IN_JUMP | IN_SPRINT);
+	}
+
+	if (quad->Flags & 0x40)
+	{
+		driving = -1;
+		hitWall = 0;
+	}
+	else
+	{
+		switch (lara_item->current_anim_state)
+		{
+		case QS_GETONR:
+		case QS_GETOFFR:
+		case QS_GETONL:
+		case QS_GETOFFL:
+			driving = -1;
+			hitWall = 0;
+			break;
+
+		default:
+			driving = QuadBikeUserControl(item, h, &pitch);
+			break;
+		}
+	}
+
+	if (quad->Velocity || quad->Revs)
+	{
+		quad->pitch = pitch;
+
+		if (quad->pitch < -0x8000)
+			quad->pitch = -0x8000;
+		else if (quad->pitch > 0xA000)
+			quad->pitch = 0xA000;
+
+		if (quad_bike_sfx_quad_move[quad_bike_index[item->object_number]] != -1)
+			SoundEffect(quad_bike_sfx_quad_move[quad_bike_index[item->object_number]], &item->pos, (quad->pitch << 8) + 0x1000004);
+	}
+	else
+	{
+		if (driving != -1 && quad_bike_sfx_quad_idle[quad_bike_index[item->object_number]] != -1)
+			SoundEffect(quad_bike_sfx_quad_idle[quad_bike_index[item->object_number]], &item->pos, SFX_DEFAULT);
+
+		quad->pitch = 0;
+	}
+
+	item->floor = h;
+	rot = (short)(quad->Velocity >> 2);
+	quad->FrontRot -= rot;
+	quad->RearRot -= (short)(rot + (quad->Revs >> 3));
+
+	for (int i = 0; i < 4 && quad_bike_mesh_wheel[quad_bike_index[item->object_number]][quad_bike_mesh_wheel_index[quad_bike_index[item->object_number]][i]]; i++)
+		quad->joint_rotation[i] = quad_bike_mesh_wheel_index[quad_bike_index[item->object_number]][i] < 2 ? quad->FrontRot : quad->RearRot;
+
+	quad->left_fallspeed = QuadBikeDoDynamics(front_left, quad->left_fallspeed, &flPos.y);
+	quad->right_fallspeed = QuadBikeDoDynamics(front_right, quad->right_fallspeed, &frPos.y);
+	item->fallspeed = (short)QuadBikeDoDynamics(h, item->fallspeed, &item->pos.y_pos);
+
+	h = (flPos.y + frPos.y) >> 1;
+	xrot = (short)phd_atan(550, item->pos.y_pos - h);
+	zrot = (short)phd_atan(260, h - flPos.y);
+	item->pos.x_rot += (xrot - item->pos.x_rot) >> 1;
+	item->pos.z_rot += (zrot - item->pos.z_rot) >> 1;
+
+	if (room_number != item->room_number)
+	{
+		ItemNewRoom(lara.vehicle, room_number);
+
+		if (!(quad->Flags & 0x80))
+			ItemNewRoom(lara.item_number, room_number);
+	}
+
+	if (!(quad->Flags & 0x80))
+	{
+		lara_item->pos.x_pos = item->pos.x_pos;
+		lara_item->pos.y_pos = item->pos.y_pos;
+		lara_item->pos.z_pos = item->pos.z_pos;
+		lara_item->pos.x_rot = item->pos.x_rot;
+		lara_item->pos.y_rot = item->pos.y_rot;
+		lara_item->pos.z_rot = item->pos.z_rot;
+	}
+
+	AnimateQuadBike(item, hitWall, killed);
+	wh = GetWaterHeight(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, item->room_number);
+
+	if (wh != NO_HEIGHT && item->pos.y_pos - wh > quad_bike_deadly_water_depth[quad_bike_index[item->object_number]])
+	{
+		if (!(quad->Flags & 0x80))
+		{
+			lara_item->anim_number = ANIM_FALLDOWN;
+			lara_item->frame_number = anims[ANIM_FALLDOWN].frame_base;
+			lara_item->current_anim_state = AS_FORWARDJUMP;
+			lara_item->goal_anim_state = AS_FORWARDJUMP;
+			lara_item->gravity_status = 1;
+			lara_item->fallspeed = 1;
+			lara_item->speed = 0;
+			lara_item->pos.x_rot = 0;
+			lara_item->pos.z_rot = 0;
+			lara_item->hit_points = 0;
+		}
+
+		QuadbikeExplode(item);
+		return 0;
+	}
+
+	AnimateItem(lara_item);
+	item->anim_number = lara_item->anim_number + objects[quad_bike_slot_quadbike[quad_bike_index[item->object_number]]].anim_index - objects[quad_bike_slot_vehicle_anim[quad_bike_index[item->object_number]]].anim_index;
+	item->frame_number = lara_item->frame_number + anims[item->anim_number].frame_base - anims[lara_item->anim_number].frame_base;
+
+	if (!(quad->Flags & 0x80))
+		camera.target_elevation = -5460;
+
+	if (quad->Flags & 0x40 && item->pos.y_pos == item->floor)
+	{
+		if (!(quad->Flags & 0x80))
+		{
+			ExplodingDeath2(lara.item_number, -1, 0);
+			lara_item->hit_points = 0;
+			lara_item->flags |= IFL_INVISIBLE;
+		}
+
+		QuadbikeExplode(item);
+		return 0;
+	}
+
+	state = lara_item->current_anim_state;
+
+	if (state != QS_GETONR && state != QS_GETONL && state != QS_GETOFFR && state != QS_GETOFFL)
+	{
+		for (int i = 0; i < 2; i++)
+		{
+			if (!i)
+			{
+				pos.x = -56;
+				rot = item->pos.y_rot + 0x9000;
+			}
+			else
+			{
+				pos.x = 56;
+				rot = item->pos.y_rot + 0x7000;
+			}
+
+			pos.y = -32;
+			pos.z = -380;
+			GetJointAbsPosition(item, &pos, 0);
+
+			if (item->speed > 32)
+			{
+				if (item->speed < 64)
+					QuadBikeTriggerExhaustSmoke(pos.x, pos.y, pos.z, rot, 64 - item->speed, 1);
+			}
+			else
+			{
+				if (quad->track_mesh < 16)
+				{
+					smokeVel = ((GetRandomControl() & 7) + (GetRandomControl() & 0x10) + 2 * quad->track_mesh) << 7;
+					quad->track_mesh++;
+				}
+				else if (quad->Flags & 0x2)
+					smokeVel = (ABS(quad->Revs) >> 2) + ((GetRandomControl() & 7) << 7);
+				else if (GetRandomControl() & 3)
+					smokeVel = 0;
+				else
+					smokeVel = ((GetRandomControl() & 0xF) + (GetRandomControl() & 0x10)) << 7;
+
+				QuadBikeTriggerExhaustSmoke(pos.x, pos.y, pos.z, rot, smokeVel, 0);
+			}
+		}
+	}
+	else
+		quad->track_mesh = 0;
+
+	return QuadBikeCheckGetOff();
+}
+
+long IsQuadBikeAssigned(long index)
+{
+	return quad_bike_slot_quadbike[index] != -1 && quad_bike_slot_vehicle_anim[index] != -1;
+}
+
+long IsInQuadBike(void)
+{
+	for (int i = 0; i < 16; i++)
+	{
+		if (IsQuadBikeAssigned(i) && quad_bike_index[quad_bike_slot_quadbike[i]] == i && items[lara.vehicle].object_number == quad_bike_slot_quadbike[i])
+			return 1;
+	}
+
+	return 0;
+}
+
+long IsDrivingQuadBike(void)
+{
+	return lara.vehicle != -1 && IsInQuadBike();
+}
+
+void SortQuadBikeJoints(long index)
+{
+	short mesh;
+	char tmp;
+
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = i + 1; j < 4; j++)
+		{
+			mesh = quad_bike_mesh_wheel[index][quad_bike_mesh_wheel_index[index][i]];
+
+			if (!mesh || mesh < quad_bike_mesh_wheel[index][quad_bike_mesh_wheel_index[index][j]])
+			{
+				tmp = quad_bike_mesh_wheel_index[index][i];
+				quad_bike_mesh_wheel_index[index][i] = quad_bike_mesh_wheel_index[index][j];
+				quad_bike_mesh_wheel_index[index][j] = tmp;
+			}
+		}
+	}
+}
+
+void setup_quad_bike(void)
+{
+	OBJECT_INFO* obj;
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (IsQuadBikeAssigned(i) && quad_bike_index[quad_bike_slot_quadbike[i]] == -1)
+		{
+			obj = &objects[quad_bike_slot_quadbike[i]];
+			obj->initialise = InitialiseQuadBike;
+			obj->collision = QuadBikeCollision;
+			obj->control = 0;
+			obj->draw_routine = DrawAnimatingItem;
+			obj->using_drawanimating_item = 1;
+			obj->save_position = 1;
+			obj->save_hitpoints = 0;
+			obj->save_flags = 1;
+			obj->save_anim = 1;
+
+			for (int j = 0; j < 4; j++)
+			{
+				if (quad_bike_mesh_wheel[i][j])
+					bones[obj->bone_index + 4 * (quad_bike_mesh_wheel[i][j] - 1)] |= 0x4;
+			}
+
+			quad_bike_index[quad_bike_slot_quadbike[i]] = i;
+		}
+	}
+}
+
+long VehicleControl(void)
+{
+	if (IsInMineCart())
+		return MineCartControl();
+
+	if (IsInQuadBike())
+		return QuadBikeControl();
+
+	return -1;
+}
+
+void VehicleLook(void)
+{
+	if (lara.vehicle != -1 && (IsInMineCart() || IsInQuadBike()) && input & IN_LOOK && lara.look)
+	{
+		camera.type = LOOK_CAMERA;
+
+		if (input & IN_LEFT)
+		{
+			input -= IN_LEFT;
+
+			if (lara.head_y_rot > -8008)
+				lara.head_y_rot -= 364;
+		}
+		else if (input & IN_RIGHT)
+		{
+			input -= IN_RIGHT;
+
+			if (lara.head_y_rot < 8008)
+				lara.head_y_rot += 364;
+		}
+	}
+}
+
+void SaveVehicle(ITEM_INFO* item)
+{
+	if (IsMineCartAssigned() && item->object_number == mine_cart_slot_minecart)
+		WriteSG(item->data, sizeof(CARTINFO));
+	else
+	{
+		for (int i = 0; i < 16; i++)
+		{
+			if (IsQuadBikeAssigned(i) && quad_bike_index[quad_bike_slot_quadbike[i]] == i && item->object_number == quad_bike_slot_quadbike[i])
+			{
+				WriteSG(item->data, sizeof(QUADINFO));
+				break;
+			}
+		}
+	}
+}
+
+void RestoreVehicle(ITEM_INFO* item)
+{
+	if (IsMineCartAssigned() && item->object_number == mine_cart_slot_minecart)
+		ReadSG(item->data, sizeof(CARTINFO));
+	else
+	{
+		for (int i = 0; i < 16; i++)
+		{
+			if (IsQuadBikeAssigned(i) && quad_bike_index[quad_bike_slot_quadbike[i]] == i && item->object_number == quad_bike_slot_quadbike[i])
+			{
+				ReadSG(item->data, sizeof(QUADINFO));
+				break;
+			}
 		}
 	}
 }
@@ -12013,6 +13589,36 @@ void pcbInitLoadNewLevel(void)
 	}
 
 	in_draw_loop = 0;
+
+	for (int i = 0; i < 16; i++)
+	{
+		quad_bike_slot_quadbike[i] = -1;
+		quad_bike_slot_vehicle_anim[i] = -1;
+
+		for (int j = 0; j < 16; j++)
+		{
+			quad_bike_slot_avalanche[i][j] = -1;
+			quad_bike_health[i][j] = 100;
+		}
+
+		quad_bike_sfx_quad_front_impact[i] = -1;
+		quad_bike_sfx_quad_move[i] = -1;
+		quad_bike_sfx_quad_idle[i] = -1;
+		quad_bike_mesh_wheel[i][0] = 7;
+		quad_bike_mesh_wheel[i][1] = 6;
+		quad_bike_mesh_wheel[i][2] = 3;
+		quad_bike_mesh_wheel[i][3] = 4;
+		quad_bike_mesh_wheel_index[i][0] = 2;
+		quad_bike_mesh_wheel_index[i][1] = 3;
+		quad_bike_mesh_wheel_index[i][2] = 1;
+		quad_bike_mesh_wheel_index[i][3] = 0;
+		quad_bike_deadly_fallspeed[i] = 240;
+		quad_bike_deadly_water_depth[i] = 0;
+		quad_bike_frame_fall_death_detach[i] = 58;
+	}
+
+	for (int i = 0; i < NUMBER_OBJECTS; i++)
+		quad_bike_index[i] = -1;
 }
 
 #ifdef __TINYC__
@@ -12116,6 +13722,10 @@ long pcbConditionMine(ushort ConditionIndex, long ItemIndex, ushort Extra, ushor
 
 	case 2:
 		RetValue |= IsDrivingMineCart();
+		break;
+
+	case 3:
+		RetValue |= IsDrivingQuadBike();
 		break;
 	}
 
@@ -12308,6 +13918,76 @@ void pcbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArr
 		}
 
 		break;
+
+	case 10:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 1;
+
+			if (NumberOfItems > 1 && pItemArray[1] != -1)
+				quad_bike_slot_quadbike[index] = pItemArray[1];
+
+			if (NumberOfItems > 2 && pItemArray[2] != -1)
+				quad_bike_slot_vehicle_anim[index] = pItemArray[2];
+
+			if (NumberOfItems > 3 && pItemArray[3] != -1)
+				quad_bike_sfx_quad_front_impact[index] = pItemArray[3];
+
+			if (NumberOfItems > 4 && pItemArray[4] != -1)
+				quad_bike_sfx_quad_move[index] = pItemArray[4];
+
+			if (NumberOfItems > 5 && pItemArray[5] != -1)
+				quad_bike_sfx_quad_idle[index] = pItemArray[5];
+		}
+
+		break;
+
+	case 11:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 1;
+
+			for (int i = 0; i < 32; i++)
+			{
+				if (NumberOfItems > i + 1 && pItemArray[i + 1] != -1)
+				{
+					if (!(i % 2))
+						quad_bike_slot_avalanche[index][i / 2] = pItemArray[i + 1];
+					else
+						quad_bike_health[index][i / 2] = pItemArray[i + 1];
+				}
+			}
+		}
+
+		break;
+
+	case 12:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 1;
+
+			for (int i = 0; i < 4; i++)
+			{
+				if (NumberOfItems > i + 1 && pItemArray[i + 1] != -1)
+					quad_bike_mesh_wheel[index][i] = pItemArray[i + 1];
+			}
+
+			if (NumberOfItems > 5 && pItemArray[5] != -1)
+				quad_bike_deadly_fallspeed[index] = (short)phd_sqrt(3072 * pItemArray[5]);
+
+			if (NumberOfItems > 6 && pItemArray[6] != -1)
+				quad_bike_deadly_water_depth[index] = 256 * pItemArray[6];
+
+			if (NumberOfItems > 7 && pItemArray[7] != -1)
+				quad_bike_frame_fall_death_detach[index] = pItemArray[7];
+
+			SortQuadBikeJoints(index);
+		}
+
+		break;
 	}
 }
 
@@ -12469,6 +14149,7 @@ void pcbInitObjects(void)
 	setup_rollingballs();
 	setup_crossbow_grenade_ammo();
 	setup_mine_cart();
+	setup_quad_bike();
 	setup_trapdoors();
 	setup_trains();
 	setup_bats();
@@ -12541,11 +14222,10 @@ void Inject(void)
 	INJECT(0x00910082, fire_crossbow_grenade);
 	INJECT(0x00910087, fire_crossbow_sound);
 	INJECT(0x0091008C, get_weapon_animation);
-	INJECT(0x00910091, MineCartControl);
-	INJECT(0x00910096, IsInMineCart);
-	INJECT(0x0091009B, MineCartLook);
-	INJECT(0x009100A0, SaveMineCart);
-	INJECT(0x009100A5, RestoreMineCart);
+	INJECT(0x00910096, VehicleControl);
+	INJECT(0x0091009B, VehicleLook);
+	INJECT(0x009100A0, SaveVehicle);
+	INJECT(0x009100A5, RestoreVehicle);
 	INJECT(0x009100AA, rotate_horizon);
 	INJECT(0x009100AF, lara_as_duckcrouch);
 	INJECT(0x009100B4, lara_col_duckcrouch);

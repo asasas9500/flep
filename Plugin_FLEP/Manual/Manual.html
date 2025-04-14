@@ -31,6 +31,7 @@
 <li><a href="#p15">Train</a></li>
 <li><a href="#p16">Bats</a></li>
 <li><a href="#p17">Springboard</a></li>
+<li><a href="#p18">Quad Bike</a></li>
 </ul>
 <hr />
 <h2 id="p1">Original Bridges</h2>
@@ -143,7 +144,7 @@ Type <strong>IGNORE</strong> to use the default value (<strong>ENABLED</strong>)
 <hr />
 <h2 id="p9">Mine Cart</h2>
 <p>Allows to use the Minecart object like TR3 with some additions.</p>
-<p><strong>Important</strong>: make sure to enable <strong>Mine Cart</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
+<p><strong>Important</strong>: make sure to enable <strong>Classic vehicles</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
 <br>
 <p class="smallParagraphs">Minecart controls</p>
 <p>The minecart controls are the following:</p>
@@ -410,5 +411,47 @@ See the <strong>OBJ_FLEP_SPRINGBOARD</strong> constants.</p>
 <p><strong>PeakHeight</strong>:<br />
 The peak height (in clicks) of the jump given by the springboard.<br />
 Type <strong>IGNORE</strong> to use the default value (19).</p>
+<hr />
+<h2 id="p18">Quad Bike</h2>
+<p>Allows to use the Quad Bike like TR3 with some additions.</p>
+<p><strong>Important</strong>: make sure to enable <strong>Classic vehicles</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_QUAD_BIKE, Number, QuadSlot, LaraSlot, FrontImpactSound, MoveSound, IdleSound</code>
+<p><strong>Number</strong>:<br />
+The quad bike number.<br />
+Note: the minimum <strong>Number</strong> is 1 and the maximum is 16.</p>
+<p><strong>QuadSlot</strong>:<br />
+The slot of the quad bike.</p>
+<p><strong>LaraSlot</strong>:<br />
+The slot containing Lara's animations.</p>
+<p><strong>FrontImpactSound</strong>, <strong>MoveSound</strong>, <strong>IdleSound</strong>:<br />
+The sounds that play when the quad bike collides in the front, moves or idles, respectively.<br />
+Type <strong>IGNORE</strong> to not play any sound.<br />
+Note: <strong>MoveSound</strong> and <strong>IdleSound</strong> must have L flag set.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_QUAD_BIKE_TRAPS, Number, TrapSlot, HealthLoss, {TrapSlot, HealthLoss array}</code>
+<p><strong>Number</strong>:<br />
+The quad bike number.</p>
+<p><strong>TrapSlot</strong>:<br />
+The slot of the object that can hurt Lara while she is driving.</p>
+<p><strong>HealthLoss</strong>:<br />
+The health loss caused to Lara each frame of contact.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_QUAD_BIKE_OPTIONS, Number, LeftFrontWheelMesh, RightFrontWheelMesh, LeftRearWheelMesh, RightRearWheelMesh, FatalDropHeight, FatalWaterDepth, FallDetachFrame</code>
+<p><strong>Number</strong>:<br />
+The quad bike number.</p>
+<p><strong>LeftFrontWheelMesh</strong>, <strong>RightFrontWheelMesh</strong>, <strong>LeftRearWheelMesh</strong>, RightRearWheelMesh</strong>:<br />
+The wheel meshes that should rotate when the quad bike is moving.<br />
+Type <strong>DISABLED</strong> to disable the rotation of a wheel mesh.<br />
+Type <strong>IGNORE</strong> to use the default values (7 for <strong>LeftFrontWheelMesh</strong>, 6 for <strong>RightFrontWheelMesh</strong>, 3 for <strong>LeftRearWheelMesh</strong> and 4 for <strong>RightRearWheelMesh</strong>).</p>
+<p><strong>FatalDropHeight</strong>:<br />
+The maximum height (in clicks) the quad bike can drop before exploding.<br />
+Type <strong>IGNORE</strong> to use the default value (19).</p>
+<p><strong>FatalWaterDepth</strong>:<br />
+The maximum water depth (in clicks) the quad bike can be in before exploding.<br />
+Type <strong>IGNORE</strong> to use the default value (0).</p>
+<p><strong>FallDetachFrame</strong>:<br />
+The frame of the falling death animation (with state 19) where Lara stops moving with the quad bike.<br />
+Type <strong>IGNORE</strong> to use the default value (58).</p>
 </body>
 </html>
