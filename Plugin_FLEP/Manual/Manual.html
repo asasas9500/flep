@@ -32,6 +32,7 @@
 <li><a href="#p16">Bats</a></li>
 <li><a href="#p17">Springboard</a></li>
 <li><a href="#p18">Quad Bike</a></li>
+<li><a href="#p19">Spinning blade</a></li>
 </ul>
 <hr />
 <h2 id="p1">Original Bridges</h2>
@@ -373,11 +374,11 @@ But note that it will also slow down camera timer, so it won't look smooth.</p>
 <p><strong>TubeLoopSound</strong>:<br />
 The sound that plays when the train is moving.<br />
 Type <strong>IGNORE</strong> to not play any sound.<br />
-Note: the sound must have L flag set.</p>
+<strong>Note</strong>: the sound must have L flag set.</p>
 <p><strong>TrainKillAnimation</strong>:<br />
 The animation that Lara does when she is killed by the train.<br />
 Type <strong>IGNORE</strong> to not force any animation.<br />
-Note: the animation must have state ID 8.</p>
+<strong>Note</strong>: the animation must have state ID 8.</p>
 <p><strong>DeathCameraDistance</strong>:<br />
 The distance (in units) from the train at which the camera is placed to look at Lara.<br />
 Type <strong>IGNORE</strong> to use the default value (8192).</p>
@@ -419,7 +420,7 @@ Type <strong>IGNORE</strong> to use the default value (19).</p>
 <code>Customize=CUST_FLEP_QUAD_BIKE, Number, QuadSlot, LaraSlot, FrontImpactSound, MoveSound, IdleSound</code>
 <p><strong>Number</strong>:<br />
 The quad bike number.<br />
-Note: the minimum <strong>Number</strong> is 1 and the maximum is 16.</p>
+<strong>Note</strong>: the minimum <strong>Number</strong> is 1 and the maximum is 16.</p>
 <p><strong>QuadSlot</strong>:<br />
 The slot of the quad bike.</p>
 <p><strong>LaraSlot</strong>:<br />
@@ -427,7 +428,7 @@ The slot containing Lara's animations.</p>
 <p><strong>FrontImpactSound</strong>, <strong>MoveSound</strong>, <strong>IdleSound</strong>:<br />
 The sounds that play when the quad bike collides in the front, moves or idles, respectively.<br />
 Type <strong>IGNORE</strong> to not play any sound.<br />
-Note: <strong>MoveSound</strong> and <strong>IdleSound</strong> must have L flag set.</p>
+<strong>Note</strong>: <strong>MoveSound</strong> and <strong>IdleSound</strong> must have L flag set.</p>
 <p><strong>Syntax</strong>:</p>
 <code>Customize=CUST_FLEP_QUAD_BIKE_TRAPS, Number, TrapSlot, HealthLoss, {TrapSlot, HealthLoss array}</code>
 <p><strong>Number</strong>:<br />
@@ -435,7 +436,8 @@ The quad bike number.</p>
 <p><strong>TrapSlot</strong>:<br />
 The slot of the object that can hurt Lara while she is driving.</p>
 <p><strong>HealthLoss</strong>:<br />
-The health loss caused to Lara each frame of contact.</p>
+The health loss caused to Lara each frame of contact.<br />
+Type IGNORE to use the default value (100).</p>
 <p><strong>Syntax</strong>:</p>
 <code>Customize=CUST_FLEP_QUAD_BIKE_OPTIONS, Number, LeftFrontWheelMesh, RightFrontWheelMesh, LeftRearWheelMesh, RightRearWheelMesh, FatalDropHeight, FatalWaterDepth, FallDetachFrame</code>
 <p><strong>Number</strong>:<br />
@@ -453,5 +455,44 @@ Type <strong>IGNORE</strong> to use the default value (0).</p>
 <p><strong>FallDetachFrame</strong>:<br />
 The frame of the falling death animation (with state 19) where Lara stops moving with the quad bike.<br />
 Type <strong>IGNORE</strong> to use the default value (58).</p>
+<hr />
+<h2 id="p19">Spinning blade</h2>
+<p>Implements the spinning blade from TR2 and TR3.</p>
+<p>To assign a slot:</p>
+<code>AssignSlot=&lt;MyUsedSlot&gt;,&lt;SpinningBlade&gt;</code>
+<p>Where <strong>&lt;SpinningBlade&gt;</strong> is <strong>OBJ_FLEP_SPINNING_BLADE{1..16}</strong>.</p>
+<p>Additional customization can be done by the command <strong>Customize=CUST_FLEP_SPINNING_BLADE</strong>.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_SPINNING_BLADE, ObjType, Sound, HealthLoss, Collision, Gravity, StoppingDistance, FrontBladeAnimation, BackBladeAnimation, FrontSpikeAnimation, BackSpikeAnimation, FrontBladeMeshswap, BackBladeMeshswap, FrontSpikeMeshswap, BackSpikeMeshswap, GeneralMeshswap</code>
+<p><strong>ObjType</strong>:<br />
+The spinning blade to be customized.<br />
+See the <strong>OBJ_FLEP_SPINNING_BLADE</strong> constants.</p>
+<p><strong>Sound</strong>:<br />
+The sound that plays when the spinning blade is moving.<br />
+Type <strong>IGNORE</strong> to not play any sound.<br />
+<strong>Note</strong>: the sound must have L flag set.</p>
+<p><strong>HealthLoss</strong>:<br />
+The health loss caused to Lara each frame of contact.<br />
+Type <strong>IGNORE</strong> to use the default value (100).</p>
+<p><strong>Collision</strong>:<br />
+<strong>ENABLED</strong>: the spinning blade will stop and reverse before steps and unwalkable slopes.<br />
+<strong>DISABLED</strong>: the spinning blade will snap up any block, pass over unwalkable slopes, and only stop and reverse at walls.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>DISABLED</strong>).</p>
+<p><strong>Gravity</strong>:<br />
+<strong>ENABLED</strong>: the spinning blade will be affected by gravity and fall down to the ground.<br />
+<strong>DISABLED</strong>: the spinning blade will snap to the ground.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>DISABLED</strong>).</p>
+<p><strong>StoppingDistance</strong>:<br />
+The distance travelled during stop animations.<br />
+Type <strong>IGNORE</strong> to use the default value (1536).</p>
+<p><strong>FrontBladeAnimation</strong>, <strong>BackBladeAnimation</strong>, <strong>FrontSpikeAnimation</strong>, <strong>BackSpikeAnimation</strong>:<br />
+The animations that Lara should play when she is killed by the blade facing her front, the blade facing her back, the spike facing her front, and the spike facing her back, respectively.<br />
+Type <strong>IGNORE</strong> to not play any animation.</p>
+<p><strong>FrontBladeMeshswap</strong>, <strong>BackBladeMeshswap</strong>, <strong>FrontSpikeMeshswap</strong>, <strong>BackSpikeMeshswap</strong>:<br />
+The slots with the meshswaps for Lara when she is killed by the blade facing her front, the blade facing her back, the spike facing her front, and the spike facing her back, respectively, regardless of whether the animations are played.<br />
+Type <strong>IGNORE</strong> to not meshswap Lara.</p>
+<p><strong>GeneralMeshswap</strong>:<br />
+The slot with the meshswap for Lara when she is killed by the spinning blade in any other way.<br />
+Type <strong>IGNORE</strong> to not meshswap Lara.</p>
 </body>
 </html>

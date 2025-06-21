@@ -6987,87 +6987,102 @@ const float cossin_tbl[32769] =
 	1.000000000e+00F
 };
 
-long patch_secret_counter_status;
-PHD_VECTOR global_mesh_position;
-short bridge_object[3];
-char HKTimer;
-char HKShotsFired;
-char LSHKTimer;
-char LSHKShotsFired;
-short hk_gunflash_slot;
-short sfx_hk_fire;
-short sfx_hk_stop;
-short hk_ammo1;
-short hk_ammo2;
-short hk_ammo3;
-short hk_ammo1_slot;
-short hk_ammo2_slot;
-short hk_ammo3_slot;
-char hk_still_hips_fire;
-short lift_doors[2];
-short sfx_lift_doors;
-short sprite_object[16];
-long camera_bounce_strength;
-short camera_bounce_item_number;
-long camera_bounce_status;
-short rollingball_object[16];
-char crossbow_grenade_animations;
-char crossbow_grenade_ammo[3];
-char crossbow_grenade_ammo_type[3];
-short crossbow_grenade_ammo_slot[3];
-short crossbow_grenade_ammo_sound[3];
-char crossbow_grenade_ammo_smoke[3];
-char in_fire_crossbow_grenade;
-short lara_meshswap_target[255];
-short lara_meshswap_source_slot[255];
-short lara_meshswap_source[255];
-short mine_cart_slot_minecart;
-short mine_cart_slot_vehicle_anim;
-short mine_cart_slot_mapper;
-short mine_cart_slot_animating2;
-short mine_cart_sfx_mine_cart_clunk_start;
-short mine_cart_sfx_quad_front_impact;
-short mine_cart_sfx_mine_cart_sreech_brake;
-short mine_cart_sfx_mine_cart_track_loop;
-short mine_cart_sfx_mine_cart_pully_loop;
-char mine_cart_alignment;
-short mine_cart_slot_rollingball[16];
-short mine_cart_health[16];
-short trapdoor_object[16];
-short horizon_rotation;
-short horizon_rotation_speed;
-short train_object[16];
-short train_sfx_tube_loop;
-short train_animation_trainkill;
-short train_distance_camera;
-short bat_emitter_object[16];
-short bat_mesh_object[16];
-short bat_mesh_sound[16];
-BAT_STRUCT bat_effect[64];
-short springboard_object[16];
-short springboard_fallspeed[16];
-float aCameraMatrix[indices_count];
-float aFMatrixStack[20 * indices_count];
-float alara_matricesF[180];
-long mw2v_matrix[indices_count];
-long mMatrixStack[20 * indices_count];
-long miMatrixStack[20 * indices_count];
-long mlara_matrices[180];
-long in_draw_loop;
-short quad_bike_slot_quadbike[16];
-short quad_bike_slot_vehicle_anim[16];
-short quad_bike_slot_avalanche[16][16];
-short quad_bike_health[16][16];
-short quad_bike_sfx_quad_front_impact[16];
-short quad_bike_sfx_quad_move[16];
-short quad_bike_sfx_quad_idle[16];
-short quad_bike_mesh_wheel[16][4];
-char quad_bike_mesh_wheel_index[16][4];
-short quad_bike_deadly_fallspeed[16];
-short quad_bike_deadly_water_depth[16];
-short quad_bike_frame_fall_death_detach[16];
-char quad_bike_index[NUMBER_OBJECTS];
-short baddie_collision_roomies[1024];
+#define patch_secret_counter_status VAR_U_(0x00902474, long)
+#define global_mesh_position VAR_U_(0x009019C0, PHD_VECTOR)
+#define bridge_object ARRAY_(0x009019F4, short, [3])
+#define HKTimer VAR_U_(0x00900062, char)
+#define HKShotsFired VAR_U_(0x00900087, char)
+#define LSHKTimer VAR_U_(0x0090087A, char)
+#define LSHKShotsFired VAR_U_(0x0090087B, char)
+#define hk_gunflash_slot VAR_U_(0x00901568, short)
+#define sfx_hk_fire VAR_U_(0x00902208, short)
+#define sfx_hk_stop VAR_U_(0x009019F0, short)
+#define hk_ammo1 VAR_U_(0x00900084, short)
+#define hk_ammo2 VAR_U_(0x009024E4, short)
+#define hk_ammo3 VAR_U_(0x00902214, short)
+#define hk_ammo1_slot VAR_U_(0x00902210, short)
+#define hk_ammo2_slot VAR_U_(0x00901A40, short)
+#define hk_ammo3_slot VAR_U_(0x00901A7C, short)
+#define hk_still_hips_fire VAR_U_(0x00900086, char)
+#define lift_doors ARRAY_(0x009019EC, short, [2])
+#define sfx_lift_doors VAR_U_(0x00901A48, short)
+#define sprite_object ARRAY_(0x0090093C, short, [16])
+#define camera_bounce_strength VAR_U_(0x00902140, long)
+#define camera_bounce_item_number VAR_U_(0x00902B10, short)
+#define camera_bounce_status VAR_U_(0x00902418, long)
+#define rollingball_object ARRAY_(0x0090249C, short, [16])
+#define crossbow_grenade_animations VAR_U_(0x00900060, char)
+#define crossbow_grenade_ammo ARRAY_(0x00902460, char, [3])
+#define crossbow_grenade_ammo_type ARRAY_(0x009019FC, char, [3])
+#define crossbow_grenade_ammo_slot ARRAY_(0x00902110, short, [3])
+#define crossbow_grenade_ammo_sound ARRAY_(0x0090246C, short, [3])
+#define crossbow_grenade_ammo_smoke ARRAY_(0x0090254C, char, [3])
+#define in_fire_crossbow_grenade VAR_U_(0x00900061, char)
+#define lara_meshswap_target ARRAY_(0x00902D38, short, [255])
+#define lara_meshswap_source_slot ARRAY_(0x00900960, short, [255])
+#define lara_meshswap_source ARRAY_(0x00902910, short, [255])
+#define mine_cart_slot_minecart VAR_U_(0x00900878, short)
+#define mine_cart_slot_vehicle_anim VAR_U_(0x00902464, short)
+#define mine_cart_slot_mapper VAR_U_(0x0090220C, short)
+#define mine_cart_slot_animating2 VAR_U_(0x00901A44, short)
+#define mine_cart_sfx_mine_cart_clunk_start VAR_U_(0x009024E0, short)
+#define mine_cart_sfx_quad_front_impact VAR_U_(0x00902204, short)
+#define mine_cart_sfx_mine_cart_sreech_brake VAR_U_(0x009015BC, short)
+#define mine_cart_sfx_mine_cart_track_loop VAR_U_(0x0090213C, short)
+#define mine_cart_sfx_mine_cart_pully_loop VAR_U_(0x0090095C, short)
+#define mine_cart_alignment VAR_U_(0x00900063, char)
+#define mine_cart_slot_rollingball ARRAY_(0x009021C4, short, [16])
+#define mine_cart_health ARRAY_(0x009024E8, short, [16])
+#define trapdoor_object ARRAY_(0x009019A0, short, [16])
+#define horizon_rotation VAR_U_(0x00902FD8, short)
+#define horizon_rotation_speed VAR_U_(0x00902498, short)
+#define train_object ARRAY_(0x0090156C, short, [16])
+#define train_sfx_tube_loop VAR_U_(0x00902138, short)
+#define train_animation_trainkill VAR_U_(0x009024BC, short)
+#define train_distance_camera VAR_U_(0x00902B34, short)
+#define bat_emitter_object ARRAY_(0x00902F38, short, [16])
+#define bat_mesh_object ARRAY_(0x0090252C, short, [16])
+#define bat_mesh_sound ARRAY_(0x0090089C, short, [16])
+#define bat_effect ARRAY_(0x00900378, BAT_STRUCT, [64])
+#define springboard_object ARRAY_(0x00902144, short, [16])
+#define springboard_fallspeed ARRAY_(0x009021E4, short, [16])
+#define aCameraMatrix ARRAY_(0x00901A4C, float, [indices_count])
+#define aFMatrixStack ARRAY_(0x009015C0, float, [20 * indices_count])
+#define alara_matricesF ARRAY_(0x00901A80, float, [180])
+#define mw2v_matrix ARRAY_(0x0090158C, long, [indices_count])
+#define mMatrixStack ARRAY_(0x00902550, long, [20 * indices_count])
+#define miMatrixStack ARRAY_(0x00901D50, long, [20 * indices_count])
+#define mlara_matrices ARRAY_(0x00900088, long, [180])
+#define in_draw_loop VAR_U_(0x00902468, long)
+#define quad_bike_slot_quadbike ARRAY_(0x00902118, short, [16])
+#define quad_bike_slot_vehicle_anim ARRAY_(0x00900064, short, [16])
+#define quad_bike_slot_avalanche ARRAY_(0x00902218, short, [16][16])
+#define quad_bike_health ARRAY_(0x00902B38, short, [16][16])
+#define quad_bike_sfx_quad_front_impact ARRAY_(0x00901980, short, [16])
+#define quad_bike_sfx_quad_move ARRAY_(0x009008BC, short, [16])
+#define quad_bike_sfx_quad_idle ARRAY_(0x009019CC, short, [16])
+#define quad_bike_mesh_wheel ARRAY_(0x00902F58, short, [16][4])
+#define quad_bike_mesh_wheel_index ARRAY_(0x00900000, char, [16][4])
+#define quad_bike_deadly_fallspeed ARRAY_(0x00902440, short, [16])
+#define quad_bike_deadly_water_depth ARRAY_(0x00902508, short, [16])
+#define quad_bike_frame_fall_death_detach ARRAY_(0x009008FC, short, [16])
+#define quad_bike_index ARRAY_(0x00900B60, char, [NUMBER_OBJECTS])
+#define baddie_collision_roomies ARRAY_(0x00900D68, short, [1024])
+#define spinning_blade_object ARRAY_(0x009024C0, short, [16])
+#define spinning_blade_sound ARRAY_(0x00902478, short, [16])
+#define spinning_blade_health ARRAY_(0x00902420, short, [16])
+#define spinning_blade_collision ARRAY_(0x0090087C, short, [16])
+#define spinning_blade_fall ARRAY_(0x00902184, short, [16])
+#define spinning_blade_distance ARRAY_(0x00902FDC, short, [16])
+#define spinning_blade_animation_front ARRAY_(0x00902B14, short, [16])
+#define spinning_blade_animation_back ARRAY_(0x00902164, short, [16])
+#define spinning_blade_animation_spike_front ARRAY_(0x00901A20, short, [16])
+#define spinning_blade_animation_spike_back ARRAY_(0x00900358, short, [16])
+#define spinning_blade_meshswap_front ARRAY_(0x00901A00, short, [16])
+#define spinning_blade_meshswap_back ARRAY_(0x0090091C, short, [16])
+#define spinning_blade_meshswap_spike_front ARRAY_(0x009021A4, short, [16])
+#define spinning_blade_meshswap_spike_back ARRAY_(0x00900040, short, [16])
+#define spinning_blade_meshswap ARRAY_(0x009008DC, short, [16])
 
 long check_flep(long number)
 {
@@ -13452,6 +13467,266 @@ void draw_pistol_mesh_left(ITEM_INFO* item)
 	}
 }
 
+void InitialiseSpinningBlade(short item_number)
+{
+	ITEM_INFO* item;
+
+	item = &items[item_number];
+	item->anim_number = objects[item->object_number].anim_index + 3;
+	item->frame_number = anims[item->anim_number].frame_base;
+	item->current_anim_state = anims[item->anim_number].current_anim_state;
+	item->goal_anim_state = anims[item->anim_number].current_anim_state;
+}
+
+void do_spinning_blade_meshswap(short object_number)
+{
+	short** meshpp;
+
+	if (object_number != -1)
+	{
+		meshpp = &meshes[objects[object_number].mesh_index];
+
+		for (int i = 0; i < 15; i++)
+			lara.mesh_ptrs[i] = meshpp[2 * i];
+	}
+}
+
+void SpinningBlade(short item_number)
+{
+	ITEM_INFO* item;
+	FLOOR_INFO* floor;
+	long flip, x, y, z, ox, oz, xrot, zrot, index, height, next_height, distance, ahead;
+	short* bounds;
+	short room_number, ang, angle, facing, anim;
+
+	item = &items[item_number];
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (spinning_blade_object[i] == item->object_number)
+		{
+			index = i;
+			break;
+		}
+	}
+
+	if (item->current_anim_state == 1 || item->current_anim_state == 4 || item->current_anim_state == 6)
+	{
+		if (TriggerActive(item))
+		{
+			if (item->current_anim_state == 4)
+				item->goal_anim_state = 5;
+			else if (item->current_anim_state == 6)
+				item->goal_anim_state = 3;
+			else
+				item->goal_anim_state = 2;
+
+			if (spinning_blade_sound[index] != -1)
+				SoundEffect(spinning_blade_sound[index], &item->pos, SFX_DEFAULT);
+		}
+
+		flip = 0;
+	}
+	else
+	{
+		if (item->goal_anim_state == item->current_anim_state)
+		{
+			distance = item->current_anim_state < 5 ? spinning_blade_distance[index] : -spinning_blade_distance[index];
+			x = item->pos.x_pos + (distance * phd_sin(item->pos.y_rot) >> W2V_SHIFT);
+			y = item->pos.y_pos - spinning_blade_distance[index] / 2 - 256;
+			z = item->pos.z_pos + (distance * phd_cos(item->pos.y_rot) >> W2V_SHIFT);
+			room_number = item->room_number;
+			floor = GetFloor(x, y, z, &room_number);
+			height = GetHeight(floor, x, y, z);
+
+			if (height == NO_HEIGHT)
+			{
+				if (item->current_anim_state == 3)
+					item->goal_anim_state = 4;
+				else if (item->current_anim_state == 5)
+					item->goal_anim_state = 6;
+				else
+					item->goal_anim_state = 1;
+			}
+			else if (spinning_blade_collision[index])
+			{
+				x = item->pos.x_pos + ((distance + item->speed) * phd_sin(item->pos.y_rot) >> W2V_SHIFT);
+				z = item->pos.z_pos + ((distance + item->speed) * phd_cos(item->pos.y_rot) >> W2V_SHIFT);
+				room_number = item->room_number;
+				floor = GetFloor(x, y, z, &room_number);
+				next_height = GetHeight(floor, x, y, z);
+
+				if (next_height != NO_HEIGHT && height - next_height > 5 * ABS(item->speed) / 8)
+				{
+					if (item->current_anim_state == 3)
+						item->goal_anim_state = 4;
+					else if (item->current_anim_state == 5)
+						item->goal_anim_state = 6;
+					else
+						item->goal_anim_state = 1;
+				}
+			}
+		}
+
+		flip = 1;
+
+		if (item->touch_bits)
+		{
+			lara_item->hit_points -= spinning_blade_health[index];
+			lara_item->hit_status = 1;
+			DoLotsOfBlood(lara_item->pos.x_pos, lara_item->pos.y_pos - 512, lara_item->pos.z_pos,
+				item->speed << 1, lara_item->pos.y_rot, lara_item->room_number, 2);
+
+			if (lara_item->hit_points <= 0)
+			{
+				bounds = GetBoundsAccurate(item);
+
+				if (item->current_anim_state < 5)
+				{
+					ox = item->pos.x_pos + (bounds[5] * phd_sin(item->pos.y_rot) >> W2V_SHIFT);
+					oz = item->pos.z_pos + (bounds[5] * phd_cos(item->pos.y_rot) >> W2V_SHIFT);
+				}
+				else
+				{
+					ox = item->pos.x_pos + (bounds[4] * phd_sin(item->pos.y_rot) >> W2V_SHIFT);
+					oz = item->pos.z_pos + (bounds[4] * phd_cos(item->pos.y_rot) >> W2V_SHIFT);
+				}
+
+				x = lara_item->pos.x_pos - ox;
+				z = lara_item->pos.z_pos - oz;
+				ang = (short)phd_atan(z, x);
+				angle = ang - item->pos.y_rot;
+				ahead = angle > -16384 && angle < 16384;
+
+				if (item->current_anim_state >= 5)
+					ahead = !ahead;
+
+				if (ahead)
+				{
+					facing = ang - lara_item->pos.y_rot + 32768;
+					xrot = (x * phd_cos(item->pos.y_rot) >> W2V_SHIFT) - (z * phd_sin(item->pos.y_rot) >> W2V_SHIFT);
+
+					if (facing > -16384 && facing < 16384)
+					{
+						if (xrot > -256 && xrot < 256)
+						{
+							anim = spinning_blade_animation_front[index];
+							do_spinning_blade_meshswap(spinning_blade_meshswap_front[index]);
+						}
+						else
+						{
+							anim = spinning_blade_animation_spike_front[index];
+							do_spinning_blade_meshswap(spinning_blade_meshswap_spike_front[index]);
+						}
+					}
+					else
+					{
+						if (xrot > -256 && xrot < 256)
+						{
+							anim = spinning_blade_animation_back[index];
+							do_spinning_blade_meshswap(spinning_blade_meshswap_back[index]);
+						}
+						else
+						{
+							anim = spinning_blade_animation_spike_back[index];
+							do_spinning_blade_meshswap(spinning_blade_meshswap_spike_back[index]);
+						}
+					}
+
+					if (anim != -1)
+					{
+						if (xrot > -256 && xrot < 256)
+						{
+							zrot = (x * phd_sin(item->pos.y_rot) >> W2V_SHIFT) + (z * phd_cos(item->pos.y_rot) >> W2V_SHIFT);
+							lara_item->pos.x_pos = ox + (zrot * phd_sin(item->pos.y_rot) >> W2V_SHIFT);
+							lara_item->pos.z_pos = oz + (zrot * phd_cos(item->pos.y_rot) >> W2V_SHIFT);
+						}
+
+						lara_item->fallspeed = 0;
+						lara_item->gravity_status = 0;
+						lara_item->pos.x_rot = 0;
+						lara_item->pos.z_rot = 0;
+
+						if (item->current_anim_state < 5)
+						{
+							if (facing > -16384 && facing < 16384)
+								lara_item->pos.y_rot = item->pos.y_rot - 32768;
+							else
+								lara_item->pos.y_rot = item->pos.y_rot;
+						}
+						else if (facing > -16384 && facing < 16384)
+							lara_item->pos.y_rot = item->pos.y_rot;
+						else
+							lara_item->pos.y_rot = item->pos.y_rot - 32768;
+
+						lara_item->anim_number = anim;
+						lara_item->frame_number = anims[lara_item->anim_number].frame_base;
+						lara_item->current_anim_state = anims[lara_item->anim_number].current_anim_state;
+						lara_item->goal_anim_state = lara_item->current_anim_state;
+					}
+				}
+				else
+					do_spinning_blade_meshswap(spinning_blade_meshswap[index]);
+			}
+		}
+
+		if (spinning_blade_sound[index] != -1)
+			SoundEffect(spinning_blade_sound[index], &item->pos, SFX_DEFAULT);
+	}
+
+	AnimateItem(item);
+
+	x = item->pos.x_pos;
+	y = item->pos.y_pos - 256;
+	z = item->pos.z_pos;
+	room_number = item->room_number;
+	floor = GetFloor(x, y, z, &room_number);
+	item->floor = GetHeight(floor, x, y, z);
+
+	if (!spinning_blade_fall[index])
+		item->pos.y_pos = item->floor;
+	else if (item->pos.y_pos >= item->floor - 256)
+	{
+		if (item->gravity_status)
+		{
+			item->gravity_status = 0;
+			item->fallspeed = 0;
+		}
+
+		item->pos.y_pos = item->floor;
+	}
+	else if (!item->gravity_status)
+	{
+		item->gravity_status = 1;
+		item->fallspeed = -10;
+	}
+
+	if (item->room_number != room_number)
+		ItemNewRoom(item_number, room_number);
+
+	if (flip && item->current_anim_state == 1)
+		item->pos.y_rot += 0x8000;
+}
+
+void setup_spinning_blades(void)
+{
+	OBJECT_INFO* obj;
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (spinning_blade_object[i] != -1)
+		{
+			obj = &objects[spinning_blade_object[i]];
+			obj->initialise = InitialiseSpinningBlade;
+			obj->collision = ObjectCollision;
+			obj->control = SpinningBlade;
+			obj->save_position = 1;
+			obj->save_anim = 1;
+			obj->save_flags = 1;
+		}
+	}
+}
+
 #ifdef __TINYC__
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
@@ -13619,6 +13894,25 @@ void pcbInitLoadNewLevel(void)
 
 	for (int i = 0; i < NUMBER_OBJECTS; i++)
 		quad_bike_index[i] = -1;
+
+	for (int i = 0; i < 16; i++)
+	{
+		spinning_blade_object[i] = -1;
+		spinning_blade_sound[i] = -1;
+		spinning_blade_health[i] = 100;
+		spinning_blade_collision[i] = 0;
+		spinning_blade_fall[i] = 0;
+		spinning_blade_distance[i] = 1536;
+		spinning_blade_animation_front[i] = -1;
+		spinning_blade_animation_back[i] = -1;
+		spinning_blade_animation_spike_front[i] = -1;
+		spinning_blade_animation_spike_back[i] = -1;
+		spinning_blade_meshswap_front[i] = -1;
+		spinning_blade_meshswap_back[i] = -1;
+		spinning_blade_meshswap_spike_front[i] = -1;
+		spinning_blade_meshswap_spike_back[i] = -1;
+		spinning_blade_meshswap[i] = -1;
+	}
 }
 
 #ifdef __TINYC__
@@ -13988,6 +14282,57 @@ void pcbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArr
 		}
 
 		break;
+
+	case 13:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 86;
+
+			if (NumberOfItems > 1 && pItemArray[1] != -1)
+				spinning_blade_sound[index] = pItemArray[1];
+
+			if (NumberOfItems > 2 && pItemArray[2] != -1)
+				spinning_blade_health[index] = pItemArray[2];
+
+			if (NumberOfItems > 3 && pItemArray[3] != -1)
+				spinning_blade_collision[index] = pItemArray[3];
+
+			if (NumberOfItems > 4 && pItemArray[4] != -1)
+				spinning_blade_fall[index] = pItemArray[4];
+
+			if (NumberOfItems > 5 && pItemArray[5] != -1)
+				spinning_blade_distance[index] = pItemArray[5];
+
+			if (NumberOfItems > 6 && pItemArray[6] != -1)
+				spinning_blade_animation_front[index] = pItemArray[6];
+
+			if (NumberOfItems > 7 && pItemArray[7] != -1)
+				spinning_blade_animation_back[index] = pItemArray[7];
+
+			if (NumberOfItems > 8 && pItemArray[8] != -1)
+				spinning_blade_animation_spike_front[index] = pItemArray[8];
+
+			if (NumberOfItems > 9 && pItemArray[9] != -1)
+				spinning_blade_animation_spike_back[index] = pItemArray[9];
+
+			if (NumberOfItems > 10 && pItemArray[10] != -1)
+				spinning_blade_meshswap_front[index] = pItemArray[10];
+
+			if (NumberOfItems > 11 && pItemArray[11] != -1)
+				spinning_blade_meshswap_back[index] = pItemArray[11];
+
+			if (NumberOfItems > 12 && pItemArray[12] != -1)
+				spinning_blade_meshswap_spike_front[index] = pItemArray[12];
+
+			if (NumberOfItems > 13 && pItemArray[13] != -1)
+				spinning_blade_meshswap_spike_back[index] = pItemArray[13];
+
+			if (NumberOfItems > 14 && pItemArray[14] != -1)
+				spinning_blade_meshswap[index] = pItemArray[14];
+		}
+
+		break;
 	}
 }
 
@@ -14134,6 +14479,25 @@ void pcbAssignSlotMine(ushort Slot, ushort ObjType)
 	case 85:
 		springboard_object[ObjType - 70] = Slot;
 		break;
+
+	case 86:
+	case 87:
+	case 88:
+	case 89:
+	case 90:
+	case 91:
+	case 92:
+	case 93:
+	case 94:
+	case 95:
+	case 96:
+	case 97:
+	case 98:
+	case 99:
+	case 100:
+	case 101:
+		spinning_blade_object[ObjType - 86] = Slot;
+		break;
 	}
 }
 
@@ -14154,6 +14518,7 @@ void pcbInitObjects(void)
 	setup_trains();
 	setup_bats();
 	setup_springboards();
+	setup_spinning_blades();
 }
 
 #ifdef __TINYC__
@@ -14193,6 +14558,242 @@ void pcbInitLevel(void)
 
 void Inject(void)
 {
+	ulong* ptr;
+	char* data;
+
+	data = (char*)0x00900000;
+
+	for (int i = 0; i < 0xC000; i++)
+		*data++ = 0;
+
+	ptr = (ulong*)0x0090C000;
+
+	*ptr++ = (ulong)check_flep;
+	*ptr++ = (ulong)print_secret_counter;
+	*ptr++ = (ulong)burning_torch_customizer_colour;
+	*ptr++ = (ulong)set_patch_secret_counter_status;
+	*ptr++ = (ulong)get_global_mesh_position;
+	*ptr++ = (ulong)calculate_static_vertex_light;
+	*ptr++ = (ulong)setup_bridge_object;
+	*ptr++ = (ulong)FireHK;
+	*ptr++ = (ulong)reset_hk;
+	*ptr++ = (ulong)get_shotgun_change;
+	*ptr++ = (ulong)play_sound_hk;
+	*ptr++ = (ulong)handle_hk_fire;
+	*ptr++ = (ulong)stop_sound_hk;
+	*ptr++ = (ulong)animate_hk;
+	*ptr++ = (ulong)get_gunflash_slot;
+	*ptr++ = (ulong)special_hk_animation;
+	*ptr++ = (ulong)special_hk_animation_interpolated;
+	*ptr++ = (ulong)reset_hk_lasersight;
+	*ptr++ = (ulong)bounce_hk_lasersight;
+	*ptr++ = (ulong)wait_hk_lasersight;
+	*ptr++ = (ulong)fire_hk_lasersight;
+	*ptr++ = (ulong)InitialiseLiftDoors;
+	*ptr++ = (ulong)LiftDoorsControl;
+	*ptr++ = (ulong)DrawLiftDoors;
+	*ptr++ = (ulong)setup_lift_doors;
+	*ptr++ = (ulong)test_vertex_wibble;
+	*ptr++ = (ulong)S_PrintCircleShadow;
+	*ptr++ = (ulong)move_lara_position_to_pushable;
+	*ptr++ = (ulong)DrawClassicHair;
+	*ptr++ = (ulong)RotateItem;
+	*ptr++ = (ulong)SpriteObjectControl;
+	*ptr++ = (ulong)setup_sprite_object;
+	*ptr++ = (ulong)GetMaximumFloor;
+	*ptr++ = (ulong)GetMinimumCeiling;
+	*ptr++ = (ulong)set_bounce;
+	*ptr++ = (ulong)do_spotcam_bounce;
+	*ptr++ = (ulong)lara_col_back_fix;
+	*ptr++ = (ulong)InitialiseRollingBall;
+	*ptr++ = (ulong)RollingBallControl;
+	*ptr++ = (ulong)RollingBallCollision;
+	*ptr++ = (ulong)setup_rollingballs;
+	*ptr++ = (ulong)AdjustForcedFixedCamera;
+	*ptr++ = (ulong)fire_crossbow_grenade;
+	*ptr++ = (ulong)setup_crossbow_grenade_ammo;
+	*ptr++ = (ulong)fire_crossbow_sound;
+	*ptr++ = (ulong)get_weapon_animation;
+	*ptr++ = (ulong)do_lara_meshswap;
+	*ptr++ = (ulong)revert_lara_meshswap;
+	*ptr++ = (ulong)exit_game;
+	*ptr++ = (ulong)MineCartInitialise;
+	*ptr++ = (ulong)GetInMineCart;
+	*ptr++ = (ulong)MineCartCollision;
+	*ptr++ = (ulong)MineCartCanGetOut;
+	*ptr++ = (ulong)CollectBaddieCollisionRoomies;
+	*ptr++ = (ulong)CartToBaddieCollision;
+	*ptr++ = (ulong)MineCartGetCollision;
+	*ptr++ = (ulong)MineCartTestHeight;
+	*ptr++ = (ulong)MineCartDoUserInput;
+	*ptr++ = (ulong)MoveCart;
+	*ptr++ = (ulong)MineCartControl;
+	*ptr++ = (ulong)MineCartMapperInitialise;
+	*ptr++ = (ulong)IsMineCartAssigned;
+	*ptr++ = (ulong)IsInMineCart;
+	*ptr++ = (ulong)IsDrivingMineCart;
+	*ptr++ = (ulong)setup_mine_cart;
+	*ptr++ = (ulong)InitialiseQuadBike;
+	*ptr++ = (ulong)GetOnQuadBike;
+	*ptr++ = (ulong)QuadBikeCollision;
+	*ptr++ = (ulong)QuadbikeExplode;
+	*ptr++ = (ulong)QuadBikeCheckGetOff;
+	*ptr++ = (ulong)QuadBikeTestHeight;
+	*ptr++ = (ulong)QuadBikeTriggerExhaustSmoke;
+	*ptr++ = (ulong)QuadBikeCanGetOff;
+	*ptr++ = (ulong)QuadBikeGetCollisionAnim;
+	*ptr++ = (ulong)QuadBikeDoDynamics;
+	*ptr++ = (ulong)QuadBikeDoShift;
+	*ptr++ = (ulong)QuadBikeIsAvalanche;
+	*ptr++ = (ulong)QuadBikeBaddieCollision;
+	*ptr++ = (ulong)QuadBikeDynamics;
+	*ptr++ = (ulong)AnimateQuadBike;
+	*ptr++ = (ulong)QuadBikeUserControl;
+	*ptr++ = (ulong)QuadBikeControl;
+	*ptr++ = (ulong)IsQuadBikeAssigned;
+	*ptr++ = (ulong)IsInQuadBike;
+	*ptr++ = (ulong)IsDrivingQuadBike;
+	*ptr++ = (ulong)SortQuadBikeJoints;
+	*ptr++ = (ulong)setup_quad_bike;
+	*ptr++ = (ulong)VehicleControl;
+	*ptr++ = (ulong)VehicleLook;
+	*ptr++ = (ulong)SaveVehicle;
+	*ptr++ = (ulong)RestoreVehicle;
+	*ptr++ = (ulong)OnTrapDoor;
+	*ptr++ = (ulong)TrapDoorCeiling;
+	*ptr++ = (ulong)TrapDoorFloor;
+	*ptr++ = (ulong)TrapDoorControl;
+	*ptr++ = (ulong)setup_trapdoors;
+	*ptr++ = (ulong)rotate_horizon;
+	*ptr++ = (ulong)lara_as_duckcrouch;
+	*ptr++ = (ulong)lara_col_duckcrouch;
+	*ptr++ = (ulong)lara_as_duckcrawl;
+	*ptr++ = (ulong)lara_col_duckcrawl;
+	*ptr++ = (ulong)LaraTestClimbUpPosDuck;
+	*ptr++ = (ulong)lara_col_climbstnc_new;
+	*ptr++ = (ulong)lara_col_climbing_new;
+	*ptr++ = (ulong)lara_as_run_torch;
+	*ptr++ = (ulong)lara_as_stop_torch;
+	*ptr++ = (ulong)DuckCrawlPickupAnim;
+	*ptr++ = (ulong)DuckCrawlPickupFrame;
+	*ptr++ = (ulong)DuckCrawlFlarePickupFrame;
+	*ptr++ = (ulong)speedup;
+	*ptr++ = (ulong)speeddn;
+	*ptr++ = (ulong)TiltHer;
+	*ptr++ = (ulong)GetCollisionInfoAndTiltHer;
+	*ptr++ = (ulong)AlignCrawlPickupPosition;
+	*ptr++ = (ulong)GetLaraCollisionInfoAndTiltHer;
+	*ptr++ = (ulong)TrainTestHeight;
+	*ptr++ = (ulong)TrainCollision;
+	*ptr++ = (ulong)TrainControl;
+	*ptr++ = (ulong)setup_trains;
+	*ptr++ = (ulong)GetBatEmitter;
+	*ptr++ = (ulong)SetBatEmitter;
+	*ptr++ = (ulong)UpdateBats;
+	*ptr++ = (ulong)DrawBats;
+	*ptr++ = (ulong)TriggerBats;
+	*ptr++ = (ulong)BatEmitterControl;
+	*ptr++ = (ulong)setup_bats;
+	*ptr++ = (ulong)SpringBoardControl;
+	*ptr++ = (ulong)setup_springboards;
+	*ptr++ = (ulong)Sin;
+	*ptr++ = (ulong)Cos;
+	*ptr++ = (ulong)SinHalf;
+	*ptr++ = (ulong)CosHalf;
+	*ptr++ = (ulong)ConfirmSP;
+	*ptr++ = (ulong)ConfirmLSP;
+	*ptr++ = (ulong)SetInDrawLoop;
+	*ptr++ = (ulong)ClearInDrawLoop;
+	*ptr++ = (ulong)GenerateQuaternion;
+	*ptr++ = (ulong)aPushMatrix;
+	*ptr++ = (ulong)aTranslateAbs;
+	*ptr++ = (ulong)aTranslateRel;
+	*ptr++ = (ulong)aRotX;
+	*ptr++ = (ulong)aRotY;
+	*ptr++ = (ulong)aRotZ;
+	*ptr++ = (ulong)aRotYXZPack;
+	*ptr++ = (ulong)aRotYXZ;
+	*ptr++ = (ulong)aScaleCurrentMatrix;
+	*ptr++ = (ulong)aInterpolateArmMatrix;
+	*ptr++ = (ulong)aGenerateW2V;
+	*ptr++ = (ulong)aSetViewMatrix;
+	*ptr++ = (ulong)aCopyMatrix;
+	*ptr++ = (ulong)aChangeMatrix;
+	*ptr++ = (ulong)aLoadMatrix;
+	*ptr++ = (ulong)aTranslateRelInterpolated;
+	*ptr++ = (ulong)aRotYXZSuperPackInterpolated;
+	*ptr++ = (ulong)mPushMatrix;
+	*ptr++ = (ulong)mTranslateAbsXYZ;
+	*ptr++ = (ulong)mTranslateXYZ;
+	*ptr++ = (ulong)mRotX;
+	*ptr++ = (ulong)mRotY;
+	*ptr++ = (ulong)mRotZ;
+	*ptr++ = (ulong)mRotPackedYXZ;
+	*ptr++ = (ulong)mRotYXZ;
+	*ptr++ = (ulong)mScaleCurrentMatrix;
+	*ptr++ = (ulong)mInitInterpolation;
+	*ptr++ = (ulong)mInterpolateMatrix;
+	*ptr++ = (ulong)mInterpolateArmMatrix;
+	*ptr++ = (ulong)mGenerateW2V;
+	*ptr++ = (ulong)mTestCurrentMatrix;
+	*ptr++ = (ulong)mCopyMatrix;
+	*ptr++ = (ulong)mChangeMatrix;
+	*ptr++ = (ulong)mLoadMatrix;
+	*ptr++ = (ulong)phd_PushMatrix_init;
+	*ptr++ = (ulong)phd_TranslateAbs_init;
+	*ptr++ = (ulong)phd_TranslateRel_init;
+	*ptr++ = (ulong)phd_RotX_init;
+	*ptr++ = (ulong)phd_RotY_init;
+	*ptr++ = (ulong)phd_RotZ_init;
+	*ptr++ = (ulong)phd_RotYXZpack_init;
+	*ptr++ = (ulong)phd_RotYXZ_init;
+	*ptr++ = (ulong)ScaleCurrentMatrix_init;
+	*ptr++ = (ulong)InitInterpolate_init;
+	*ptr++ = (ulong)InterpolateMatrix_init;
+	*ptr++ = (ulong)InterpolateArmMatrix_init;
+	*ptr++ = (ulong)phd_PushMatrix_I_init;
+	*ptr++ = (ulong)phd_TranslateRel_ID_new_1;
+	*ptr++ = (ulong)gar_RotYXZsuperpack_I_new_1;
+	*ptr++ = (ulong)phd_GenerateW2V_end;
+	*ptr++ = (ulong)SetD3DViewMatrix_test;
+	*ptr++ = (ulong)CalcLaraMatrices_copy;
+	*ptr++ = (ulong)CalcLaraMatrices_change;
+	*ptr++ = (ulong)DrawLara_load;
+	*ptr++ = (ulong)draw_pistol_mesh_right;
+	*ptr++ = (ulong)draw_pistol_mesh_left;
+	*ptr++ = (ulong)InitialiseSpinningBlade;
+	*ptr++ = (ulong)do_spinning_blade_meshswap;
+	*ptr++ = (ulong)SpinningBlade;
+	*ptr++ = (ulong)setup_spinning_blades;
+
+#ifdef __TINYC__
+	*ptr++ = (ulong)cbSaveMyData;
+	*ptr++ = (ulong)cbLoadMyData;
+	*ptr++ = (ulong)cbInitLoadNewLevel;
+	*ptr++ = (ulong)cbFlipEffectMine;
+	*ptr++ = (ulong)cbActionMine;
+	*ptr++ = (ulong)cbConditionMine;
+	*ptr++ = (ulong)cbCustomizeMine;
+	*ptr++ = (ulong)cbParametersMine;
+	*ptr++ = (ulong)cbAssignSlotMine;
+	*ptr++ = (ulong)cbInitObjects;
+	*ptr++ = (ulong)cbInitGame;
+	*ptr++ = (ulong)cbInitLevel;
+#else
+	*ptr++ = (ulong)pcbSaveMyData;
+	*ptr++ = (ulong)pcbLoadMyData;
+	*ptr++ = (ulong)pcbInitLoadNewLevel;
+	*ptr++ = (ulong)pcbFlipEffectMine;
+	*ptr++ = (ulong)pcbActionMine;
+	*ptr++ = (ulong)pcbConditionMine;
+	*ptr++ = (ulong)pcbCustomizeMine;
+	*ptr++ = (ulong)pcbParametersMine;
+	*ptr++ = (ulong)pcbAssignSlotMine;
+	*ptr++ = (ulong)pcbInitObjects;
+	*ptr++ = (ulong)pcbInitGame;
+	*ptr++ = (ulong)pcbInitLevel;
+#endif
+
 	INJECT(0x00910000, print_secret_counter);
 	INJECT(0x00910005, burning_torch_customizer_colour);
 	INJECT(0x0091000A, get_global_mesh_position);

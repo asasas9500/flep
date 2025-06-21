@@ -133,3 +133,16 @@ AssignSlot=<MyUsedSlot>,<Springboard>
 Where <Springboard> is OBJ_FLEP_SPRINGBOARD{1..16}.
 
 Additional customization can be done by the command Customize=CUST_FLEP_SPRINGBOARD.
+
+Spinning blade
+==============
+
+Implements the spinning blade from TR2 and TR3.
+
+To assign a slot:
+
+AssignSlot=<MyUsedSlot>,<SpinningBlade>
+
+Where <SpinningBlade> is OBJ_FLEP_SPINNING_BLADE{1..16}.
+
+Additional customization can be done by the command Customize=CUST_FLEP_SPINNING_BLADE.
