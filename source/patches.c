@@ -2869,6 +2869,8 @@ __declspec(naked) float fsin(float angle)
 #define spark	ARRAY_(VAR_U_(0x0043383F, long), SPARKS, [2048])
 #define bones	VAR_U_(0x00533958, long*)
 
+#define SayNo	( (void(*)(void)) 0x0045ECB0 )
+
 short phd_sin(long angle)
 {
 	angle >>= 3;
@@ -7083,6 +7085,8 @@ const float cossin_tbl[32769] =
 #define spinning_blade_meshswap_spike_front ARRAY_(0x009021A4, short, [16])
 #define spinning_blade_meshswap_spike_back ARRAY_(0x00900040, short, [16])
 #define spinning_blade_meshswap ARRAY_(0x009008DC, short, [16])
+
+#define say_no_position VAR_U_(0x00904000, PHD_VECTOR)
 
 long check_flep(long number)
 {
@@ -13727,6 +13731,17 @@ void setup_spinning_blades(void)
 	}
 }
 
+void PuzzleKeyHoleSayNo(void)
+{
+	if (say_no_position.x != lara_item->pos.x_pos || say_no_position.y != lara_item->pos.y_pos || say_no_position.z != lara_item->pos.z_pos)
+	{
+		SayNo();
+		say_no_position.x = lara_item->pos.x_pos;
+		say_no_position.y = lara_item->pos.y_pos;
+		say_no_position.z = lara_item->pos.z_pos;
+	}
+}
+
 #ifdef __TINYC__
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
@@ -14559,11 +14574,19 @@ void pcbInitLevel(void)
 void Inject(void)
 {
 	ulong* ptr;
-	char* data;
+	uchar* data;
 
-	data = (char*)0x00900000;
+	if (pPatchMap)
+	{
+		data = (uchar*)0x00812000;
 
-	for (int i = 0; i < 0xC000; i++)
+		for (int i = 0; i < 0x1000; i++)
+			data[i] = pPatchMap[i];
+	}
+
+	data = (uchar*)0x00900000;
+
+	for (int i = 0; i < 0x10000; i++)
 		*data++ = 0;
 
 	ptr = (ulong*)0x0090C000;
@@ -14794,6 +14817,8 @@ void Inject(void)
 	*ptr++ = (ulong)pcbInitLevel;
 #endif
 
+	*ptr++ = (ulong)PuzzleKeyHoleSayNo;
+
 	INJECT(0x00910000, print_secret_counter);
 	INJECT(0x00910005, burning_torch_customizer_colour);
 	INJECT(0x0091000A, get_global_mesh_position);
@@ -14868,4 +14893,5 @@ void Inject(void)
 	INJECT(0x00910168, mInterpolateArmMatrix);
 	INJECT(0x0091016D, draw_pistol_mesh_right);
 	INJECT(0x00910172, draw_pistol_mesh_left);
+	INJECT(0x00910177, PuzzleKeyHoleSayNo);
 }
