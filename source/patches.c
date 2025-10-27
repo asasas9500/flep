@@ -880,6 +880,9 @@ typedef enum
 	ANIM_FALLDOWN = 34,
 	ANIM_BACKSTEPD_LEFT = 61,
 	ANIM_BACKSTEPD_RIGHT = 62,
+	ANIM_TREAD = 108,
+	ANIM_SURFTREAD = 114,
+	ANIM_UWDEATH = 124,
 	ANIM_RBALL_DEATH = 139,
 	ANIM_CRAWLPICKUP = 292
 } lara_anim;
@@ -1485,6 +1488,17 @@ typedef enum
 	SF_ATTACHEDNODE =	0x1000,	//spark is attached to an item node, uses NodeOffsets
 	SF_GREEN =			0x2000,	//turns the spark into a green-ish blue (for explosions only)
 } spark_flags;
+
+typedef enum
+{
+	CT_NONE =			0x0,
+	CT_FRONT =			0x1,
+	CT_LEFT =			0x2,
+	CT_RIGHT =			0x4,
+	CT_TOP =			0x8,
+	CT_TOP_FRONT =		0x10,
+	CT_CLAMP =			0x20
+} collision_types;
 
 typedef struct
 {
@@ -2440,6 +2454,26 @@ typedef struct
 
 typedef struct
 {
+	short joint_rotation[4];
+	long Vel;
+	long Rot;
+	long RotX;
+	short FanRot;
+	char Flags;
+	char WeaponTimer;
+} SUBINFO;
+
+typedef struct
+{
+	long x[2];
+	long y[2];
+	long z[2];
+	uchar life;
+	uchar pad[3];
+} SUB_WAKE_PTS;
+
+typedef struct
+{
 	char Text[80];
 } StrText80;
 
@@ -2508,6 +2542,17 @@ typedef struct
 	StrVariabiliGlobTRNG Globals;
 	StrBloccoNumVar Locals;
 } StrBaseVarAll;
+
+typedef struct
+{
+	long patch_secret_counter_status_;
+	long camera_bounce_strength_;
+	short camera_bounce_item_number_;
+	long camera_bounce_status_;
+	char LaraElectric_;
+	short LaraElectricIndex_;
+	uchar pad;
+} MY_DATA;
 
 typedef struct
 {
@@ -2870,6 +2915,23 @@ __declspec(naked) float fsin(float angle)
 #define bones	VAR_U_(0x00533958, long*)
 
 #define SayNo	( (void(*)(void)) 0x0045ECB0 )
+
+#define UpdateLaraRoom	( (void(*)(ITEM_INFO*, long)) 0x00446740 )
+#define CreateBubble	( (void(*)(PHD_3DPOS*, short, long, long)) 0x004391A0 )
+#define DrawAirBar	( (void(*)(long)) 0x00452390 )
+#define LaraTorch	( (void(*)(PHD_VECTOR*, PHD_VECTOR*, short, long)) 0x00445040 )
+#define GetWaterDepth	( (long(*)(long, long, long, short)) 0x00432700 )
+
+#define bLaraTorch	VAR_U_(0x00536DE0, long)
+
+#define setXYZ4	( (void(*)(D3DTLVERTEX*, long, long, long, long, long, long, long, long, long, long, long, long, short*)) 0x00483770 )
+
+#define AddQuadSorted	( *(void(**)(D3DTLVERTEX*, short, short, short, short, TEXTURESTRUCT*, long)) 0x005339A4 )
+
+#define GetRandomDraw	( (long(*)(void)) 0x0048EB70 )
+
+#define phd_winwidth	VAR_U_(0x00753C60, long)
+#define phd_winheight	VAR_U_(0x00753BB0, long)
 
 short phd_sin(long angle)
 {
@@ -6989,6 +7051,11 @@ const float cossin_tbl[32769] =
 	1.000000000e+00F
 };
 
+const uchar lara_meshes[28] = { 0, 1, 1, 2, 2, 3, 0, 4, 4, 5, 5, 6, 0, 7, 7, 8, 8, 9, 9, 10, 7, 11, 11, 12, 12, 13, 7, 14 };
+const uchar lara_last_points[14] = { 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1 };
+const uchar lara_line_counts[6] = { 12, 12, 4, 12, 12, 4 };
+const long lara_mesh_spicy_table[15] = {0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 8};
+
 #define patch_secret_counter_status VAR_U_(0x00902474, long)
 #define global_mesh_position VAR_U_(0x009019C0, PHD_VECTOR)
 #define bridge_object ARRAY_(0x009019F4, short, [3])
@@ -7087,6 +7154,24 @@ const float cossin_tbl[32769] =
 #define spinning_blade_meshswap ARRAY_(0x009008DC, short, [16])
 
 #define say_no_position VAR_U_(0x00904000, PHD_VECTOR)
+#define sub_slot_upv ARRAY_(0x0090400C, short, [16])
+#define sub_slot_vehicle_anim ARRAY_(0x0090402C, short, [16])
+#define sub_index ARRAY_(0x0090404C, char, [NUMBER_OBJECTS])
+#define SubWakePts ARRAY_(0x00904254, SUB_WAKE_PTS, [32][2])
+#define SubWakeShade VAR_U_(0x00904F54, uchar)
+#define SubCurrentStartWake VAR_U_(0x00904F55, uchar)
+#define sub_sfx_little_sub_loop ARRAY_(0x00904F56, short, [16])
+#define sub_sfx_little_sub_start ARRAY_(0x00904F76, short, [16])
+#define sub_sfx_little_sub_stop ARRAY_(0x00904F96, short, [16])
+#define SubWakeVehicle VAR_U_(0x00904FB6, short)
+#define SubHarpoonLeftRight VAR_U_(0x00904FB8, char)
+#define sub_harpoon ARRAY_(0x00904FB9, char, [16])
+#define LaraElectric VAR_U_(0x00904FC9, char)
+#define electricity_points ARRAY_(0x00904FCA, short, [32][6])
+#define sfx_lara_electric_loop ARRAY_(0x0090514A, short, [255])
+#define sfx_lara_electric_crackles ARRAY_(0x00905348, short, [255])
+#define light_lara_electric ARRAY_(0x00905546, char, [255])
+#define LaraElectricIndex VAR_U_(0x00905645, short)
 
 long check_flep(long number)
 {
@@ -10984,6 +11069,1097 @@ void setup_quad_bike(void)
 	}
 }
 
+void SubInitialise(short item_number)
+{
+	ITEM_INFO* item;
+	SUBINFO* sub;
+
+	item = &items[item_number];
+	sub = (SUBINFO*)game_malloc(sizeof(SUBINFO));
+	item->data = sub;
+	sub->Rot = 0;
+	sub->Vel = 0;
+	sub->Flags = 0;
+	sub->WeaponTimer = 0;
+
+	for (int i = 0; i < 4; i++)
+		sub->joint_rotation[i] = 0;
+
+	for (int i = 0; i < 32; i++)
+	{
+		SubWakePts[i][0].life = 0;
+		SubWakePts[i][1].life = 0;
+	}
+
+	item->anim_number = objects[sub_slot_upv[sub_index[item->object_number]]].anim_index + 5;
+	item->frame_number = anims[item->anim_number].frame_base;
+	item->current_anim_state = 5;
+	item->goal_anim_state = 5;
+	AddActiveItem(item_number);
+	item->flags |= IFL_CODEBITS;
+	item->status = ITEM_ACTIVE;
+	item->mesh_bits &= ~0x10;
+}
+
+long GetOnSub(short item_number, COLL_INFO* coll)
+{
+	ITEM_INFO* item;
+	FLOOR_INFO* floor;
+	long dx, dy, dz, dist, h;
+	short room_number;
+
+	if (!(input & IN_ACTION) || lara.gun_status != LG_NO_ARMS || lara_item->gravity_status)
+		return 0;
+
+	item = &items[item_number];
+	dy = lara_item->pos.y_pos - item->pos.y_pos + 256;
+
+	if (ABS(dy) > 256)
+		return 0;
+
+	dx = lara_item->pos.x_pos - item->pos.x_pos;
+	dz = lara_item->pos.z_pos - item->pos.z_pos;
+	dist = SQUARE(dx) + SQUARE(dz);
+
+	if (dist > 0x40000)
+		return 0;
+
+	room_number = item->room_number;
+	floor = GetFloor(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, &room_number);
+	h = GetHeight(floor, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+
+	if (h < -32000)
+		return 0;
+
+	return 1;
+}
+
+void SubCollision(short item_number, ITEM_INFO* l, COLL_INFO* coll)
+{
+	ITEM_INFO* item;
+
+	item = &items[item_number];
+
+	if (l->hit_points < 0 || lara.vehicle != NO_ITEM)
+		return;
+
+	if (GetOnSub(item_number, coll))
+	{
+		lara.vehicle = item_number;
+		SubWakeVehicle = item_number;
+		lara.water_status = LW_UNDERWATER;
+
+		if (lara.gun_type == WEAPON_FLARE)
+		{
+			CreateFlare(FLARE_ITEM, 0);
+			undraw_flare_meshes();
+			lara.flare_control_left = 0;
+			lara.gun_type = WEAPON_NONE;
+			lara.request_gun_type = WEAPON_NONE;
+		}
+
+		lara.gun_status = LG_HANDS_BUSY;
+		l->pos.x_pos = item->pos.x_pos;
+		l->pos.y_pos = item->pos.y_pos;
+		l->pos.z_pos = item->pos.z_pos;
+		l->pos.y_rot = item->pos.y_rot;
+
+		if (l->current_anim_state == AS_SURFTREAD || l->current_anim_state == AS_SURFSWIM)
+		{
+			l->anim_number = objects[sub_slot_vehicle_anim[sub_index[item->object_number]]].anim_index + 10;
+			l->frame_number = anims[l->anim_number].frame_base;
+		}
+		else
+		{
+			l->anim_number = objects[sub_slot_vehicle_anim[sub_index[item->object_number]]].anim_index + 13;
+			l->frame_number = anims[l->anim_number].frame_base;
+		}
+
+		l->goal_anim_state = 8;
+		l->current_anim_state = 8;
+		AnimateItem(l);
+	}
+	else
+		ObjectCollision(item_number, l, coll);
+}
+
+long SubCanGetOff(ITEM_INFO* item)
+{
+	SUBINFO* sub;
+	FLOOR_INFO* floor;
+	long rad, x, y, z, h, c;
+	short room_number;
+
+	sub = (SUBINFO*)item->data;
+
+	if (lara.current_xvel || lara.current_zvel || sub->Vel)
+		return 0;
+
+	rad = WALL_SIZE * phd_cos(item->pos.x_rot) >> W2V_SHIFT;
+	x = item->pos.x_pos + ((rad * phd_sin(item->pos.y_rot + 0x8000)) >> W2V_SHIFT);
+	y = item->pos.y_pos - ((WALL_SIZE * phd_sin(item->pos.x_rot)) >> W2V_SHIFT);
+	z = item->pos.z_pos + ((rad * phd_cos(item->pos.y_rot + 0x8000)) >> W2V_SHIFT);
+
+	room_number = item->room_number;
+	floor = GetFloor(x, y, z, &room_number);
+	h = GetHeight(floor, x, y, z);
+
+	if (h == NO_HEIGHT || y > h)
+		return 0;
+
+	c = GetCeiling(floor, x, y, z);
+
+	if (c == NO_HEIGHT || h - c < 256 || y < c)
+		return 0;
+
+	return 1;
+}
+
+void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
+{
+	PHD_VECTOR pos;
+	long wh, wsd;
+	short anim, frame;
+
+	if (l->hit_points < 0)
+		sub->Flags &= ~1;
+
+	anim = l->anim_number - objects[sub_slot_vehicle_anim[sub_index[item->object_number]]].anim_index;
+	frame = l->frame_number - anims[l->anim_number].frame_base;
+
+	switch (l->current_anim_state)
+	{
+	case 0:
+
+		if (!anim && frame == 16)
+		{
+			pos.x = 0;
+			pos.y = 0;
+			pos.z = 0;
+			GetLaraJointPos(&pos, LM_HIPS);
+			l->pos.x_pos = pos.x;
+			l->pos.y_pos = pos.y;
+			l->pos.z_pos = pos.z;
+			l->anim_number = ANIM_UWDEATH;
+			l->frame_number = anims[ANIM_UWDEATH].frame_base;
+			l->current_anim_state = AS_UWDEATH;
+			l->goal_anim_state = AS_UWDEATH;
+			l->fallspeed = 0;
+			l->gravity_status = 0;
+			l->pos.x_rot = 0;
+			l->pos.z_rot = 0;
+			lara.water_status = LW_UNDERWATER;
+			lara.gun_status = LG_NO_ARMS;
+			lara.vehicle = NO_ITEM;
+			item->anim_number = objects[sub_slot_upv[sub_index[item->object_number]]].anim_index + 5;
+			item->frame_number = anims[item->anim_number].frame_base;
+			item->current_anim_state = 5;
+			item->goal_anim_state = 5;
+			sub->Vel = 0;
+		}
+
+		break;
+
+	case 2:
+
+		if (anim == 9 && frame == 51)
+		{
+			pos.x = 0;
+			pos.y = 0;
+			pos.z = 0;
+			wh = GetWaterHeight(l->pos.x_pos, l->pos.y_pos, l->pos.z_pos, l->room_number);
+
+			if (wh == NO_HEIGHT)
+				wsd = NO_HEIGHT;
+			else
+				wsd = l->pos.y_pos - wh;
+
+			GetLaraJointPos(&pos, LM_HIPS);
+			l->pos.x_pos = pos.x;
+			l->pos.y_pos = pos.y;
+			l->pos.z_pos = pos.z;
+			l->anim_number = ANIM_SURFTREAD;
+			l->frame_number = anims[ANIM_SURFTREAD].frame_base;
+			l->current_anim_state = AS_SURFTREAD;
+			l->goal_anim_state = AS_SURFTREAD;
+			l->fallspeed = 0;
+			l->gravity_status = 0;
+			l->pos.x_rot = 0;
+			l->pos.z_rot = 0;
+			UpdateLaraRoom(l, -381);
+			lara.water_status = LW_SURFACE;
+			lara.water_surface_dist = -wsd;
+			lara.torso_x_rot = 0;
+			lara.torso_y_rot = 0;
+			lara.head_x_rot = 0;
+			lara.head_y_rot = 0;
+			lara.gun_status = LG_NO_ARMS;
+			lara.vehicle = NO_ITEM;
+			item->anim_number = objects[sub_slot_upv[sub_index[item->object_number]]].anim_index + 5;
+			item->frame_number = anims[item->anim_number].frame_base;
+			item->current_anim_state = 5;
+			item->goal_anim_state = 5;
+			sub->Vel = 0;
+		}
+
+		break;
+
+	case 4:
+
+		if (l->hit_points <= 0)
+		{
+			l->goal_anim_state = 0;
+			break;
+		}
+
+		if (input & IN_LEFT)
+			sub->Rot -= 0x400000;
+		else if (input & IN_RIGHT)
+			sub->Rot += 0x400000;
+
+		if (sub->Flags & 2)
+		{
+			if (item->pos.x_rot > 9100)
+				item->pos.x_rot -= 182;
+			else if (item->pos.x_rot < 9100)
+				item->pos.x_rot += 182;
+		}
+		else if (input & IN_FORWARD)
+			sub->RotX -= 0x16C0000;
+		else if (input & IN_BACK)
+			sub->RotX += 0x16C0000;
+
+		if (input & IN_JUMP)
+		{
+			if (sub->Flags & 2 && input & IN_FORWARD && item->pos.x_rot > -2730)
+				sub->Flags |= 4;
+
+			sub->Vel += 0x40000;
+		}
+		else
+			l->goal_anim_state = 5;
+
+		break;
+
+	case 5:
+
+		if (l->hit_points <= 0)
+		{
+			l->goal_anim_state = 0;
+			break;
+		}
+
+		if (input & IN_LEFT)
+			sub->Rot -= 0x200000;
+		else if (input & IN_RIGHT)
+			sub->Rot += 0x200000;
+
+		if (sub->Flags & 2)
+		{
+			if (item->pos.x_rot > 9100)
+				item->pos.x_rot -= 182;
+			else if (item->pos.x_rot < 9100)
+				item->pos.x_rot += 182;
+		}
+		else if (input & IN_FORWARD)
+			sub->RotX -= 0x16C0000;
+		else if (input & IN_BACK)
+			sub->RotX += 0x16C0000;
+
+		if (sub->Flags & 1)
+		{
+			if (input & IN_ROLL && SubCanGetOff(item))
+			{
+				if (sub->Flags & 2)
+					l->goal_anim_state = 2;
+				else
+					l->goal_anim_state = 9;
+
+				sub->Flags &= ~1;
+
+				if (sub_sfx_little_sub_loop[sub_index[item->object_number]] != -1)
+					StopSoundEffect(sub_sfx_little_sub_loop[sub_index[item->object_number]]);
+
+				if (sub_sfx_little_sub_stop[sub_index[item->object_number]] != -1)
+					SoundEffect(sub_sfx_little_sub_stop[sub_index[item->object_number]], &item->pos, SFX_ALWAYS);
+			}
+			else if (input & IN_JUMP)
+			{
+				if (sub->Flags & 2 && input & IN_FORWARD && item->pos.x_rot > -2730)
+					sub->Flags |= 4;
+
+				l->goal_anim_state = 4;
+			}
+		}
+
+		break;
+
+	case 8:
+
+		if (anim == 11)
+		{
+			item->pos.x_rot += 182;
+			item->pos.y_pos += 4;
+
+			if (frame == 30 && sub_sfx_little_sub_start[sub_index[item->object_number]] != -1)
+				SoundEffect(sub_sfx_little_sub_start[sub_index[item->object_number]], &item->pos, 2);
+
+			if (frame == 50)
+				sub->Flags |= 1;
+		}
+		else if (anim == 13)
+		{
+			if (frame == 30 && sub_sfx_little_sub_start[sub_index[item->object_number]] != -1)
+				SoundEffect(sub_sfx_little_sub_start[sub_index[item->object_number]], &item->pos, 2);
+
+			if (frame == 42)
+				sub->Flags |= 1;
+		}
+
+		break;
+
+	case 9:
+
+		if (anim == 12 && frame == 42)
+		{
+			pos.x = 0;
+			pos.y = 0;
+			pos.z = 0;
+			GetLaraJointPos(&pos, LM_HIPS);
+			l->pos.x_pos = pos.x;
+			l->pos.y_pos = pos.y;
+			l->pos.z_pos = pos.z;
+			l->anim_number = ANIM_TREAD;
+			l->frame_number = anims[ANIM_TREAD].frame_base;
+			l->current_anim_state = AS_TREAD;
+			l->fallspeed = 0;
+			l->gravity_status = 0;
+			l->pos.x_rot = 0;
+			l->pos.z_rot = 0;
+			UpdateLaraRoom(l, 0);
+			lara.water_status = LW_UNDERWATER;
+			lara.gun_status = LG_NO_ARMS;
+			lara.vehicle = NO_ITEM;
+			item->anim_number = objects[sub_slot_upv[sub_index[item->object_number]]].anim_index + 5;
+			item->frame_number = anims[item->anim_number].frame_base;
+			item->current_anim_state = 5;
+			item->goal_anim_state = 5;
+			sub->Vel = 0;
+		}
+
+		break;
+	}
+
+	if (sub->Flags & 4)
+	{
+		if (item->pos.x_rot > -2730)
+			item->pos.x_rot -= 910;
+		else
+			sub->Flags &= ~4;
+	}
+
+	if (sub->Vel > 0)
+	{
+		sub->Vel -= 0x18000;
+
+		if (sub->Vel < 0)
+			sub->Vel = 0;
+
+	}
+	else if (sub->Vel < 0)
+	{
+		sub->Vel += 0x18000;
+
+		if (sub->Vel > 0)
+			sub->Vel = 0;
+	}
+
+	if (sub->Vel > 0x400000)
+		sub->Vel = 0x400000;
+	else if (sub->Vel < -0x400000)
+		sub->Vel = -0x400000;
+
+	if (sub->Rot > 0)
+	{
+		sub->Rot -= 0x100000;
+
+		if (sub->Rot < 0)
+			sub->Rot = 0;
+	}
+	else if (sub->Rot < 0)
+	{
+		sub->Rot += 0x100000;
+
+		if (sub->Rot > 0)
+			sub->Rot = 0;
+	}
+
+	if (sub->RotX > 0)
+	{
+		sub->RotX -= 0xB60000;
+
+		if (sub->RotX < 0)
+			sub->RotX = 0;
+	}
+	else if (sub->RotX < 0)
+	{
+		sub->RotX += 0xB60000;
+
+		if (sub->RotX > 0)
+			sub->RotX = 0;
+	}
+
+	if (sub->Rot > 0x1C00000)
+		sub->Rot = 0x1C00000;
+	else if (sub->Rot < -0x1C00000)
+		sub->Rot = -0x1C00000;
+
+	if (sub->RotX > 0x16C0000)
+		sub->RotX = 0x16C0000;
+	else if (sub->RotX < -0x16C0000)
+		sub->RotX = -0x16C0000;
+}
+
+void SubDoCurrent(ITEM_INFO* item)
+{
+	long sinkval, angle, speed, xvel, zvel, shifter, absvel;
+
+	if (lara.current_active)
+	{
+		sinkval = lara.current_active - 1;
+		angle = mGetAngle(camera.fixed[sinkval].x, camera.fixed[sinkval].z, lara_item->pos.x_pos, lara_item->pos.z_pos);
+		angle = ((angle - 0x4000) >> 4) & 0xFFF;
+		speed = camera.fixed[sinkval].data;
+		xvel = (speed * rcossin_tbl[angle << 1]) >> 2;
+		zvel = (speed * rcossin_tbl[(angle << 1) + 1]) >> 2;
+		lara.current_xvel += (short)((xvel - lara.current_xvel) >> 4);
+		lara.current_zvel += (short)((zvel - lara.current_zvel) >> 4);
+	}
+	else
+	{
+		absvel = ABS(lara.current_xvel);
+
+		if (absvel > 16)
+			shifter = 4;
+		else if (absvel > 8)
+			shifter = 3;
+		else
+			shifter = 2;
+
+		lara.current_xvel -= lara.current_xvel >> shifter;
+
+		if (ABS(lara.current_xvel) < 4)
+			lara.current_xvel = 0;
+
+		absvel = ABS(lara.current_zvel);
+
+		if (absvel > 16)
+			shifter = 4;
+		else if (absvel > 8)
+			shifter = 3;
+		else
+			shifter = 2;
+
+		lara.current_zvel -= lara.current_zvel >> shifter;
+
+		if (ABS(lara.current_zvel) < 4)
+			lara.current_zvel = 0;
+
+		if (!lara.current_xvel && !lara.current_zvel)
+			return;
+	}
+
+	item->pos.x_pos += lara.current_xvel >> 8;
+	item->pos.z_pos += lara.current_zvel >> 8;
+	lara.current_active = 0;
+}
+
+void FireSubHarpoon(ITEM_INFO* item)
+{
+	PHD_3DPOS pos;
+	short* ammo;
+
+	ammo = get_current_ammo_pointer(WEAPON_CROSSBOW);
+
+	if (!*ammo)
+		return;
+
+	if (*ammo != -1)
+		--*ammo;
+
+	pos.x_pos = SubHarpoonLeftRight ? 22 : -22;
+	pos.y_pos = 24;
+	pos.z_pos = 230;
+	GetJointAbsPosition(item, (PHD_VECTOR*)&pos, 3);
+	pos.x_rot = item->pos.x_rot;
+	pos.y_rot = item->pos.y_rot;
+	pos.z_rot = 0;
+	FireCrossbow(&pos);
+	SubHarpoonLeftRight ^= 1;
+}
+
+void SubBackgroundCollision(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
+{
+	COLL_INFO coll;
+	long h;
+
+	coll.bad_pos = -NO_HEIGHT;
+	coll.bad_neg = -400;
+	coll.bad_ceiling = -400;
+	coll.old.x = item->pos.x_pos;
+	coll.old.y = item->pos.y_pos + 128;
+	coll.old.z = item->pos.z_pos;
+	coll.radius = 300;
+	coll.trigger = 0;
+	coll.slopes_are_walls = 0;
+	coll.slopes_are_pits = 0;
+	coll.lava_is_pit = 0;
+	coll.enable_spaz = 0;
+	coll.enable_baddie_push = 1;
+
+	if (item->pos.x_rot < -0x4000 || item->pos.x_rot > 0x4000)
+		lara.move_angle = item->pos.y_rot + 0x8000;
+	else
+		lara.move_angle = item->pos.y_rot;
+
+	coll.facing = lara.move_angle;
+	h = (WALL_SIZE * phd_sin(item->pos.x_rot)) >> W2V_SHIFT;
+
+	if (h < 0)
+		h = -h;
+
+	if (h < 200)
+		h = 200;
+
+	coll.bad_neg = -h;
+	GetCollisionInfo(&coll, item->pos.x_pos, item->pos.y_pos + 128 + h / 2, item->pos.z_pos, item->room_number, h);
+	ShiftItem(item, &coll);
+
+	switch (coll.coll_type)
+	{
+	case CT_FRONT:
+
+		if (sub->RotX > 0x1FFE0000)
+			sub->RotX += 0x16C0000;
+		else if (sub->RotX < -0x1FFE0000)
+			sub->RotX -= 0x16C0000;
+		else
+			sub->Vel = 0;
+
+		break;
+
+	case CT_TOP:
+
+		if (sub->RotX >= -0x1FFE0000)
+			sub->RotX -= 0x16C0000;
+
+		break;
+
+	case CT_TOP_FRONT:
+		sub->Vel = 0;
+		break;
+
+	case CT_LEFT:
+		item->pos.y_rot += 910;
+		break;
+
+	case CT_RIGHT:
+		item->pos.y_rot -= 910;
+		break;
+
+	case CT_CLAMP:
+		item->pos.x_pos = coll.old.x;
+		item->pos.y_pos = coll.old.y;
+		item->pos.z_pos = coll.old.z;
+		sub->Vel = 0;
+		return;
+	}
+
+	if (coll.mid_floor < 0)
+	{
+		item->pos.y_pos += coll.mid_floor;
+		sub->RotX += 0x16C0000;
+	}
+}
+
+long SubControl(void)
+{
+	ITEM_INFO* item;
+	SUBINFO* sub;
+	FLOOR_INFO* floor;
+	long wh, wd, ox, oy, oz;
+	short room_number;
+
+	item = &items[lara.vehicle];
+	sub = (SUBINFO*)item->data;
+	ox = item->pos.x_pos;
+	oy = item->pos.y_pos;
+	oz = item->pos.z_pos;
+	SubUserInput(item, lara_item, sub);
+	item->speed = sub->Vel >> 16;
+	item->pos.x_rot += sub->RotX >> 16;
+	item->pos.y_rot += sub->Rot >> 16;
+	item->pos.z_rot = (short)(sub->Rot >> 12);
+
+	if (item->pos.x_rot > 14560)
+		item->pos.x_rot = 14560;
+	else if (item->pos.x_rot < -14560)
+		item->pos.x_rot = -14560;
+
+	item->pos.x_pos += (phd_cos(item->pos.x_rot) * ((item->speed * phd_sin(item->pos.y_rot)) >> W2V_SHIFT)) >> W2V_SHIFT;
+	item->pos.y_pos -= (item->speed * phd_sin(item->pos.x_rot)) >> W2V_SHIFT;
+	item->pos.z_pos += (phd_cos(item->pos.x_rot) * ((item->speed * phd_cos(item->pos.y_rot)) >> W2V_SHIFT)) >> W2V_SHIFT;
+
+	if (lara.vehicle == NO_ITEM)
+		return 0;
+
+	SubDoCurrent(item);
+	SubBackgroundCollision(item, lara_item, sub);
+	sub->joint_rotation[0] = (short)(item->pos.z_rot + (sub->RotX >> 13));
+	sub->joint_rotation[1] = (short)((sub->RotX >> 13) - item->pos.z_rot);
+	sub->joint_rotation[2] = sub->FanRot;
+	room_number = item->room_number;
+	floor = GetFloor(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, &room_number);
+	wd = GetWaterDepth(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, room_number);
+
+	if (!(room[room_number].flags & ROOM_UNDERWATER) || wd == NO_HEIGHT || wd < 768)
+	{
+		item->pos.x_pos = ox;
+		item->pos.y_pos = oy;
+		item->pos.z_pos = oz;
+		room_number = item->room_number;
+		floor = GetFloor(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, &room_number);
+		wd = GetWaterDepth(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, room_number);
+	}
+
+	item->floor = GetHeight(floor, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+
+	if (room_number != item->room_number)
+	{
+		ItemNewRoom(lara.vehicle, room_number);
+		ItemNewRoom(lara.item_number, room_number);
+	}
+
+	TestTriggers(trigger_index, 1, 0);
+	TestTriggers(trigger_index, 0, 0);
+
+	if (sub_harpoon[sub_index[item->object_number]] && input & IN_ACTION && sub->Flags & 1 && !sub->WeaponTimer)
+	{
+		FireSubHarpoon(item);
+		sub->WeaponTimer = 15;
+	}
+
+	if (wd != NO_HEIGHT && wd != 0x7FFF)
+	{
+		wh = GetWaterHeight(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, room_number);
+
+		if (wh != NO_HEIGHT && wh - item->pos.y_pos >= -338)
+		{
+			item->pos.y_pos = wh + 338;
+
+			if (!(sub->Flags & 2))
+			{
+				SoundEffect(SFX_LARA_BREATH, &lara_item->pos, SFX_ALWAYS);
+				sub->Flags &= ~4;
+			}
+
+			sub->Flags |= 2;
+			lara.water_status = LW_SURFACE;
+		}
+		else
+		{
+			sub->Flags &= ~2;
+			lara.water_status = LW_UNDERWATER;
+		}
+	}
+	else
+	{
+		sub->Flags &= ~2;
+		lara.water_status = LW_UNDERWATER;
+	}
+
+	lara_item->pos.x_pos = item->pos.x_pos;
+	lara_item->pos.y_pos = item->pos.y_pos;
+	lara_item->pos.z_pos = item->pos.z_pos;
+	lara_item->pos.x_rot = item->pos.x_rot;
+	lara_item->pos.y_rot = item->pos.y_rot;
+	lara_item->pos.z_rot = item->pos.z_rot;
+	AnimateItem(lara_item);
+
+	if (sub->Flags & 1 && sub_sfx_little_sub_loop[sub_index[item->object_number]] != -1)
+		SoundEffect(sub_sfx_little_sub_loop[sub_index[item->object_number]], &item->pos, (item->speed << 16) | 0x1000000 | SFX_SETPITCH | SFX_ALWAYS);
+
+	item->anim_number = lara_item->anim_number + objects[sub_slot_upv[sub_index[item->object_number]]].anim_index - objects[sub_slot_vehicle_anim[sub_index[item->object_number]]].anim_index;
+	item->frame_number = lara_item->frame_number + anims[item->anim_number].frame_base - anims[lara_item->anim_number].frame_base;
+	camera.target_elevation = sub->Flags & 2 ? -10920 : 0;
+	return 1;
+}
+
+void TriggerSubMist(long x, long y, long z, long speed, short angle)
+{
+	SPARKS* sptr;
+
+	sptr = &spark[GetFreeSpark()];
+	sptr->On = 1;
+	sptr->sR = 0;
+	sptr->sG = 0;
+	sptr->sB = 0;
+	sptr->dR = 64;
+	sptr->dG = 64;
+	sptr->dB = 64;
+	sptr->FadeToBlack = 12;
+	sptr->ColFadeSpeed = (GetRandomControl() & 3) + 4;
+	sptr->TransType = 2;
+	sptr->extras = 0;
+	sptr->Life = (GetRandomControl() & 3) + 20;
+	sptr->sLife = sptr->Life;
+	sptr->Dynamic = -1;
+	sptr->x = (GetRandomControl() & 0xF) + x - 8;
+	sptr->y = (GetRandomControl() & 0xF) + y - 8;
+	sptr->z = (GetRandomControl() & 0xF) + z - 8;
+	sptr->Xvel = (GetRandomControl() & 0x7F) + ((speed * phd_sin(angle)) >> (W2V_SHIFT + 2)) - 64;
+	sptr->Yvel = 0;
+	sptr->Zvel = (GetRandomControl() & 0x7F) + ((speed * phd_cos(angle)) >> (W2V_SHIFT + 2)) - 64;
+	sptr->Friction = 3;
+
+	if (GetRandomControl() & 1)
+	{
+		sptr->Flags = SF_ROTATE | SF_DEF | SF_SCALE;
+		sptr->RotAng = GetRandomControl() & 0xFFF;
+
+		if (GetRandomControl() & 1)
+			sptr->RotAdd = -16 - (GetRandomControl() & 0xF);
+		else
+			sptr->RotAdd = (GetRandomControl() & 0xF) + 16;
+	}
+	else
+		sptr->Flags = SF_DEF | SF_SCALE;
+
+	sptr->Scalar = 3;
+	sptr->Def = (uchar)objects[DEFAULT_SPRITES].mesh_index;
+	sptr->MaxYvel = 0;
+	sptr->Gravity = 0;
+	sptr->dSize = (uchar)((GetRandomControl() & 7) + (speed >> 1) + 16);
+	sptr->sSize = sptr->dSize >> 2;
+	sptr->Size = sptr->sSize;
+}
+
+void SubDoWake(ITEM_INFO* item, short lr)
+{
+	PHD_VECTOR pos;
+
+	if (!SubWakePts[SubCurrentStartWake][lr].life)
+	{
+		SubWakePts[SubCurrentStartWake][lr].life = 32;
+
+		for (int i = 0; i < 2; i++)
+		{
+			pos.x = !i ? 128 : 0;
+
+			if (!lr)
+				pos.x = -pos.x;
+
+			pos.y = 0;
+			pos.z = -64;
+			GetJointAbsPosition(item, &pos, lr + 1);
+			SubWakePts[SubCurrentStartWake][lr].x[i] = pos.x;
+			SubWakePts[SubCurrentStartWake][lr].y[i] = pos.y;
+			SubWakePts[SubCurrentStartWake][lr].z[i] = pos.z;
+		}
+
+		if (lr == 1)
+			SubCurrentStartWake = (SubCurrentStartWake + 1) & 0x1F;
+	}
+}
+
+void SubUpdateWakeFX(void)
+{
+	for (int i = 0; i < 2; i++)
+	{
+		for (int j = 0; j < 32; j++)
+		{
+			if (SubWakePts[j][i].life)
+				SubWakePts[j][i].life--;
+		}
+	}
+}
+
+void SubEffects(short item_number)
+{
+	ITEM_INFO* item;
+	SUBINFO* sub;
+	PHD_VECTOR pos, s, t;
+	PHD_3DPOS bPos;
+	short room_number;
+
+	item = &items[item_number];
+	sub = (SUBINFO*)item->data;
+
+	if (lara.vehicle == item_number)
+	{
+		if (sub->Vel)
+		{
+			sub->FanRot += (short)(sub->Vel >> 12);
+			pos.x = 0;
+			pos.y = 0;
+			pos.z = 0;
+			GetJointAbsPosition(item, &pos, 3);
+			TriggerSubMist(pos.x, pos.y, pos.z, ABS(sub->Vel) >> 16, item->pos.y_rot + 0x8000);
+
+			if (!(GetRandomControl() & 1))
+			{
+				bPos.x_pos = (GetRandomControl() & 0x3F) + pos.x - 32;
+				bPos.y_pos = pos.y;
+				bPos.z_pos = (GetRandomControl() & 0x3F) + pos.z - 32;
+				room_number = item->room_number;
+				GetFloor(bPos.x_pos, bPos.y_pos, bPos.z_pos, &room_number);
+				CreateBubble(&bPos, room_number, 4, 8);
+			}
+		}
+		else
+			sub->FanRot += 364;
+
+		if (sub->Flags & 1)
+		{
+			s.x = 0;
+			s.y = 96;
+			s.z = 256;
+			GetJointAbsPosition(item, &s, 0);
+			t.x = 0;
+			t.y = 96;
+			t.z = 16384;
+			GetJointAbsPosition(item, &t, 0);
+			LaraTorch(&s, &t, item->pos.y_rot, (31 - (GetRandomControl() & 3)) << 3);
+			item->mesh_bits |= 0x10;
+		}
+		else
+		{
+			bLaraTorch = 0;
+			item->mesh_bits &= ~0x10;
+		}
+	}
+	else
+		AnimateItem(item);
+
+	if (SubWakeVehicle == item_number)
+	{
+		if (!(wibble & 0xF) && sub->Vel)
+		{
+			SubDoWake(item, 0);
+			SubDoWake(item, 1);
+		}
+
+		if (!sub->Vel)
+		{
+			if (SubWakeShade)
+				SubWakeShade--;
+		}
+		else if (SubWakeShade < 16)
+			SubWakeShade++;
+
+		SubUpdateWakeFX();
+	}
+
+	if (sub->WeaponTimer)
+		sub->WeaponTimer--;
+}
+
+void S_DrawSubWakeFX(ITEM_INFO* item)
+{
+	SUB_WAKE_PTS* pt;
+	TEXTURESTRUCT Tex;
+	PHD_VECTOR pos, wh[2][2], w[2][32][2];
+	D3DTLVERTEX v[4];
+	long current;
+	long x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, s1, s2, s3, s4, cval;
+	uchar c[2][32];
+
+	if (SubWakeVehicle == NO_ITEM || &items[SubWakeVehicle] != item)
+		return;
+
+	phd_PushMatrix();
+	phd_TranslateAbs(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+
+	for (int i = 0; i < 2; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			pos.x = j ? 128 : 0;
+
+			if (!i)
+				pos.x = -pos.x;
+
+			pos.y = 0;
+			pos.z = -64;
+			GetJointAbsPosition(item, &pos, i + 1);
+			x1 = pos.x - item->pos.x_pos;
+			y1 = pos.y - item->pos.y_pos;
+			z1 = pos.z - item->pos.z_pos;
+
+			wh[i][j].x = (phd_mxptr[M00] * x1 + phd_mxptr[M01] * y1 + phd_mxptr[M02] * z1 + phd_mxptr[M03]) >> W2V_SHIFT;
+			wh[i][j].y = (phd_mxptr[M10] * x1 + phd_mxptr[M11] * y1 + phd_mxptr[M12] * z1 + phd_mxptr[M13]) >> W2V_SHIFT;
+			wh[i][j].z = (phd_mxptr[M20] * x1 + phd_mxptr[M21] * y1 + phd_mxptr[M22] * z1 + phd_mxptr[M23]) >> W2V_SHIFT;
+		}
+
+		current = (SubCurrentStartWake - 1) & 0x1F;
+
+		for (int j = 0; j < 32; j++)
+		{
+			pt = &SubWakePts[current][i];
+			c[i][j] = pt->life;
+
+			if (!pt->life)
+				break;
+
+			for (int k = 0; k < 2; k++)
+			{
+				x1 = pt->x[k] - item->pos.x_pos;
+				y1 = pt->y[k] - item->pos.y_pos;
+				z1 = pt->z[k] - item->pos.z_pos;
+				w[i][j][k].x = (phd_mxptr[M00] * x1 + phd_mxptr[M01] * y1 + phd_mxptr[M02] * z1 + phd_mxptr[M03]) >> W2V_SHIFT;
+				w[i][j][k].y = (phd_mxptr[M10] * x1 + phd_mxptr[M11] * y1 + phd_mxptr[M12] * z1 + phd_mxptr[M13]) >> W2V_SHIFT;
+				w[i][j][k].z = (phd_mxptr[M20] * x1 + phd_mxptr[M21] * y1 + phd_mxptr[M22] * z1 + phd_mxptr[M23]) >> W2V_SHIFT;
+			}
+
+			current = (current - 1) & 0x1F;
+		}
+	}
+
+	phd_PopMatrix();
+
+	for (int i = 0; i < 2; i++)
+	{
+		cval = 63;
+
+		if (SubWakeShade < 16)
+			cval = (cval * SubWakeShade) >> 4;
+
+		cval <<= 1;
+		s1 = RGBA(cval, cval, cval, 0xFF);
+		s2 = RGBA(cval << 1, cval << 1, cval << 1, 0xFF);
+		x1 = wh[i][0].x;
+		y1 = wh[i][0].y;
+		z1 = wh[i][0].z;
+		x2 = wh[i][1].x;
+		y2 = wh[i][1].y;
+		z2 = wh[i][1].z;
+
+		for (int j = 0; j < 32; j++)
+		{
+			cval = c[i][j];
+
+			if (!cval)
+				break;
+
+			if (SubWakeShade < 16)
+				cval = (cval * SubWakeShade) >> 4;
+
+			cval <<= 1;
+			s3 = RGBA(cval << 1, cval << 1, cval << 1, 0xFF);
+			s4 = RGBA(cval, cval, cval, 0xFF);
+			x3 = w[i][j][0].x;
+			y3 = w[i][j][0].y;
+			z3 = w[i][j][0].z;
+			x4 = w[i][j][1].x;
+			y4 = w[i][j][1].y;
+			z4 = w[i][j][1].z;
+
+			setXYZ4(v, x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, clipflags);
+			v[0].color = s1;
+			v[1].color = s2;
+			v[2].color = s3;
+			v[3].color = s4;
+			v[0].specular = 0xFF000000;
+			v[1].specular = 0xFF000000;
+			v[2].specular = 0xFF000000;
+			v[3].specular = 0xFF000000;
+			Tex.flag = 0;
+			Tex.tpage = 0;
+			Tex.drawtype = 2;
+			Tex.u1 = 0;
+			Tex.v1 = 0;
+			Tex.u2 = 0;
+			Tex.v2 = 0;
+			Tex.u3 = 0;
+			Tex.v3 = 0;
+			Tex.u4 = 0;
+			Tex.v4 = 0;
+			AddQuadSorted(v, 0, 1, 2, 3, &Tex, 1);
+
+			s1 = s4;
+			s2 = s3;
+			x1 = x4;
+			y1 = y4;
+			z1 = z4;
+			x2 = x3;
+			y2 = y3;
+			z2 = z3;
+		}
+	}
+}
+
+long IsSubAssigned(long index)
+{
+	return sub_slot_upv[index] != -1 && sub_slot_vehicle_anim[index] != -1;
+}
+
+long IsInSub(void)
+{
+	for (int i = 0; i < 16; i++)
+	{
+		if (IsSubAssigned(i) && sub_index[sub_slot_upv[i]] == i && items[lara.vehicle].object_number == sub_slot_upv[i])
+			return 1;
+	}
+
+	return 0;
+}
+
+long IsDrivingSub(void)
+{
+	return lara.vehicle != -1 && IsInSub();
+}
+
+void DrawAirBarSub(long flash_state)
+{
+	short vehicle;
+
+	vehicle = lara.vehicle;
+
+	if (IsDrivingSub())
+		lara.vehicle = NO_ITEM;
+
+	DrawAirBar(flash_state);
+	lara.vehicle = vehicle;
+}
+
+void setup_sub(void)
+{
+	OBJECT_INFO* obj;
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (IsSubAssigned(i) && sub_index[sub_slot_upv[i]] == -1)
+		{
+			obj = &objects[sub_slot_upv[i]];
+			obj->initialise = SubInitialise;
+			obj->collision = SubCollision;
+			obj->control = SubEffects;
+			obj->draw_routine = DrawAnimatingItem;
+			obj->draw_routine_extra = S_DrawSubWakeFX;
+			obj->using_drawanimating_item = 1;
+			obj->save_position = 1;
+			obj->save_hitpoints = 0;
+			obj->save_flags = 1;
+			obj->save_anim = 1;
+			obj->shadow_size = 256;
+			bones[obj->bone_index] |= 0x4;
+			bones[obj->bone_index + 4] |= 0x4;
+			bones[obj->bone_index + 8] |= 0x10;
+			sub_index[sub_slot_upv[i]] = i;
+		}
+	}
+}
+
 long VehicleControl(void)
 {
 	if (IsInMineCart())
@@ -10995,9 +12171,20 @@ long VehicleControl(void)
 	return -1;
 }
 
+long VehicleControlUnderwater(void)
+{
+	if (lara.vehicle == NO_ITEM)
+		return 0;
+
+	if (IsInSub())
+		return SubControl();
+
+	return -1;
+}
+
 void VehicleLook(void)
 {
-	if (lara.vehicle != -1 && (IsInMineCart() || IsInQuadBike()) && input & IN_LOOK && lara.look)
+	if (lara.vehicle != -1 && (IsInMineCart() || IsInQuadBike() || IsInSub()) && input & IN_LOOK && lara.look)
 	{
 		camera.type = LOOK_CAMERA;
 
@@ -11031,6 +12218,12 @@ void SaveVehicle(ITEM_INFO* item)
 				WriteSG(item->data, sizeof(QUADINFO));
 				break;
 			}
+
+			if (IsSubAssigned(i) && sub_index[sub_slot_upv[i]] == i && item->object_number == sub_slot_upv[i])
+			{
+				WriteSG(item->data, sizeof(SUBINFO));
+				break;
+			}
 		}
 	}
 }
@@ -11046,6 +12239,12 @@ void RestoreVehicle(ITEM_INFO* item)
 			if (IsQuadBikeAssigned(i) && quad_bike_index[quad_bike_slot_quadbike[i]] == i && item->object_number == quad_bike_slot_quadbike[i])
 			{
 				ReadSG(item->data, sizeof(QUADINFO));
+				break;
+			}
+
+			if (IsSubAssigned(i) && sub_index[sub_slot_upv[i]] == i && item->object_number == sub_slot_upv[i])
+			{
+				ReadSG(item->data, sizeof(SUBINFO));
 				break;
 			}
 		}
@@ -13742,6 +14941,412 @@ void PuzzleKeyHoleSayNo(void)
 	}
 }
 
+void ControlElectricDeath(void)
+{
+	PHD_VECTOR pos;
+	long r, g, b, falloff;
+
+	if (LaraElectricIndex != -1 && LaraElectric)
+	{
+		if (light_lara_electric[LaraElectricIndex])
+		{
+			if (LaraElectric < 12)
+			{
+				r = (GetRandomControl() & 7) - LaraElectric + 16;
+				g = 32 - LaraElectric;
+				b = 31;
+				falloff = (GetRandomControl() & 1) - 2 * LaraElectric + 25;
+			}
+			else
+			{
+				r = 0;
+				g = (GetRandomControl() & 7) + 8;
+				b = (GetRandomControl() & 7) + 16;
+				falloff = (GetRandomControl() & 3) + 8;
+			}
+
+			pos.x = 0;
+			pos.y = 0;
+			pos.z = 0;
+			GetLaraJointPos(&pos, LMX_HIPS);
+			TriggerDynamic(pos.x, pos.y, pos.z, 4 * falloff / 5, r << 3, g << 3, b << 3);
+		}
+
+		if (sfx_lara_electric_loop[LaraElectricIndex] != -1)
+			SoundEffect(sfx_lara_electric_loop[LaraElectricIndex], &lara_item->pos, SFX_ALWAYS);
+
+		if (sfx_lara_electric_crackles[LaraElectricIndex] != -1)
+			SoundEffect(sfx_lara_electric_crackles[LaraElectricIndex], &lara_item->pos, SFX_ALWAYS);
+	}
+}
+
+void UpdateElectricityPoints(void)
+{
+	short* points;
+	long rnd;
+	short x, y, z, xv, yv, zv;
+
+	points = &electricity_points[0][0];
+
+	for (int i = 0; i < 32; i++)
+	{
+		rnd = GetRandomDraw();
+		x = points[0];
+		y = points[1];
+		z = points[2];
+		xv = points[3];
+		yv = points[4];
+		zv = points[5];
+
+		if ((x > 256 || x < -256) && (y > 256 || y < -256) && (z > 256 || z < -256) ||
+			x > 384 || x < -128 || y > 384 || y < -128 || z > 384 || z < -128)
+		{
+			x = 0;
+			y = 0;
+			z = 0;
+			xv = 0;
+			yv = 0;
+			zv = 0;
+		}
+
+		if (xv)
+		{
+			if (xv >= 0)
+				xv += 2;
+			else
+				xv -= 2;
+		}
+		else if (rnd & 1)
+			xv = -1 - (GetRandomDraw() & 3);
+		else
+			xv = (GetRandomDraw() & 3) + 1;
+
+		if (yv)
+		{
+			if (yv >= 0)
+				yv += 2;
+			else
+				yv -= 2;
+		}
+		else if (rnd & 2)
+			yv = -1 - (GetRandomDraw() & 3);
+		else
+			yv = (GetRandomDraw() & 3) + 1;
+
+		if (zv)
+		{
+			if (zv >= 0)
+				zv++;
+			else
+				zv--;
+		}
+		else if (rnd & 4)
+			zv = -1 - (GetRandomDraw() & 3);
+		else
+			zv = (GetRandomDraw() & 3) + 1;
+
+		x += xv;
+		y += yv;
+		z += zv;
+
+		*points++ = x;
+		*points++ = y;
+		*points++ = z;
+		*points++ = xv;
+		*points++ = yv;
+		*points++ = zv;
+	}
+}
+
+float GetRenderScale(float unit)
+{
+	float scaleX, scaleY;
+
+	if (phd_winwidth > 640)
+		scaleX = phd_winwidth * unit / 640;
+	else
+		scaleX = unit;
+
+	if (phd_winheight > 480)
+		scaleY = phd_winheight * unit / 480;
+	else
+		scaleY = unit;
+
+	return scaleX < scaleY ? scaleX : scaleY;
+}
+
+void AddPolyLineSorted(D3DTLVERTEX* v, short v0, short v1, TEXTURESTRUCT* tex, long double_sided)
+{
+	D3DTLVERTEX vtx[4];
+	float dx, dy, s;
+	short tmp[2];
+
+	dx = v[v1].sx - v[v0].sx;
+	dy = v[v1].sy - v[v0].sy;
+	s = GetRenderScale(0.5F) / fsqrt(dx * dx + dy * dy);
+	dx *= s;
+	dy *= s;
+
+	vtx[0].sx = v[v0].sx - dy;
+	vtx[0].sy = v[v0].sy + dx;
+	vtx[0].sz = v[v0].sz;
+	vtx[0].rhw = v[v0].rhw;
+	vtx[0].color = v[v0].color;
+	vtx[0].specular = v[v0].specular;
+	vtx[0].tu = v[v0].tu;
+	vtx[0].tv = v[v0].tv;
+
+	vtx[1].sx = v[v0].sx + dy;
+	vtx[1].sy = v[v0].sy - dx;
+	vtx[1].sz = v[v0].sz;
+	vtx[1].rhw = v[v0].rhw;
+	vtx[1].color = v[v0].color;
+	vtx[1].specular = v[v0].specular;
+	vtx[1].tu = v[v0].tu;
+	vtx[1].tv = v[v0].tv;
+
+	vtx[2].sx = v[v1].sx + dy;
+	vtx[2].sy = v[v1].sy - dx;
+	vtx[2].sz = v[v1].sz;
+	vtx[2].rhw = v[v1].rhw;
+	vtx[2].color = v[v1].color;
+	vtx[2].specular = v[v1].specular;
+	vtx[2].tu = v[v1].tu;
+	vtx[2].tv = v[v1].tv;
+
+	vtx[3].sx = v[v1].sx - dy;
+	vtx[3].sy = v[v1].sy + dx;
+	vtx[3].sz = v[v1].sz;
+	vtx[3].rhw = v[v1].rhw;
+	vtx[3].color = v[v1].color;
+	vtx[3].specular = v[v1].specular;
+	vtx[3].tu = v[v1].tu;
+	vtx[3].tv = v[v1].tv;
+
+	tmp[v0] = clipflags[v0];
+	tmp[v1] = clipflags[v1];
+	clipflags[0] = tmp[v0];
+	clipflags[1] = tmp[v0];
+	clipflags[2] = tmp[v1];
+	clipflags[3] = tmp[v1];
+
+	AddQuadSorted(vtx, 0, 1, 2, 3, tex, double_sided);
+}
+
+void LaraElectricDeath(long lr, ITEM_INFO* item)
+{
+	PHD_VECTOR pos;
+	PHD_VECTOR pos1;
+	PHD_VECTOR pos2;
+	PHD_VECTOR point;
+	TEXTURESTRUCT Tex;
+	D3DTLVERTEX v[3];
+	short* points;
+	long nDs, mesh1, mesh2, x, y, z, xStep, yStep, zStep, segments, pX, pY, pZ;
+	long x1, y1, z1, x2, y2, z2, c0, c1;
+	long coords[210];
+	short distances[70];
+
+	phd_PushMatrix();
+	phd_TranslateAbs(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos);
+	nDs = 0;
+
+	for (int i = 0; i < 14; i++)
+	{
+		mesh1 = lara_meshes[2 * i];
+		mesh2 = lara_meshes[2 * i + 1];
+		points = &electricity_points[(5 * i) & 0xF][0];
+
+		pos1.y = 0;
+
+		if (lr)
+		{
+			pos1.x = -48;
+			pos1.z = -48;
+		}
+		else
+		{
+			pos1.x = 48;
+			pos1.z = 48;
+		}
+
+		GetLaraJointPos(&pos1, lara_mesh_spicy_table[mesh1]);
+		pos2.y = 0;
+
+		if (!lara_last_points[i] || i == 13)
+		{
+			if (lr)
+			{
+				pos2.z = -48;
+				pos2.x = -48;
+			}
+			else
+			{
+				pos2.x = 48;
+				pos2.z = 48;
+			}
+
+			if (i == 13)
+				pos2.y = -64;
+		}
+		else
+		{
+			pos2.x = 0;
+			pos2.z = 0;
+		}
+
+		GetLaraJointPos(&pos2, lara_mesh_spicy_table[mesh2]);
+		pos1.x -= item->pos.x_pos;
+		pos1.y -= item->pos.y_pos;
+		pos1.z -= item->pos.z_pos;
+		pos2.x -= item->pos.x_pos;
+		pos2.y -= item->pos.y_pos;
+		pos2.z -= item->pos.z_pos;
+		x = pos1.x;
+		y = pos1.y;
+		z = pos1.z;
+		xStep = (pos2.x - pos1.x) >> 2;
+		yStep = (pos2.y - pos1.y) >> 2;
+		zStep = (pos2.z - pos1.z) >> 2;
+		segments = 5 - !lara_last_points[i];
+
+		for (int j = 0; j < segments; j++)
+		{
+			if (j == 4)
+			{
+				pos.x = pos2.x;
+				pos.y = pos2.y;
+				pos.z = pos2.z;
+			}
+			else
+			{
+				pos.x = x;
+				pos.y = y;
+				pos.z = z;
+			}
+
+			if (!j || j == 4)
+				distances[nDs] = 0;
+			else
+			{
+				point.x = *points++;
+				point.y = *points++;
+				point.z = *points++;
+				points += 3;	//dont need vels
+
+				if (lr)
+				{
+					pos.x -= point.x >> 3;
+					pos.y -= point.y >> 3;
+					pos.z -= point.z >> 3;
+				}
+				else
+				{
+					pos.x += point.x >> 3;
+					pos.y += point.y >> 3;
+					pos.z += point.z >> 3;
+				}
+
+				pX = ABS(point.x);
+				pY = ABS(point.y);
+				pZ = ABS(point.z);
+
+				if (pY > pX)
+					pX = pY;
+
+				if (pZ > pX)
+					pX = pZ;
+
+				distances[nDs] = (short)pX;
+			}
+
+			coords[3 * nDs] = (phd_mxptr[M00] * pos.x + phd_mxptr[M01] * pos.y + phd_mxptr[M02] * pos.z + phd_mxptr[M03]) >> W2V_SHIFT;
+			coords[3 * nDs + 1] = (phd_mxptr[M10] * pos.x + phd_mxptr[M11] * pos.y + phd_mxptr[M12] * pos.z + phd_mxptr[M13]) >> W2V_SHIFT;
+			coords[3 * nDs + 2] = (phd_mxptr[M20] * pos.x + phd_mxptr[M21] * pos.y + phd_mxptr[M22] * pos.z + phd_mxptr[M23]) >> W2V_SHIFT;
+			nDs++;
+			x += xStep;
+			y += yStep;
+			z += zStep;
+		}
+	}
+
+	phd_PopMatrix();
+	nDs = 0;
+
+	for (int i = 0; i < 6; i++)
+	{
+		for (int j = 0; j < lara_line_counts[i]; j++)
+		{
+			x1 = coords[3 * nDs];
+			y1 = coords[3 * nDs + 1];
+			z1 = coords[3 * nDs + 2];
+			x2 = coords[3 * nDs + 3];
+			y2 = coords[3 * nDs + 4];
+			z2 = coords[3 * nDs + 5];
+			c0 = distances[nDs];
+			c1 = distances[nDs + 1];
+			nDs++;
+
+			if (c0 > 255)
+			{
+				c0 = 511 - c0;
+
+				if (c0 < 0)
+					c0 = 0;
+			}
+
+			if (c1 > 255)
+			{
+				c1 = 511 - c1;
+
+				if (c1 < 0)
+					c1 = 0;
+			}
+
+			if (lr)
+			{
+				c0 >>= 1;
+				c1 >>= 1;
+			}
+
+			c0 = RGBA(0x00, c0, c0, 0x70);
+			c1 = RGBA(0x00, c1, c1, 0x70);
+			setXYZ3(v, x1, y1, z1, x2, y2, z2, 0, 0, 0, clipflags);
+			v[0].color = c0;
+			v[1].color = c1;
+			v[0].specular = 0xFF000000;
+			v[1].specular = 0xFF000000;
+			Tex.flag = 0;
+			Tex.tpage = 0;
+			Tex.drawtype = 2;
+			Tex.u1 = 0;
+			Tex.v1 = 0;
+			Tex.u2 = 0;
+			Tex.v2 = 0;
+			Tex.u3 = 0;
+			Tex.v3 = 0;
+			Tex.u4 = 0;
+			Tex.v4 = 0;
+			AddPolyLineSorted(v, 0, 1, &Tex, 1);
+		}
+
+		nDs++;
+	}
+}
+
+void DrawElectricDeath(void)
+{
+	if (LaraElectricIndex != -1 && LaraElectric)
+	{
+		if (LaraElectric < 16)
+			LaraElectric++;
+
+		UpdateElectricityPoints();
+		LaraElectricDeath(0, lara_item);
+		LaraElectricDeath(1, lara_item);
+	}
+}
+
 #ifdef __TINYC__
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
@@ -13756,10 +15361,15 @@ void cbSaveMyData(void)
 void pcbSaveMyData(void)
 #endif
 {
-	pWriteMyData(&patch_secret_counter_status, sizeof(long));
-	pWriteMyData(&camera_bounce_strength, sizeof(long));
-	pWriteMyData(&camera_bounce_item_number, sizeof(short));
-	pWriteMyData(&camera_bounce_status, sizeof(long));
+	MY_DATA data;
+
+	data.patch_secret_counter_status_ = patch_secret_counter_status;
+	data.camera_bounce_strength_ = camera_bounce_strength;
+	data.camera_bounce_item_number_ = camera_bounce_item_number;
+	data.camera_bounce_status_ = camera_bounce_status;
+	data.LaraElectric_ = LaraElectric;
+	data.LaraElectricIndex_ = LaraElectricIndex;
+	pWriteMyData(&data, sizeof(MY_DATA));
 }
 
 #ifdef __TINYC__
@@ -13768,10 +15378,15 @@ void cbLoadMyData(void)
 void pcbLoadMyData(void)
 #endif
 {
-	pReadMyData(&patch_secret_counter_status, sizeof(long));
-	pReadMyData(&camera_bounce_strength, sizeof(long));
-	pReadMyData(&camera_bounce_item_number, sizeof(short));
-	pReadMyData(&camera_bounce_status, sizeof(long));
+	MY_DATA data;
+
+	pReadMyData(&data, sizeof(MY_DATA));
+	patch_secret_counter_status = data.patch_secret_counter_status_;
+	camera_bounce_strength = data.camera_bounce_strength_;
+	camera_bounce_item_number = data.camera_bounce_item_number_;
+	camera_bounce_status = data.camera_bounce_status_;
+	LaraElectric = data.LaraElectric_;
+	LaraElectricIndex = data.LaraElectricIndex_;
 }
 
 #ifdef __TINYC__
@@ -13928,6 +15543,48 @@ void pcbInitLoadNewLevel(void)
 		spinning_blade_meshswap_spike_back[i] = -1;
 		spinning_blade_meshswap[i] = -1;
 	}
+
+	for (int i = 0; i < 16; i++)
+	{
+		sub_slot_upv[i] = -1;
+		sub_slot_vehicle_anim[i] = -1;
+		sub_sfx_little_sub_loop[i] = -1;
+		sub_sfx_little_sub_start[i] = -1;
+		sub_sfx_little_sub_stop[i] = -1;
+		sub_harpoon[i] = 1;
+	}
+
+	for (int i = 0; i < NUMBER_OBJECTS; i++)
+		sub_index[i] = -1;
+
+	for (int i = 0; i < 32; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			for (int k = 0; k < 2; k++)
+			{
+				SubWakePts[i][j].x[k] = 0;
+				SubWakePts[i][j].y[k] = 0;
+				SubWakePts[i][j].z[k] = 0;
+			}
+
+			SubWakePts[i][j].life = 0;
+		}
+	}
+
+	SubWakeShade = 0;
+	SubCurrentStartWake = 0;
+	SubWakeVehicle = NO_ITEM;
+	SubHarpoonLeftRight = 0;
+	LaraElectricIndex = -1;
+	LaraElectric = 0;
+
+	for (int i = 0; i < 255; i++)
+	{
+		light_lara_electric[i] = -1;
+		sfx_lara_electric_loop[i] = -1;
+		sfx_lara_electric_crackles[i] = -1;
+	}
 }
 
 #ifdef __TINYC__
@@ -13989,6 +15646,16 @@ long pcbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort Acti
 		speeddn();
 		RetValue = ActivationMode & 0x400 ? 2 : 0;
 		break;
+
+	case 12:
+		LaraElectricIndex = Timer - 1;
+		LaraElectric = 1;
+		break;
+
+	case 13:
+		LaraElectricIndex = -1;
+		LaraElectric = 0;
+		break;
 	}
 
 	return RetValue;
@@ -14035,6 +15702,10 @@ long pcbConditionMine(ushort ConditionIndex, long ItemIndex, ushort Extra, ushor
 
 	case 3:
 		RetValue |= IsDrivingQuadBike();
+		break;
+
+	case 4:
+		RetValue |= IsDrivingSub();
 		break;
 	}
 
@@ -14348,6 +16019,33 @@ void pcbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArr
 		}
 
 		break;
+
+	case 14:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 1;
+
+			if (NumberOfItems > 1 && pItemArray[1] != -1)
+				sub_slot_upv[index] = pItemArray[1];
+
+			if (NumberOfItems > 2 && pItemArray[2] != -1)
+				sub_slot_vehicle_anim[index] = pItemArray[2];
+
+			if (NumberOfItems > 3 && pItemArray[3] != -1)
+				sub_sfx_little_sub_loop[index] = pItemArray[3];
+
+			if (NumberOfItems > 4 && pItemArray[4] != -1)
+				sub_sfx_little_sub_start[index] = pItemArray[4];
+
+			if (NumberOfItems > 5 && pItemArray[5] != -1)
+				sub_sfx_little_sub_stop[index] = pItemArray[5];
+
+			if (NumberOfItems > 6 && pItemArray[6] != -1)
+				sub_harpoon[index] = (char)pItemArray[6];
+		}
+
+		break;
 	}
 }
 
@@ -14375,6 +16073,24 @@ void pcbParametersMine(ushort ParameterValue, long NumberOfItems, short* pItemAr
 
 			if (NumberOfItems > 3 && pItemArray[3] != -1)
 				lara_meshswap_source[index] = pItemArray[3];
+		}
+
+		break;
+
+	case 2:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 1;
+
+			if (NumberOfItems > 1 && pItemArray[1] != -1)
+				light_lara_electric[index] = (char)pItemArray[1];
+
+			if (NumberOfItems > 2 && pItemArray[2] != -1)
+				sfx_lara_electric_loop[index] = pItemArray[2];
+
+			if (NumberOfItems > 3 && pItemArray[3] != -1)
+				sfx_lara_electric_crackles[index] = pItemArray[3];
 		}
 
 		break;
@@ -14534,6 +16250,7 @@ void pcbInitObjects(void)
 	setup_bats();
 	setup_springboards();
 	setup_spinning_blades();
+	setup_sub();
 }
 
 #ifdef __TINYC__
@@ -14569,6 +16286,8 @@ void pcbInitLevel(void)
 		inventry_objects_list[INV_CROSSBOW_AMMO2_ITEM].object_number = hk_ammo2_slot;
 		inventry_objects_list[INV_CROSSBOW_AMMO3_ITEM].object_number = hk_ammo3_slot;
 	}
+
+	bLaraTorch = 0;
 }
 
 void Inject(void)
@@ -14818,6 +16537,32 @@ void Inject(void)
 #endif
 
 	*ptr++ = (ulong)PuzzleKeyHoleSayNo;
+	*ptr++ = (ulong)SubInitialise;
+	*ptr++ = (ulong)GetOnSub;
+	*ptr++ = (ulong)SubCollision;
+	*ptr++ = (ulong)SubCanGetOff;
+	*ptr++ = (ulong)SubUserInput;
+	*ptr++ = (ulong)SubDoCurrent;
+	*ptr++ = (ulong)FireSubHarpoon;
+	*ptr++ = (ulong)SubBackgroundCollision;
+	*ptr++ = (ulong)SubControl;
+	*ptr++ = (ulong)TriggerSubMist;
+	*ptr++ = (ulong)SubDoWake;
+	*ptr++ = (ulong)SubUpdateWakeFX;
+	*ptr++ = (ulong)SubEffects;
+	*ptr++ = (ulong)S_DrawSubWakeFX;
+	*ptr++ = (ulong)IsSubAssigned;
+	*ptr++ = (ulong)IsInSub;
+	*ptr++ = (ulong)IsDrivingSub;
+	*ptr++ = (ulong)DrawAirBarSub;
+	*ptr++ = (ulong)setup_sub;
+	*ptr++ = (ulong)VehicleControlUnderwater;
+	*ptr++ = (ulong)ControlElectricDeath;
+	*ptr++ = (ulong)UpdateElectricityPoints;
+	*ptr++ = (ulong)GetRenderScale;
+	*ptr++ = (ulong)AddPolyLineSorted;
+	*ptr++ = (ulong)LaraElectricDeath;
+	*ptr++ = (ulong)DrawElectricDeath;
 
 	INJECT(0x00910000, print_secret_counter);
 	INJECT(0x00910005, burning_torch_customizer_colour);
@@ -14894,4 +16639,8 @@ void Inject(void)
 	INJECT(0x0091016D, draw_pistol_mesh_right);
 	INJECT(0x00910172, draw_pistol_mesh_left);
 	INJECT(0x00910177, PuzzleKeyHoleSayNo);
+	INJECT(0x0091017C, VehicleControlUnderwater);
+	INJECT(0x00910181, DrawAirBarSub);
+	INJECT(0x00910186, ControlElectricDeath);
+	INJECT(0x0091018B, DrawElectricDeath);
 }

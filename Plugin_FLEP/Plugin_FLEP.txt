@@ -36,6 +36,7 @@ AssignSlot=<MyUsedSlot>,<Sprite>
 Where <Sprite> is OBJ_FLEP_SPRITE{1..16}.
 
 If the object has more than one mesh, they will be cycled through, like animated sprites.
+These objects must be triggered to work as sprites.
 
 Old style rollingballs
 ======================

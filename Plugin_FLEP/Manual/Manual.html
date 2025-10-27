@@ -33,6 +33,7 @@
 <li><a href="#p17">Springboard</a></li>
 <li><a href="#p18">Quad Bike</a></li>
 <li><a href="#p19">Spinning blade</a></li>
+<li><a href="#p20">Electric Lara</a></li>
 </ul>
 <hr />
 <h2 id="p1">Original Bridges</h2>
@@ -82,6 +83,7 @@ Type <strong>IGNORE</strong> to use the default value (<strong>DISABLED</strong>
 <code>AssignSlot=&lt;MyUsedSlot&gt;,&lt;Sprite&gt;</code>
 <p>Where <strong>&lt;Sprite&gt;</strong> is <strong>OBJ_FLEP_SPRITE{1..16}</strong>.</p>
 <p>If the object has more than one mesh, they will be cycled through, like animated sprites.</p>
+<p>These objects must be triggered to work as sprites.</p>
 <hr />
 <h2 id="p5">Old style rollingballs</h2>
 <p>Provides the rollingballs from TR1/2/3.</p>
@@ -100,7 +102,7 @@ And to revert a meshswap, use flipeffect 8.</p>
 <code>Parameters=PARAM_FLEP_LARA_MESHSWAP, IdParamList, LaraMesh, SourceSlot, SourceMesh</code>
 <p><strong>IdParamList</strong>:<br />
 The Id to be used in the trigger.<br />
-Note: the minimum Id is 1 and the maximum is 255.</p>
+<strong>Note</strong>: the minimum Id is 1 and the maximum is 255.</p>
 <p><strong>LaraMesh</strong>:<br />
 The mesh to be swapped.<br />
 See the <strong>LARA_MESH_</strong> constants.</p>
@@ -494,5 +496,22 @@ Type <strong>IGNORE</strong> to not meshswap Lara.</p>
 <p><strong>GeneralMeshswap</strong>:<br />
 The slot with the meshswap for Lara when she is killed by the spinning blade in any other way.<br />
 Type <strong>IGNORE</strong> to not meshswap Lara.</p>
+<hr />
+<h2 id="p20">Electric Lara</h2>
+<p>Implements the electricity effect from TR3.</p>
+<p><strong>Important</strong>: make sure to enable <strong>Electric Lara</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Parameters=PARAM_FLEP_LARA_ELECTRIC, IdParamList, DynamicLight, LaraElectricLoopSound, LaraElectricCracklesSound</code>
+<p><strong>IdParamList</strong>:<br />
+The Id to be used in the trigger.<br />
+<strong>Note</strong>: the minimum Id is 1 and the maximum is 255.</p>
+<p><strong>DynamicLight</strong>:<br />
+<strong>ENABLED</strong>: The electricity effect emits light.<br />
+<strong>DISABLED</strong>: The electricity effect does not emit light.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>ENABLED</strong>).</p>
+<p><strong>LaraElectricLoopSound</strong>, <strong>LaraElectricCracklesSound</strong>:<br />
+The sounds that play while the electricity effect is enabled.<br />
+Type <strong>IGNORE</strong> to not play any sound.<br />
+<strong>Note</strong>: the sounds must have <strong>L</strong> flag set.</p>
 </body>
 </html>

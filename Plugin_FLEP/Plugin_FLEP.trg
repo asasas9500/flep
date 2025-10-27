@@ -10,6 +10,8 @@
 9:Exit game. Exit the game
 10:SPEEDUP. Speed up the engine
 11:SPEEDDN. Speed down the engine
+12:Lara. Enable the electricity effect with <&> Parameters
+13:Lara. Disable the electricity effect
 <END>
 
 <START_EFFECT_1_T_H>
@@ -43,10 +45,14 @@
 14:Head
 <END>
 
+<START_EFFECT_12_T_H>
+#REPEAT#Parameters=PARAM_FLEP_LARA_ELECTRIC,#1#255
+<END>
+
 <START_TRIGGERTYPE_12_T_H>
 1:FLEP number. The <#> number is equal to the secret number
 2:Mine Cart. Lara is in the Mine Cart
-3:Quad Bike. Lara is in the Quad Bike
+3:Quad Bike. Lara is on the Quad Bike
 <END>
 
 <START_CONDITION_1_O_H>
