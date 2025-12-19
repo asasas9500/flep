@@ -34,6 +34,8 @@
 <li><a href="#p18">Quad Bike</a></li>
 <li><a href="#p19">Spinning blade</a></li>
 <li><a href="#p20">Electric Lara</a></li>
+<li><a href="#p21">Change hair type</a></li>
+<li><a href="#p22">Sub and Subsuit</a></li>
 </ul>
 <hr />
 <h2 id="p1">Original Bridges</h2>
@@ -376,7 +378,7 @@ But note that it will also slow down camera timer, so it won't look smooth.</p>
 <p><strong>TubeLoopSound</strong>:<br />
 The sound that plays when the train is moving.<br />
 Type <strong>IGNORE</strong> to not play any sound.<br />
-<strong>Note</strong>: the sound must have L flag set.</p>
+<strong>Note</strong>: the sound must have <strong>L</strong> flag set.</p>
 <p><strong>TrainKillAnimation</strong>:<br />
 The animation that Lara does when she is killed by the train.<br />
 Type <strong>IGNORE</strong> to not force any animation.<br />
@@ -430,7 +432,7 @@ The slot containing Lara's animations.</p>
 <p><strong>FrontImpactSound</strong>, <strong>MoveSound</strong>, <strong>IdleSound</strong>:<br />
 The sounds that play when the quad bike collides in the front, moves or idles, respectively.<br />
 Type <strong>IGNORE</strong> to not play any sound.<br />
-<strong>Note</strong>: <strong>MoveSound</strong> and <strong>IdleSound</strong> must have L flag set.</p>
+<strong>Note</strong>: <strong>MoveSound</strong> and <strong>IdleSound</strong> must have <strong>L</strong> flag set.</p>
 <p><strong>Syntax</strong>:</p>
 <code>Customize=CUST_FLEP_QUAD_BIKE_TRAPS, Number, TrapSlot, HealthLoss, {TrapSlot, HealthLoss array}</code>
 <p><strong>Number</strong>:<br />
@@ -472,7 +474,7 @@ See the <strong>OBJ_FLEP_SPINNING_BLADE</strong> constants.</p>
 <p><strong>Sound</strong>:<br />
 The sound that plays when the spinning blade is moving.<br />
 Type <strong>IGNORE</strong> to not play any sound.<br />
-<strong>Note</strong>: the sound must have L flag set.</p>
+<strong>Note</strong>: the sound must have <strong>L</strong> flag set.</p>
 <p><strong>HealthLoss</strong>:<br />
 The health loss caused to Lara each frame of contact.<br />
 Type <strong>IGNORE</strong> to use the default value (100).</p>
@@ -513,5 +515,182 @@ Type <strong>IGNORE</strong> to use the default value (<strong>ENABLED</strong>)
 The sounds that play while the electricity effect is enabled.<br />
 Type <strong>IGNORE</strong> to not play any sound.<br />
 <strong>Note</strong>: the sounds must have <strong>L</strong> flag set.</p>
+<hr />
+<h2 id="p21">Change hair type</h2>
+<p>Shows or hides Lara's hair.</p>
+<p>To show or hide Lara's hair, use flipeffect 16.</p>
+<hr />
+<h2 id="p22">Sub and Subsuit</h2>
+<p>Allows the use of the Sub and the Subsuit.</p>
+<p><strong>Important</strong>: make sure to enable <strong>Classic vehicles</strong> patch inside <strong>FLEP</strong> or the following settings won't work.</p>
+<h3>Controls</h3>
+<ul>
+<li>Left/Right/Up/Down: Turn left/right/up/down.</li>
+<li>Action: Shoot crossbow bolts or harpoons.</li>
+<li>Jump: Accelerate.</li>
+<li>Sprint: Sprint when moving forward.</li>
+<li>Roll: Dismount.</li>
+</ul>
+<h3>Commands</h3>
+<h4>CUST_FLEP_SUB</h4>
+<p>This is the main command that associates an existing TRNG slot to a required Sub item.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_SUB, Number, SubSlot, LaraSlot, VelocityLimit, SprintVelocityLimit, ResponsiveTurning, SubsuitCollision, Pickup, PickupFrame</code>
+<p><strong>Number</strong>:<br />
+The Sub number.<br />
+<strong>Note</strong>: the minimum <strong>Number</strong> is 1 and the maximum is 16.</p>
+<p><strong>SubSlot</strong>:<br />
+The slot of the Sub.</p>
+<p><strong>LaraSlot</strong>:<br />
+The slot containing Lara's animations for the Sub.</p>
+<p><strong>VelocityLimit</strong>, <strong>SprintVelocityLimit</strong>:<br />
+The velocity limits of the Sub when it moves forward with and without the dash input released.<br />
+Type <strong>IGNORE</strong> to use the default values (64 for <strong>VelocityLimit</strong> and 116 for <strong>SprintVelocityLimit</strong>).</p>
+<p><strong>ResponsiveTurning</strong>:<br />
+<strong>ENABLED</strong>: The Sub has less drag and turns faster.<br />
+<strong>DISABLED</strong>: The Sub has more drag and turns slower.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>ENABLED</strong>).</p>
+<p><strong>SubsuitCollision</strong>:<br />
+<strong>ENABLED</strong>: The Sub collision for when Lara turns around herself.<br />
+<strong>DISABLED</strong>: The Sub collision for when Lara turns around the Sub.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>DISABLED</strong>).</p>
+<p><strong>Pickup</strong>:<br />
+<strong>ENABLED</strong>: Lara can pick up items with animation 17 from her defined slot while using the Sub.<br />
+<strong>DISABLED</strong>: Lara cannot pick up items while using the Sub.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>DISABLED</strong>).</p>
+<p><strong>PickupFrame</strong>:<br />
+The frame of animation 17 in the defined slot for when the item is picked up.<br />
+Type <strong>IGNORE</strong> to use the default value (18).</p>
+<h4>CUST_FLEP_SUB_WAKE</h4>
+<p>This command adds sublime wakes to the Sub.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_SUB_WAKE, Number, LeftMesh, RightMesh, Smoothness, AmbientTint, MistMesh, ExtraMistMesh</code>
+<p><strong>Number</strong>:<br />
+The Sub number.<br />
+<strong>Note</strong>: the minimum <strong>Number</strong> is 1 and the maximum is 16.</p>
+<p><strong>LeftMesh</strong>, <strong>RightMesh</strong>:<br />
+The meshes that produce wakes.<br />
+Type <strong>DISABLED</strong> to not produce wake.<br />
+Type <strong>IGNORE</strong> to use the default values (1 for <strong>LeftMesh</strong> and 2 for <strong>RightMesh</strong>).</p>
+<p><strong>Smoothness</strong>:<br />
+<strong>ENABLED</strong>: The wakes do not have rough edges.<br />
+<strong>DISABLED</strong>: The wakes have rough edges.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>ENABLED</strong>).</p>
+<p><strong>AmbientTint</strong>:<br />
+<strong>ENABLED</strong>: The wakes and mist change tint according to the room where the Sub is in.<br />
+<strong>DISABLED</strong>: The wakes and mist do not change tint.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>ENABLED</strong>).</p>
+<p><strong>MistMesh</strong>, <strong>ExtraMistMesh</strong>:<br />
+The meshes that produce mist.<br />
+Type <strong>DISABLED</strong> to not produce mist.<br />
+Type <strong>IGNORE</strong> to use the default values (3 for <strong>MistMesh</strong> and <strong>DISABLED</strong> for <strong>ExtraMistMesh</strong>).</p>
+<h4>CUST_FLEP_SUB_GEAR</h4>
+<p>This command defines the functions of the meshes for the Sub.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_SUB_GEAR, Number, HeadlightMesh, GunMesh, LeftWingMesh, RightWingMesh, FanMesh, ExtraFanMesh</code>
+<p><strong>Number</strong>:<br />
+The Sub number.<br />
+<strong>Note</strong>: the minimum <strong>Number</strong> is 1 and the maximum is 16.</p>
+<p><strong>HeadlightMesh</strong>:<br />
+The mesh that casts light and is showed when the Sub is turned on.<br />
+Type <strong>DISABLED</strong> to not cast any light.<br />
+Type <strong>IGNORE</strong> to use the default value (4).</p>
+<p><strong>GunMesh</strong>:<br />
+The mesh that can shoot crossbow bolts or harpoons.<br />
+Type <strong>DISABLED</strong> to forbid shooting.<br />
+Type <strong>IGNORE</strong> to use the default value (3).</p>
+<p><strong>LeftWingMesh</strong>, <strong>RightWingMesh</strong>:<br />
+The meshes that rotate when the Sub steers.<br />
+Type <strong>DISABLED</strong> to not rotate the mesh.<br />
+Type <strong>IGNORE</strong> to use the default values (1 for <strong>LeftWingMesh</strong> and 2 for <strong>RightWingMesh</strong>).</p>
+<p><strong>FanMesh</strong>, <strong>ExtraFanMesh</strong>:<br />
+The meshes that rotate while the Sub is turned on, with varying speed.<br />
+Type <strong>DISABLED</strong> to not rotate the mesh.<br />
+Type <strong>IGNORE</strong> to use the default values (3 for <strong>FanMesh</strong> and <strong>DISABLED</strong> for <strong>ExtraFanMesh</strong>).</p>
+<h4>CUST_FLEP_SUB_MISC</h4>
+<p>This command adds further refinements to the Sub.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_SUB_MISC, Number, DeathRelease, OnWaterDismount, StartSound, StopSound, StartFrameUnderwater, StartFrameOnWater, OnWaterLevel</code>
+<p><strong>Number</strong>:<br />
+The Sub number.<br />
+<strong>Note</strong>: the minimum <strong>Number</strong> is 1 and the maximum is 16.</p>
+<p><strong>DeathRelease</strong>:<br />
+<strong>ENABLED</strong>: Lara gets off the Sub when she dies.<br />
+<strong>DISABLED</strong>: Lara stays on the Sub when she dies.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>ENABLED</strong>).</p>
+<p><strong>OnWaterDismount</strong>:<br />
+<strong>ENABLED</strong>: When the Sub is on water, Lara gets off the Sub and stays on water.<br />
+<strong>DISABLED</strong>: When the Sub is on water, Lara gets off the Sub and dives.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>ENABLED</strong>).</p>
+<p><strong>StartSound</strong>, <strong>StopSound</strong>:<br />
+The sounds that play when Lara gets on and off the Sub, respectively.<br />
+Type <strong>IGNORE</strong> to not play any sound.</p>
+<p><strong>StartFrameUnderwater</strong>, <strong>StartFrameOnWater</strong>:<br />
+The frames of animation 11 and 13 in the defined slot, respectively, for when the Sub plays the <strong>StartSound</strong>.<br />
+Type <strong>IGNORE</strong> to use the default values (30 for <strong>StartFrameUnderwater</strong> and 15 for <strong>StartFrameOnWater</strong>).<br />
+<strong>Note</strong>: this setting is used only if <strong>StartSound</strong> is defined.</p>
+<p><strong>OnWaterLevel</strong>:<br />
+The level at which Lara is able to take air.<br />
+Type <strong>IGNORE</strong> to use the default value (338).</p>
+<h4>CUST_FLEP_SUB_BREATH</h4>
+<p>This command lets Lara have audible breathing based on her fear level and adds metal clashing.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_SUB_BREATH, Number, BreathSound, MetalClashSound, FearClash, FearNoAir, ClashSpeed</code>
+<p><strong>Number</strong>:<br />
+The Sub number.<br />
+<strong>Note</strong>: the minimum <strong>Number</strong> is 1 and the maximum is 16.</p>
+<p><strong>BreathSound</strong>, <strong>MetalClashSound</strong>:<br />
+The sounds that play when Lara breathes or when she clashes, respectively.<br />
+Type <strong>IGNORE</strong> to not play any sound.</p>
+<p><strong>FearClash</strong>:<br />
+<strong>ENABLED</strong>: When Lara clashes, she breathes faster.<br />
+<strong>DISABLED</strong>: When Lara clashes, she keeps breathing as usual.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>ENABLED</strong>).<br />
+<strong>Note</strong>: this setting is used only if <strong>BreathSound</strong> is defined.</p>
+<p><strong>FearNoAir</strong>:<br />
+<strong>ENABLED</strong>: When Lara has no air left, she breathes faster.<br />
+<strong>DISABLED</strong>: When Lara has no air left, she keeps breathing as usual.<br />
+Type <strong>IGNORE</strong> to use the default value (<strong>ENABLED</strong>).<br />
+<strong>Note</strong>: this setting is used only if <strong>BreathSound</strong> is defined.</p>
+<p><strong>ClashSpeed</strong>:<br />
+The speed at which the Sub will effectively clash with floors, walls, and ceilings.<br />
+Type <strong>IGNORE</strong> to use the default value (100).</p>
+<h4>CUST_FLEP_SUB_FX</h4>
+<p>This command adds a few more effects to the Sub.</p>
+<p><strong>Syntax</strong>:</p>
+<code>Customize=CUST_FLEP_SUB_FX, Number, EngineMesh, AirBubblesSprite, EngineBubblesSprite, ClusterBubblesSprite, LoopSound, EngineSound</code>
+<p><strong>Number</strong>:<br />
+The Sub number.<br />
+<strong>Note</strong>: the minimum <strong>Number</strong> is 1 and the maximum is 16.</p>
+<p><strong>EngineMesh</strong>:<br />
+The mesh that can produce bubbles.<br />
+Type <strong>DISABLED</strong> to not produce bubbles.<br />
+Type <strong>IGNORE</strong> to use the default value (7).</p>
+<p><strong>AirBubblesSprite</strong>, <strong>EngineBubblesSprite</strong>, <strong>ClusterBubblesSprite</strong>:<br />
+The sprites that come from the engine. Air bubbles can be enabled using action 2 and disabled using action 3.<br />
+Type <strong>IGNORE</strong> to not produce sprites.<br />
+<strong>Note</strong>: this setting is used only if <strong>EngineMesh</strong> is defined.</p>
+<p><strong>LoopSound</strong>, <strong>EngineSound</strong>:<br />
+The sounds that play while the Sub is turned on and when the Sub moves, respectively.<br />
+Type <strong>IGNORE</strong> to not play any sound.<br />
+<strong>Note</strong>: <strong>LoopSound</strong> and <strong>EngineSound</strong> must have <strong>L</strong> flag set.</p>
+<h3>Action Triggers</h3>
+<p><strong>A1: Sub. Put Lara on &lt;#&gt; Sub immediately</strong><br />
+Allows Lara to be immediately taken and put on the specified Sub located in the level while bypassing her mounting animation.</p>
+<p><strong>A2: Sub. Enable air bubbles on &lt;#&gt; Sub</strong><br />
+Enables the air bubbles that escape when Lara encounters a puncture with her suit.</p>
+<p><strong>A3: Sub. Disable air bubbles on &lt;#&gt; Sub</strong><br />
+Disables the air bubbles that escape from the puncture.</p>
+<p><strong>A4: Sub. Lock Lara to the &lt;#&gt; Sub</strong><br />
+Forbids Lara to dismount the suit, useful for when Lara has left a safe location.</p>
+<p><strong>A5: Sub. Free Lara from the &lt;#&gt; Sub</strong><br />
+Allows Lara to dismount the suit, useful for when Lara has reached a safe location.</p>
+<p><strong>A6: Sub. Take Lara to &lt;#&gt; LSP immediately</strong><br />
+Allows Lara to be immediately put off the Sub and to be taken to the specified Lara Start Position located in the level.</p>
+<h3>Condition Triggers</h3>
+<p><strong>C4: Sub. Lara is on a Sub</strong><br />
+Checks if Lara is on any type of Sub.</p>
+<p><strong>C5: Sub. Lara is on the Sub &lt;#&gt; number</strong><br />
+Checks if Lara is on a specific type of Sub defined in the script.</p>
 </body>
 </html>

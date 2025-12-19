@@ -147,3 +147,10 @@ AssignSlot=<MyUsedSlot>,<SpinningBlade>
 Where <SpinningBlade> is OBJ_FLEP_SPINNING_BLADE{1..16}.
 
 Additional customization can be done by the command Customize=CUST_FLEP_SPINNING_BLADE.
+
+Change hair type
+================
+
+Shows or hides Lara's hair.
+
+To show or hide Lara's hair, use flipeffect 16.

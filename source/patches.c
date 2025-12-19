@@ -21,6 +21,10 @@ typedef ulong D3DCOLOR;
 #define WALL_MASK	(WALL_SIZE - 1)
 #define	TRIGMULT2(a,b)		(((a) * (b)) >> W2V_SHIFT)
 #define	TRIGMULT3(a,b,c)	(TRIGMULT2((TRIGMULT2(a, b)), c))
+#define	CLRA(clr)	((clr >> 24) & 0xFF)	//shift r, g, and b out of the way and 0xFF
+#define	CLRR(clr)	((clr >> 16) & 0xFF)	//shift g and b out of the way and 0xFF
+#define	CLRG(clr)	((clr >> 8) & 0xFF)		//shift b out of the way and 0xFF
+#define	CLRB(clr)	((clr) & 0xFF)			//and 0xFF
 
 typedef enum
 {
@@ -125,7 +129,8 @@ typedef enum
 	SFX_DEFAULT =	0,
 	SFX_WATER =		1,
 	SFX_ALWAYS =	2,
-	SFX_SETPITCH =	4
+	SFX_SETPITCH =	4,
+	SFX_SETVOL =	8
 } sfx_options;
 
 typedef enum
@@ -881,6 +886,7 @@ typedef enum
 	ANIM_BACKSTEPD_LEFT = 61,
 	ANIM_BACKSTEPD_RIGHT = 62,
 	ANIM_TREAD = 108,
+	ANIM_SURFACE = 110,
 	ANIM_SURFTREAD = 114,
 	ANIM_UWDEATH = 124,
 	ANIM_RBALL_DEATH = 139,
@@ -2461,6 +2467,7 @@ typedef struct
 	short FanRot;
 	char Flags;
 	char WeaponTimer;
+	short EngineVel[2];
 } SUBINFO;
 
 typedef struct
@@ -2471,6 +2478,19 @@ typedef struct
 	uchar life;
 	uchar pad[3];
 } SUB_WAKE_PTS;
+
+typedef struct
+{
+	short object_number;
+	short room_number;
+	long x;
+	long y;
+	long z;
+	short trigger_flags;
+	short flags;
+	short y_rot;
+	short box_number;
+} AIOBJECT;
 
 typedef struct
 {
@@ -2551,7 +2571,11 @@ typedef struct
 	long camera_bounce_status_;
 	char LaraElectric_;
 	short LaraElectricIndex_;
-	uchar pad;
+	short HeadlightIndex_;
+	long SubMaximumVelocity_;
+	short SubWakeVehicle_;
+	ushort TRNGCustHairOverride_;
+	uchar LaraBreath_;
 } MY_DATA;
 
 typedef struct
@@ -2932,6 +2956,15 @@ __declspec(naked) float fsin(float angle)
 
 #define phd_winwidth	VAR_U_(0x00753C60, long)
 #define phd_winheight	VAR_U_(0x00753BB0, long)
+#define LaraTorchIntensity	VAR_U_(0x00536DB8, long)
+
+#define AddDisplayPickup	( (void(*)(short)) 0x00452530 )
+
+#define PickUpBoundsUW	ARRAY_(0x004ADB98, short, [12])
+#define PickUpPositionUW	VAR_U_(0x004ADBB0, PHD_VECTOR)
+
+#define AIObjects	VAR_U_(0x007FD0E4, AIOBJECT*)
+#define nAIObjects	VAR_U_(0x007FD0E0, short)
 
 short phd_sin(long angle)
 {
@@ -7055,6 +7088,7 @@ const uchar lara_meshes[28] = { 0, 1, 1, 2, 2, 3, 0, 4, 4, 5, 5, 6, 0, 7, 7, 8, 
 const uchar lara_last_points[14] = { 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1 };
 const uchar lara_line_counts[6] = { 12, 12, 4, 12, 12, 4 };
 const long lara_mesh_spicy_table[15] = {0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 8};
+const char SubBVols[8] = {4, 5, 6, 8, 11, 14, 18, 23};
 
 #define patch_secret_counter_status VAR_U_(0x00902474, long)
 #define global_mesh_position VAR_U_(0x009019C0, PHD_VECTOR)
@@ -7158,20 +7192,63 @@ const long lara_mesh_spicy_table[15] = {0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 1
 #define sub_slot_vehicle_anim ARRAY_(0x0090402C, short, [16])
 #define sub_index ARRAY_(0x0090404C, char, [NUMBER_OBJECTS])
 #define SubWakePts ARRAY_(0x00904254, SUB_WAKE_PTS, [32][2])
-#define SubWakeShade VAR_U_(0x00904F54, uchar)
-#define SubCurrentStartWake VAR_U_(0x00904F55, uchar)
+#define SubCurrentStartWake ARRAY_(0x00904F54, uchar, [2])
 #define sub_sfx_little_sub_loop ARRAY_(0x00904F56, short, [16])
 #define sub_sfx_little_sub_start ARRAY_(0x00904F76, short, [16])
 #define sub_sfx_little_sub_stop ARRAY_(0x00904F96, short, [16])
 #define SubWakeVehicle VAR_U_(0x00904FB6, short)
 #define SubHarpoonLeftRight VAR_U_(0x00904FB8, char)
-#define sub_harpoon ARRAY_(0x00904FB9, char, [16])
+#define sub_mesh_harpoon ARRAY_(0x00904FB9, char, [16])
 #define LaraElectric VAR_U_(0x00904FC9, char)
 #define electricity_points ARRAY_(0x00904FCA, short, [32][6])
 #define sfx_lara_electric_loop ARRAY_(0x0090514A, short, [255])
 #define sfx_lara_electric_crackles ARRAY_(0x00905348, short, [255])
 #define light_lara_electric ARRAY_(0x00905546, char, [255])
 #define LaraElectricIndex VAR_U_(0x00905645, short)
+#define HeadlightRed ARRAY_(0x00905647, uchar, [255])
+#define HeadlightGreen ARRAY_(0x00905746, uchar, [255])
+#define HeadlightBlue ARRAY_(0x00905845, uchar, [255])
+#define HeadlightDistance ARRAY_(0x00905944, uchar, [255])
+#define HeadlightIndex VAR_U_(0x00905A43, short)
+#define sub_ambient_tint ARRAY_(0x00905A45, char, [16])
+#define sub_responsive ARRAY_(0x00905A55, char, [16])
+#define SubMaximumVelocity VAR_U_(0x00905A65, long)
+#define sub_velocity_limit ARRAY_(0x00905A69, long, [16])
+#define sub_sprint_velocity_limit ARRAY_(0x00905AA9, long, [16])
+#define sub_surface_dismount ARRAY_(0x00905AE9, char, [16])
+#define sub_start_frame_surface ARRAY_(0x00905B09, short, [16])
+#define sub_start_frame_underwater ARRAY_(0x00905B29, short, [16])
+#define sub_pickup ARRAY_(0x00905B49, char, [16])
+#define sub_wake_smooth ARRAY_(0x00905B59, char, [16])
+#define sub_mesh_left_wing ARRAY_(0x00905B69, char, [16])
+#define sub_mesh_right_wing ARRAY_(0x00905B79, char, [16])
+#define sub_mesh_mist ARRAY_(0x00905B89, char, [16][2])
+#define sub_mesh_fan_index ARRAY_(0x00905BA9, char, [16][2])
+#define TRNGCustHairOverride VAR_U_(0x00905BC9, ushort)
+#define TRNGCustHairBackup VAR_U_(0x00905BCB, ushort)
+#define sub_mesh_headlight ARRAY_(0x00905BCD, char, [16])
+#define SubHitCount VAR_U_(0x00905BDD, char)
+#define sub_sfx_swimsuit_metal_clash ARRAY_(0x00905BDE, short, [16])
+#define sub_mesh_engine ARRAY_(0x00905BFE, char, [16])
+#define sub_sprite_air_bubbles ARRAY_(0x00905C0E, char, [16])
+#define sub_swimming_collision ARRAY_(0x00905C1E, char, [16])
+#define sub_death_release ARRAY_(0x00905C2E, char, [16])
+#define sub_pickup_frame ARRAY_(0x00905C3E, short, [16])
+#define sub_mesh_wake ARRAY_(0x00905C5E, char, [16][2])
+#define SubWakeShade VAR_U_(0x00905C7E, uchar)
+#define sub_sfx_lara_underwater_engine ARRAY_(0x00905C7F, short, [16])
+#define sub_sprite_engine_bubbles ARRAY_(0x00905C9F, char, [16][2])
+#define LaraBreath VAR_U_(0x00905CBF, uchar)
+#define sub_sfx_lara_sub_breathe ARRAY_(0x00905CC0, short, [16])
+#define sub_breath_clash ARRAY_(0x00905CE0, char, [16])
+#define sub_breath_no_air ARRAY_(0x00905CF0, char, [16])
+#define LaraBreathCount VAR_U_(0x00905D00, short)
+#define LaraBreathDelay VAR_U_(0x00905D02, short)
+#define sub_mesh_fan ARRAY_(0x00905D04, char, [16][2])
+#define sub_mesh_right_wing_index ARRAY_(0x00905D24, char, [16])
+#define sub_mesh_left_wing_index ARRAY_(0x00905D34, char, [16])
+#define sub_surface_water_depth ARRAY_(0x00905D44, short, [16])
+#define sub_speed_clash ARRAY_(0x00905D64, short, [16])
 
 long check_flep(long number)
 {
@@ -11002,7 +11079,7 @@ long IsQuadBikeAssigned(long index)
 	return quad_bike_slot_quadbike[index] != -1 && quad_bike_slot_vehicle_anim[index] != -1;
 }
 
-long IsInQuadBike(void)
+long IsOnQuadBike(void)
 {
 	for (int i = 0; i < 16; i++)
 	{
@@ -11015,7 +11092,7 @@ long IsInQuadBike(void)
 
 long IsDrivingQuadBike(void)
 {
-	return lara.vehicle != -1 && IsInQuadBike();
+	return lara.vehicle != -1 && IsOnQuadBike();
 }
 
 void SortQuadBikeJoints(long index)
@@ -11081,15 +11158,11 @@ void SubInitialise(short item_number)
 	sub->Vel = 0;
 	sub->Flags = 0;
 	sub->WeaponTimer = 0;
+	sub->EngineVel[0] = 0;
+	sub->EngineVel[1] = 0;
 
 	for (int i = 0; i < 4; i++)
 		sub->joint_rotation[i] = 0;
-
-	for (int i = 0; i < 32; i++)
-	{
-		SubWakePts[i][0].life = 0;
-		SubWakePts[i][1].life = 0;
-	}
 
 	item->anim_number = objects[sub_slot_upv[sub_index[item->object_number]]].anim_index + 5;
 	item->frame_number = anims[item->anim_number].frame_base;
@@ -11098,30 +11171,24 @@ void SubInitialise(short item_number)
 	AddActiveItem(item_number);
 	item->flags |= IFL_CODEBITS;
 	item->status = ITEM_ACTIVE;
-	item->mesh_bits &= ~0x10;
+
+	if (sub_mesh_headlight[sub_index[item->object_number]])
+		item->mesh_bits &= ~(1 << sub_mesh_headlight[sub_index[item->object_number]]);
 }
 
 long GetOnSub(short item_number, COLL_INFO* coll)
 {
 	ITEM_INFO* item;
 	FLOOR_INFO* floor;
-	long dx, dy, dz, dist, h;
+	long h;
 	short room_number;
 
 	if (!(input & IN_ACTION) || lara.gun_status != LG_NO_ARMS || lara_item->gravity_status)
 		return 0;
 
 	item = &items[item_number];
-	dy = lara_item->pos.y_pos - item->pos.y_pos + 256;
 
-	if (ABS(dy) > 256)
-		return 0;
-
-	dx = lara_item->pos.x_pos - item->pos.x_pos;
-	dz = lara_item->pos.z_pos - item->pos.z_pos;
-	dist = SQUARE(dx) + SQUARE(dz);
-
-	if (dist > 0x40000)
+	if (!TestBoundsCollide(item, lara_item, coll->radius) || !TestCollision(item, lara_item))
 		return 0;
 
 	room_number = item->room_number;
@@ -11147,7 +11214,7 @@ void SubCollision(short item_number, ITEM_INFO* l, COLL_INFO* coll)
 	{
 		lara.vehicle = item_number;
 		SubWakeVehicle = item_number;
-		lara.water_status = LW_UNDERWATER;
+		SubMaximumVelocity = sub_velocity_limit[sub_index[item->object_number]];
 
 		if (lara.gun_type == WEAPON_FLARE)
 		{
@@ -11158,7 +11225,6 @@ void SubCollision(short item_number, ITEM_INFO* l, COLL_INFO* coll)
 			lara.request_gun_type = WEAPON_NONE;
 		}
 
-		lara.gun_status = LG_HANDS_BUSY;
 		l->pos.x_pos = item->pos.x_pos;
 		l->pos.y_pos = item->pos.y_pos;
 		l->pos.z_pos = item->pos.z_pos;
@@ -11192,7 +11258,7 @@ long SubCanGetOff(ITEM_INFO* item)
 
 	sub = (SUBINFO*)item->data;
 
-	if (lara.current_xvel || lara.current_zvel || sub->Vel)
+	if (lara.current_xvel || lara.current_zvel || sub->Vel || sub->Flags & 2 && item->pos.x_rot != 9100 || item->item_flags[0] & 2)
 		return 0;
 
 	rad = WALL_SIZE * phd_cos(item->pos.x_rot) >> W2V_SHIFT;
@@ -11215,23 +11281,149 @@ long SubCanGetOff(ITEM_INFO* item)
 	return 1;
 }
 
+void SubToPickupCollision(ITEM_INFO* sub)
+{
+	ITEM_INFO* item;
+	OBJECT_INFO* obj;
+	long dx, dy, dz;
+	short room_count, item_number, rotx, roty, rotz;
+
+	room_count = CollectBaddieCollisionRoomies(sub->room_number);
+
+	for (int i = 0; i < room_count; i++)
+	{
+		for (item_number = room[baddie_collision_roomies[i]].item_number; item_number != NO_ITEM; item_number = item->next_item)
+		{
+			item = &items[item_number];
+
+			if (!item->collidable || item->status == ITEM_INVISIBLE || item->object_number == FLARE_ITEM || item->object_number == BURNING_TORCH_ITEM)
+				continue;
+
+			obj = &objects[item->object_number];
+
+			if (obj->collision != PickupCollision)
+				continue;
+
+			dx = sub->pos.x_pos - item->pos.x_pos;
+			dy = sub->pos.y_pos - item->pos.y_pos;
+			dz = sub->pos.z_pos - item->pos.z_pos;
+
+			if (dx > -2048 && dx < 2048 && dz > -2048 && dz < 2048 && dy > -2048 && dy < 2048)
+			{
+				rotx = item->pos.x_rot;
+				roty = item->pos.y_rot;
+				rotz = item->pos.z_rot;
+				item->pos.x_rot = -4550;
+				item->pos.y_rot = sub->pos.y_rot;
+				item->pos.z_rot = 0;
+
+				if (input & IN_ACTION && lara_item->current_anim_state == 5 && TestLaraPosition(PickUpBoundsUW, item, sub)
+					|| lara.IsMoving && lara.GeneralPtr == (void*)item_number)
+				{
+					if (TestLaraPosition(PickUpBoundsUW, item, sub))
+					{
+						if (MoveLaraPosition(&PickUpPositionUW, item, sub))
+						{
+							lara_item->anim_number = objects[sub_slot_vehicle_anim[sub_index[sub->object_number]]].anim_index + 17;
+							lara_item->frame_number = anims[lara_item->anim_number].frame_base;
+							lara_item->current_anim_state = 10;
+							lara_item->goal_anim_state = 10;
+							lara.IsMoving = 0;
+						}
+
+						lara.GeneralPtr = (void*)item_number;
+					}
+					else if (lara.IsMoving && lara.GeneralPtr == (void*)item_number)
+						lara.IsMoving = 0;
+				}
+				else if (lara.GeneralPtr == (void*)item_number
+					&& lara_item->current_anim_state == 10
+					&& lara_item->frame_number - anims[lara_item->anim_number].frame_base == sub_pickup_frame[sub_index[sub->object_number]])
+				{
+					AddDisplayPickup(item->object_number);
+
+					if (!(item->trigger_flags & 0xC0))
+						KillItem(item_number);
+					else
+					{
+						item->item_flags[3] = 1;
+						item->flags |= IFL_TRIGGERED;
+						item->status = ITEM_INVISIBLE;
+					}
+				}
+
+				item->pos.x_rot = rotx;
+				item->pos.y_rot = roty;
+				item->pos.z_rot = rotz;
+			}
+		}
+	}
+}
+
+void UpdateSubsuitAngles(ITEM_INFO* item, SUBINFO* sub)
+{
+	short vel, vol, turn_rate;
+
+	vel = 16 * item->speed;
+	sub->EngineVel[0] = vel;
+	sub->EngineVel[1] = vel;
+
+	vel = ABS(sub->RotX >> 16);
+	sub->EngineVel[0] += vel;
+	sub->EngineVel[1] += vel;
+
+	turn_rate = 8 * sub->Rot >> 16;
+
+	if (turn_rate > 0)
+	{
+		if (turn_rate > 0x1C0)
+			turn_rate = 0x1C0;
+
+		sub->EngineVel[0] += 2 * turn_rate;
+	}
+	else if (turn_rate < 0)
+	{
+		if (turn_rate < -0x1C0)
+			turn_rate = -0x1C0;
+
+		sub->EngineVel[1] -= 2 * turn_rate;
+	}
+
+	if (sub->EngineVel[0] > 1536)
+		sub->EngineVel[0] = 1536;
+
+	if (sub->EngineVel[1] > 1536)
+		sub->EngineVel[1] = 1536;
+
+	if (sub_sfx_lara_underwater_engine[sub_index[item->object_number]] != -1 && (sub->EngineVel[0] || sub->EngineVel[1]))
+	{
+		vol = (sub->EngineVel[0] + sub->EngineVel[1]) >> 6;
+
+		if (vol > 31)
+			vol = 31;
+
+		SoundEffect(sub_sfx_lara_underwater_engine[sub_index[item->object_number]], &item->pos, (vol << 8) | SFX_SETVOL | SFX_ALWAYS);
+	}
+}
+
 void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 {
 	PHD_VECTOR pos;
 	long wh, wsd;
-	short anim, frame;
+	short anim;
 
 	if (l->hit_points < 0)
 		sub->Flags &= ~1;
 
+	UpdateSubsuitAngles(item, sub);
+
 	anim = l->anim_number - objects[sub_slot_vehicle_anim[sub_index[item->object_number]]].anim_index;
-	frame = l->frame_number - anims[l->anim_number].frame_base;
 
 	switch (l->current_anim_state)
 	{
 	case 0:
 
-		if (!anim && frame == 16)
+		if (sub_death_release[sub_index[item->object_number]] && (!anim || anim == 1) && l->frame_number == anims[l->anim_number].frame_end)
 		{
 			pos.x = 0;
 			pos.y = 0;
@@ -11241,7 +11433,7 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 			l->pos.y_pos = pos.y;
 			l->pos.z_pos = pos.z;
 			l->anim_number = ANIM_UWDEATH;
-			l->frame_number = anims[ANIM_UWDEATH].frame_base;
+			l->frame_number = anims[ANIM_UWDEATH].frame_base + 18;
 			l->current_anim_state = AS_UWDEATH;
 			l->goal_anim_state = AS_UWDEATH;
 			l->fallspeed = 0;
@@ -11262,7 +11454,15 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 
 	case 2:
 
-		if (anim == 9 && frame == 51)
+		if (sub_surface_dismount[sub_index[item->object_number]] && item->pos.x_rot > 0)
+		{
+			item->pos.x_rot -= 182;
+
+			if (item->pos.x_rot < 0)
+				item->pos.x_rot = 0;
+		}
+
+		if (anim == 9 && l->frame_number == anims[l->anim_number].frame_end)
 		{
 			pos.x = 0;
 			pos.y = 0;
@@ -11276,17 +11476,17 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 
 			GetLaraJointPos(&pos, LM_HIPS);
 			l->pos.x_pos = pos.x;
-			l->pos.y_pos = pos.y;
+			l->pos.y_pos = sub_surface_dismount[sub_index[item->object_number]] ? wh + 1 : pos.y;
 			l->pos.z_pos = pos.z;
-			l->anim_number = ANIM_SURFTREAD;
-			l->frame_number = anims[ANIM_SURFTREAD].frame_base;
+			l->anim_number = sub_surface_dismount[sub_index[item->object_number]] ? ANIM_SURFACE : ANIM_SURFTREAD;
+			l->frame_number = anims[l->anim_number].frame_base;
 			l->current_anim_state = AS_SURFTREAD;
 			l->goal_anim_state = AS_SURFTREAD;
 			l->fallspeed = 0;
 			l->gravity_status = 0;
 			l->pos.x_rot = 0;
 			l->pos.z_rot = 0;
-			UpdateLaraRoom(l, -381);
+			UpdateLaraRoom(l, 0);
 			lara.water_status = LW_SURFACE;
 			lara.water_surface_dist = -wsd;
 			lara.torso_x_rot = 0;
@@ -11313,16 +11513,26 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 		}
 
 		if (input & IN_LEFT)
-			sub->Rot -= 0x400000;
+			sub->Rot -= sub_responsive[sub_index[item->object_number]] ? 0x500000 : 0x400000;
 		else if (input & IN_RIGHT)
-			sub->Rot += 0x400000;
+			sub->Rot += sub_responsive[sub_index[item->object_number]] ? 0x500000 : 0x400000;
 
 		if (sub->Flags & 2)
 		{
 			if (item->pos.x_rot > 9100)
+			{
 				item->pos.x_rot -= 182;
+
+				if (item->pos.x_rot < 9100)
+					item->pos.x_rot = 9100;
+			}
 			else if (item->pos.x_rot < 9100)
+			{
 				item->pos.x_rot += 182;
+
+				if (item->pos.x_rot > 9100)
+					item->pos.x_rot = 9100;
+			}
 		}
 		else if (input & IN_FORWARD)
 			sub->RotX -= 0x16C0000;
@@ -11332,9 +11542,15 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 		if (input & IN_JUMP)
 		{
 			if (sub->Flags & 2 && input & IN_FORWARD && item->pos.x_rot > -2730)
-				sub->Flags |= 4;
+			{
+				item->pos.x_rot -= 546;
+				sub->RotX -= 0x16C0000;
+			}
 
 			sub->Vel += 0x40000;
+
+			if (input & IN_SPRINT)
+				SubMaximumVelocity += 0x40000;
 		}
 		else
 			l->goal_anim_state = 5;
@@ -11350,16 +11566,26 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 		}
 
 		if (input & IN_LEFT)
-			sub->Rot -= 0x200000;
+			sub->Rot -= sub_responsive[sub_index[item->object_number]] ? 0x300000 : 0x200000;
 		else if (input & IN_RIGHT)
-			sub->Rot += 0x200000;
+			sub->Rot += sub_responsive[sub_index[item->object_number]] ? 0x300000 : 0x200000;
 
 		if (sub->Flags & 2)
 		{
 			if (item->pos.x_rot > 9100)
+			{
 				item->pos.x_rot -= 182;
+
+				if (item->pos.x_rot < 9100)
+					item->pos.x_rot = 9100;
+			}
 			else if (item->pos.x_rot < 9100)
+			{
 				item->pos.x_rot += 182;
+
+				if (item->pos.x_rot > 9100)
+					item->pos.x_rot = 9100;
+			}
 		}
 		else if (input & IN_FORWARD)
 			sub->RotX -= 0x16C0000;
@@ -11384,12 +11610,7 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 					SoundEffect(sub_sfx_little_sub_stop[sub_index[item->object_number]], &item->pos, SFX_ALWAYS);
 			}
 			else if (input & IN_JUMP)
-			{
-				if (sub->Flags & 2 && input & IN_FORWARD && item->pos.x_rot > -2730)
-					sub->Flags |= 4;
-
 				l->goal_anim_state = 4;
-			}
 		}
 
 		break;
@@ -11401,18 +11622,20 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 			item->pos.x_rot += 182;
 			item->pos.y_pos += 4;
 
-			if (frame == 30 && sub_sfx_little_sub_start[sub_index[item->object_number]] != -1)
+			if (sub_sfx_little_sub_start[sub_index[item->object_number]] != -1
+				&& l->frame_number - anims[l->anim_number].frame_base == sub_start_frame_surface[sub_index[item->object_number]])
 				SoundEffect(sub_sfx_little_sub_start[sub_index[item->object_number]], &item->pos, 2);
 
-			if (frame == 50)
+			if (l->frame_number == anims[l->anim_number].frame_end)
 				sub->Flags |= 1;
 		}
 		else if (anim == 13)
 		{
-			if (frame == 30 && sub_sfx_little_sub_start[sub_index[item->object_number]] != -1)
+			if (sub_sfx_little_sub_start[sub_index[item->object_number]] != -1
+				&& l->frame_number - anims[l->anim_number].frame_base == sub_start_frame_underwater[sub_index[item->object_number]])
 				SoundEffect(sub_sfx_little_sub_start[sub_index[item->object_number]], &item->pos, 2);
 
-			if (frame == 42)
+			if (l->frame_number == anims[l->anim_number].frame_end)
 				sub->Flags |= 1;
 		}
 
@@ -11420,7 +11643,7 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 
 	case 9:
 
-		if (anim == 12 && frame == 42)
+		if (anim == 12 && l->frame_number == anims[l->anim_number].frame_end)
 		{
 			pos.x = 0;
 			pos.y = 0;
@@ -11432,6 +11655,7 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 			l->anim_number = ANIM_TREAD;
 			l->frame_number = anims[ANIM_TREAD].frame_base;
 			l->current_anim_state = AS_TREAD;
+			l->goal_anim_state = AS_TREAD;
 			l->fallspeed = 0;
 			l->gravity_status = 0;
 			l->pos.x_rot = 0;
@@ -11450,13 +11674,13 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 		break;
 	}
 
-	if (sub->Flags & 4)
-	{
-		if (item->pos.x_rot > -2730)
-			item->pos.x_rot -= 910;
-		else
-			sub->Flags &= ~4;
-	}
+	if (SubMaximumVelocity > sub_velocity_limit[sub_index[item->object_number]])
+		SubMaximumVelocity -= 0x18000;
+
+	if (SubMaximumVelocity > sub_sprint_velocity_limit[sub_index[item->object_number]])
+		SubMaximumVelocity = sub_sprint_velocity_limit[sub_index[item->object_number]];
+	else if (SubMaximumVelocity < sub_velocity_limit[sub_index[item->object_number]])
+		SubMaximumVelocity = sub_velocity_limit[sub_index[item->object_number]];
 
 	if (sub->Vel > 0)
 	{
@@ -11474,21 +11698,21 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 			sub->Vel = 0;
 	}
 
-	if (sub->Vel > 0x400000)
-		sub->Vel = 0x400000;
-	else if (sub->Vel < -0x400000)
-		sub->Vel = -0x400000;
+	if (sub->Vel > SubMaximumVelocity)
+		sub->Vel = SubMaximumVelocity;
+	else if (sub->Vel < -SubMaximumVelocity)
+		sub->Vel = -SubMaximumVelocity;
 
 	if (sub->Rot > 0)
 	{
-		sub->Rot -= 0x100000;
+		sub->Rot -= sub_responsive[sub_index[item->object_number]] ? 0x200000 : 0x100000;
 
 		if (sub->Rot < 0)
 			sub->Rot = 0;
 	}
 	else if (sub->Rot < 0)
 	{
-		sub->Rot += 0x100000;
+		sub->Rot += sub_responsive[sub_index[item->object_number]] ? 0x200000 : 0x100000;
 
 		if (sub->Rot > 0)
 			sub->Rot = 0;
@@ -11518,6 +11742,9 @@ void SubUserInput(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 		sub->RotX = 0x16C0000;
 	else if (sub->RotX < -0x16C0000)
 		sub->RotX = -0x16C0000;
+
+	if (sub_pickup[sub_index[item->object_number]] && sub->Flags & 1 && !(sub->Flags & 2))
+		SubToPickupCollision(item);
 }
 
 void SubDoCurrent(ITEM_INFO* item)
@@ -11590,7 +11817,7 @@ void FireSubHarpoon(ITEM_INFO* item)
 	pos.x_pos = SubHarpoonLeftRight ? 22 : -22;
 	pos.y_pos = 24;
 	pos.z_pos = 230;
-	GetJointAbsPosition(item, (PHD_VECTOR*)&pos, 3);
+	GetJointAbsPosition(item, (PHD_VECTOR*)&pos, sub_mesh_harpoon[sub_index[item->object_number]]);
 	pos.x_rot = item->pos.x_rot;
 	pos.y_rot = item->pos.y_rot;
 	pos.z_rot = 0;
@@ -11601,13 +11828,20 @@ void FireSubHarpoon(ITEM_INFO* item)
 void SubBackgroundCollision(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 {
 	COLL_INFO coll;
-	long h;
+	long ox, oy, oz;
+	short oxr, oyr, hit;
 
+	hit = 0;
+	ox = item->pos.x_pos;
+	oy = item->pos.y_pos;
+	oz = item->pos.z_pos;
+	oxr = item->pos.x_rot;
+	oyr = item->pos.y_rot;
 	coll.bad_pos = -NO_HEIGHT;
-	coll.bad_neg = -400;
-	coll.bad_ceiling = -400;
+	coll.bad_neg = -200;
+	coll.bad_ceiling = 200;
 	coll.old.x = item->pos.x_pos;
-	coll.old.y = item->pos.y_pos + 128;
+	coll.old.y = item->pos.y_pos;
 	coll.old.z = item->pos.z_pos;
 	coll.radius = 300;
 	coll.trigger = 0;
@@ -11616,33 +11850,26 @@ void SubBackgroundCollision(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 	coll.lava_is_pit = 0;
 	coll.enable_spaz = 0;
 	coll.enable_baddie_push = 1;
-
-	if (item->pos.x_rot < -0x4000 || item->pos.x_rot > 0x4000)
-		lara.move_angle = item->pos.y_rot + 0x8000;
-	else
-		lara.move_angle = item->pos.y_rot;
-
+	lara.move_angle = item->pos.y_rot;
 	coll.facing = lara.move_angle;
-	h = (WALL_SIZE * phd_sin(item->pos.x_rot)) >> W2V_SHIFT;
 
-	if (h < 0)
-		h = -h;
+	if (!sub_swimming_collision[sub_index[item->object_number]])
+		GetCollisionInfo(&coll, item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, item->room_number, 400);
+	else
+		GetCollisionInfo(&coll, item->pos.x_pos, item->pos.y_pos + 100, item->pos.z_pos, item->room_number, 200);
 
-	if (h < 200)
-		h = 200;
-
-	coll.bad_neg = -h;
-	GetCollisionInfo(&coll, item->pos.x_pos, item->pos.y_pos + 128 + h / 2, item->pos.z_pos, item->room_number, h);
 	ShiftItem(item, &coll);
 
 	switch (coll.coll_type)
 	{
 	case CT_FRONT:
 
-		if (sub->RotX > 0x1FFE0000)
-			sub->RotX += 0x16C0000;
-		else if (sub->RotX < -0x1FFE0000)
-			sub->RotX -= 0x16C0000;
+		hit = 1;
+
+		if (item->pos.x_rot > 4550)
+			item->pos.x_rot += 182;
+		else if (item->pos.x_rot < -4550)
+			item->pos.x_rot -= 182;
 		else
 			sub->Vel = 0;
 
@@ -11650,35 +11877,96 @@ void SubBackgroundCollision(ITEM_INFO* item, ITEM_INFO* l, SUBINFO* sub)
 
 	case CT_TOP:
 
-		if (sub->RotX >= -0x1FFE0000)
-			sub->RotX -= 0x16C0000;
+		if (item->pos.x_rot >= -8190)
+		{
+			hit = 1;
+			item->pos.x_rot -= 364;
+		}
 
 		break;
 
 	case CT_TOP_FRONT:
+		hit = 1;
 		sub->Vel = 0;
 		break;
 
 	case CT_LEFT:
-		item->pos.y_rot += 910;
+		hit = 1;
+		item->pos.y_rot += 364;
 		break;
 
 	case CT_RIGHT:
-		item->pos.y_rot -= 910;
+		hit = 1;
+		item->pos.y_rot -= 364;
 		break;
 
 	case CT_CLAMP:
-		item->pos.x_pos = coll.old.x;
-		item->pos.y_pos = coll.old.y;
-		item->pos.z_pos = coll.old.z;
+		hit = 2;
 		sub->Vel = 0;
-		return;
+		break;
 	}
 
-	if (coll.mid_floor < 0)
+	if (coll.mid_floor != NO_HEIGHT && coll.mid_floor < 0)
 	{
+		hit = 1;
 		item->pos.y_pos += coll.mid_floor;
-		sub->RotX += 0x16C0000;
+		item->pos.x_rot += 364;
+	}
+
+	if ((ox != item->pos.x_pos || oy != item->pos.y_pos || oz != item->pos.z_pos || oxr != item->pos.x_rot || oyr != item->pos.y_rot) &&
+		hit == 1 && !SubHitCount && item->speed > sub_speed_clash[sub_index[item->object_number]])
+	{
+		if (sub_sfx_swimsuit_metal_clash[sub_index[item->object_number]] != -1)
+			SoundEffect(sub_sfx_swimsuit_metal_clash[sub_index[item->object_number]], &item->pos, ((GetRandomControl() << 9) + 0x800000) | SFX_SETPITCH | SFX_ALWAYS);
+
+		SubHitCount = 30;
+
+		if (sub_breath_clash[sub_index[item->object_number]] && LaraBreath < 96)
+			LaraBreath += 16;
+	}
+}
+
+void DoSubsuitStuff(ITEM_INFO* item)
+{
+	long pitch, anx, vol;
+
+	LaraBreathCount++;
+
+	if (LaraBreathCount >= LaraBreathDelay)
+	{
+		anx = LaraBreath;
+
+		if (anx > 127)
+			anx = 127;
+
+		anx &= 0x70;
+
+		if (sub_sfx_lara_sub_breathe[sub_index[item->object_number]] != -1 && lara_item->hit_points > 0)
+		{
+			pitch = (anx << 8) + 0x8000;
+			vol = SubBVols[anx >> 4];
+			SoundEffect(sub_sfx_lara_sub_breathe[sub_index[item->object_number]], &item->pos, (pitch << 8) | (vol << 8) | SFX_ALWAYS | SFX_SETPITCH | SFX_SETVOL);
+		}
+
+		LaraBreathCount = (short)(-40 - (30 * (128 - anx) >> 7));
+
+		if (LaraBreath)
+		{
+			anx = LaraBreath;
+
+			if (anx > 128)
+				anx -= 16;
+			else
+				anx -= 4;
+
+			if (anx < 0)
+				anx = 0;
+
+			LaraBreath = (uchar)anx;
+			LaraBreathDelay = 0;
+		}
+		else if (LaraBreathDelay < 16)
+			LaraBreathDelay += 2;
 	}
 }
 
@@ -11713,16 +12001,30 @@ long SubControl(void)
 	if (lara.vehicle == NO_ITEM)
 		return 0;
 
+	if (sub_breath_no_air[sub_index[item->object_number]] && lara.air < 0 && LaraBreath < 251)
+		LaraBreath += 4;
+
 	SubDoCurrent(item);
 	SubBackgroundCollision(item, lara_item, sub);
-	sub->joint_rotation[0] = (short)(item->pos.z_rot + (sub->RotX >> 13));
-	sub->joint_rotation[1] = (short)((sub->RotX >> 13) - item->pos.z_rot);
-	sub->joint_rotation[2] = sub->FanRot;
+	DoSubsuitStuff(item);
+
+	if (sub_mesh_left_wing_index[sub_index[item->object_number]] != -1)
+		sub->joint_rotation[sub_mesh_left_wing_index[sub_index[item->object_number]]] = (short)(item->pos.z_rot + (sub->RotX >> 13));
+
+	if (sub_mesh_right_wing_index[sub_index[item->object_number]] != -1)
+		sub->joint_rotation[sub_mesh_right_wing_index[sub_index[item->object_number]]] = (short)((sub->RotX >> 13) - item->pos.z_rot);
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (sub_mesh_fan_index[sub_index[item->object_number]][i] != -1)
+			sub->joint_rotation[sub_mesh_fan_index[sub_index[item->object_number]][i]] = sub->FanRot;
+	}
+
 	room_number = item->room_number;
 	floor = GetFloor(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, &room_number);
 	wd = GetWaterDepth(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, room_number);
 
-	if (!(room[room_number].flags & ROOM_UNDERWATER) || wd == NO_HEIGHT || wd < 768)
+	if (!(room[room_number].flags & ROOM_UNDERWATER) || wd == NO_HEIGHT || wd < 384)
 	{
 		item->pos.x_pos = ox;
 		item->pos.y_pos = oy;
@@ -11743,7 +12045,11 @@ long SubControl(void)
 	TestTriggers(trigger_index, 1, 0);
 	TestTriggers(trigger_index, 0, 0);
 
-	if (sub_harpoon[sub_index[item->object_number]] && input & IN_ACTION && sub->Flags & 1 && !sub->WeaponTimer)
+	if (sub_mesh_harpoon[sub_index[item->object_number]]
+		&& lara_item->current_anim_state != 10
+		&& input & IN_ACTION
+		&& sub->Flags & 1
+		&& !sub->WeaponTimer)
 	{
 		FireSubHarpoon(item);
 		sub->WeaponTimer = 15;
@@ -11753,15 +12059,12 @@ long SubControl(void)
 	{
 		wh = GetWaterHeight(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, room_number);
 
-		if (wh != NO_HEIGHT && wh - item->pos.y_pos >= -338)
+		if (wh != NO_HEIGHT && wh - item->pos.y_pos >= -sub_surface_water_depth[sub_index[item->object_number]])
 		{
-			item->pos.y_pos = wh + 338;
+			item->pos.y_pos = wh + sub_surface_water_depth[sub_index[item->object_number]];
 
 			if (!(sub->Flags & 2))
-			{
 				SoundEffect(SFX_LARA_BREATH, &lara_item->pos, SFX_ALWAYS);
-				sub->Flags &= ~4;
-			}
 
 			sub->Flags |= 2;
 			lara.water_status = LW_SURFACE;
@@ -11792,21 +12095,54 @@ long SubControl(void)
 	item->anim_number = lara_item->anim_number + objects[sub_slot_upv[sub_index[item->object_number]]].anim_index - objects[sub_slot_vehicle_anim[sub_index[item->object_number]]].anim_index;
 	item->frame_number = lara_item->frame_number + anims[item->anim_number].frame_base - anims[lara_item->anim_number].frame_base;
 	camera.target_elevation = sub->Flags & 2 ? -10920 : 0;
+
+	if (sub_surface_dismount[sub_index[item->object_number]])
+	{
+		if (lara_item->current_anim_state == 2)
+		{
+			camera.target_elevation = -4004 - item->pos.x_rot;
+
+			if (camera.target_elevation < -10920)
+				camera.target_elevation = -10920;
+		}
+		else if (lara_item->current_anim_state == 8)
+		{
+			camera.target_elevation = -4004 + item->pos.x_rot;
+
+			if (camera.target_elevation > 0)
+				camera.target_elevation = 0;
+		}
+
+		camera.flags = 1;
+	}
+
 	return 1;
 }
 
 void TriggerSubMist(long x, long y, long z, long speed, short angle)
 {
 	SPARKS* sptr;
+	ITEM_INFO* item;
+	long ambient;
 
 	sptr = &spark[GetFreeSpark()];
 	sptr->On = 1;
 	sptr->sR = 0;
 	sptr->sG = 0;
 	sptr->sB = 0;
-	sptr->dR = 64;
-	sptr->dG = 64;
-	sptr->dB = 64;
+	item = &items[SubWakeVehicle];
+
+	if (sub_ambient_tint[sub_index[item->object_number]]) {
+		ambient = room[item->room_number].ambient;
+		sptr->dR = (3 * CLRR(ambient) >> 2) + 16;
+		sptr->dG = (3 * CLRG(ambient) >> 2) + 16;
+		sptr->dB = (3 * CLRB(ambient) >> 2) + 16;
+	} else {
+		sptr->dR = 64;
+		sptr->dG = 64;
+		sptr->dB = 64;
+	}
+
 	sptr->FadeToBlack = 12;
 	sptr->ColFadeSpeed = (GetRandomControl() & 3) + 4;
 	sptr->TransType = 2;
@@ -11848,9 +12184,9 @@ void SubDoWake(ITEM_INFO* item, short lr)
 {
 	PHD_VECTOR pos;
 
-	if (!SubWakePts[SubCurrentStartWake][lr].life)
+	if (!SubWakePts[SubCurrentStartWake[lr]][lr].life)
 	{
-		SubWakePts[SubCurrentStartWake][lr].life = 32;
+		SubWakePts[SubCurrentStartWake[lr]][lr].life = 32;
 
 		for (int i = 0; i < 2; i++)
 		{
@@ -11861,14 +12197,13 @@ void SubDoWake(ITEM_INFO* item, short lr)
 
 			pos.y = 0;
 			pos.z = -64;
-			GetJointAbsPosition(item, &pos, lr + 1);
-			SubWakePts[SubCurrentStartWake][lr].x[i] = pos.x;
-			SubWakePts[SubCurrentStartWake][lr].y[i] = pos.y;
-			SubWakePts[SubCurrentStartWake][lr].z[i] = pos.z;
+			GetJointAbsPosition(item, &pos, sub_mesh_wake[sub_index[item->object_number]][lr]);
+			SubWakePts[SubCurrentStartWake[lr]][lr].x[i] = pos.x;
+			SubWakePts[SubCurrentStartWake[lr]][lr].y[i] = pos.y;
+			SubWakePts[SubCurrentStartWake[lr]][lr].z[i] = pos.z;
 		}
 
-		if (lr == 1)
-			SubCurrentStartWake = (SubCurrentStartWake + 1) & 0x1F;
+		SubCurrentStartWake[lr] = (SubCurrentStartWake[lr] + 1) & 0x1F;
 	}
 }
 
@@ -11881,6 +12216,177 @@ void SubUpdateWakeFX(void)
 			if (SubWakePts[j][i].life)
 				SubWakePts[j][i].life--;
 		}
+	}
+}
+
+void SubTriggerAirBubbles(ITEM_INFO* item)
+{
+	SPARKS* sptr;
+	PHD_VECTOR pos1;
+	PHD_VECTOR pos2;
+	long size, wh;
+
+	if (sub_sprite_air_bubbles[sub_index[item->object_number]] == -1)
+		return;
+
+	pos1.x = 0;
+	pos1.y = -192;
+	pos1.z = -160;
+	GetJointAbsPosition(item, &pos1, sub_mesh_engine[sub_index[item->object_number]]);
+
+	pos2.x = 0;
+	pos2.y = -192;
+	pos2.z = -512 - (GetRandomControl() & 0x7F);
+	GetJointAbsPosition(item, &pos2, sub_mesh_engine[sub_index[item->object_number]]);
+
+	wh = GetWaterHeight(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, item->room_number);
+
+	if (wh == NO_HEIGHT)
+		return;
+
+	wh += 100;
+
+	if (pos1.y < wh)
+		return;
+
+	if (pos2.y < wh)
+		pos2.y = wh;
+
+	sptr = &spark[GetFreeSpark()];
+	sptr->On = 1;
+	sptr->sR = 32;
+	sptr->sG = 32;
+	sptr->sB = 32;
+	sptr->dR = 160;
+	sptr->dG = 160;
+	sptr->dB = 160;
+	sptr->ColFadeSpeed = 2;
+	sptr->FadeToBlack = 6;
+	sptr->TransType = 2;
+	sptr->Life = (GetRandomControl() & 7) + 16;
+	sptr->sLife = sptr->Life;
+
+	sptr->x = (GetRandomControl() & 0x1F) + pos1.x - 16;
+	sptr->y = (GetRandomControl() & 0x1F) + pos1.y - 16;
+	sptr->z = (GetRandomControl() & 0x1F) + pos1.z - 16;
+	sptr->Xvel = (short)(pos2.x - pos1.x + ((GetRandomControl() & 0x7F) - 64));
+	sptr->Yvel = (short)(pos2.y - pos1.y + ((GetRandomControl() & 0x7F) - 64));
+	sptr->Zvel = (short)(pos2.z - pos1.z + ((GetRandomControl() & 0x7F) - 64));
+
+	sptr->Friction = 0;
+	sptr->Def = objects[DEFAULT_SPRITES].mesh_index + sub_sprite_air_bubbles[sub_index[item->object_number]];
+	sptr->MaxYvel = 0;
+	sptr->Gravity = -4 - (GetRandomControl() & 3);
+	sptr->Scalar = 1;
+	sptr->Flags = SF_SCALE | SF_DEF | SF_ROTATE;
+	sptr->RotAng = GetRandomControl() & 0xFFF;
+	sptr->RotAdd = (GetRandomControl() & 0xF) - 8;
+	size = 16 + (GetRandomControl() & 15);
+	sptr->Size = (uchar)size;
+	sptr->sSize = sptr->Size;
+	sptr->dSize = sptr->Size << 1;
+}
+
+void SubTriggerEngineBubbles(ITEM_INFO* item, PHD_VECTOR* pos, PHD_VECTOR* pos1, long size, long n)
+{
+	SPARKS* sptr;
+
+	if (sub_sprite_engine_bubbles[sub_index[item->object_number]][n] == -1)
+		return;
+
+	sptr = &spark[GetFreeSpark()];
+	sptr->On = 1;
+	sptr->sR = 32;
+	sptr->sG = 32;
+	sptr->sB = 32;
+	sptr->dR = 160;
+	sptr->dG = 160;
+	sptr->dB = 160;
+	sptr->ColFadeSpeed = 2;
+	sptr->FadeToBlack = 6;
+	sptr->TransType = 2;
+	sptr->Life = (uchar)((GetRandomControl() & 7) - size + 16);
+	sptr->sLife = sptr->Life;
+	sptr->x = (GetRandomControl() & 0x1F) + pos->x - 16;
+	sptr->y = (GetRandomControl() & 0x1F) + pos->y - 16;
+	sptr->z = (GetRandomControl() & 0x1F) + pos->z - 16;
+	sptr->Xvel = (short)(pos1->x + (GetRandomControl() & 0x7F) - pos->x - 64);
+	sptr->Yvel = (short)(pos1->y + (GetRandomControl() & 0x7F) - pos->y - 64);
+	sptr->Zvel = (short)(pos1->z + (GetRandomControl() & 0x7F) - pos->z - 64);
+	sptr->Friction = 0;
+	sptr->Def = objects[DEFAULT_SPRITES].mesh_index + sub_sprite_engine_bubbles[sub_index[item->object_number]][n];
+	sptr->Gravity = -4 - (GetRandomControl() & 3);
+	sptr->MaxYvel = 0;
+	sptr->Scalar = 1;
+
+	if (n)
+	{
+		sptr->Flags = SF_SCALE | SF_DEF | SF_ROTATE;
+		sptr->RotAng = GetRandomControl() & 0xFFF;
+		sptr->RotAdd = (GetRandomControl() & 0xF) - 8;
+		sptr->Size = (uchar)((GetRandomControl() & 0xF) + 2 * size + 8);
+		sptr->sSize = sptr->Size;
+		sptr->dSize = sptr->Size << 1;
+	}
+	else
+	{
+		sptr->Flags = SF_SCALE | SF_DEF;
+		sptr->dSize = (uchar)((GetRandomControl() & 3) + size + 4);
+		sptr->Size = sptr->dSize >> 1;
+		sptr->sSize = sptr->Size >> 1;
+	}
+}
+
+void SubTriggerEngineEffects(ITEM_INFO* item, SUBINFO* sub)
+{
+	PHD_VECTOR pos;
+	PHD_VECTOR pos2;
+	long x, n, wh;
+
+	x = -80;
+	wh = GetWaterHeight(item->pos.x_pos, item->pos.y_pos, item->pos.z_pos, item->room_number);
+
+	if (wh == NO_HEIGHT)
+		return;
+
+	wh += 100;
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (sub_sprite_engine_bubbles[sub_index[item->object_number]][i] != -1 && sub->EngineVel[i])
+		{
+			pos.x = x;
+			pos.y = -192;
+			pos.z = -160;
+			GetJointAbsPosition(item, &pos, sub_mesh_engine[sub_index[item->object_number]]);
+
+			if (pos.y < wh)
+				continue;
+
+			n = sub->EngineVel[i] >> 2;
+
+			for (int j = 0; j < 2; j++)
+			{
+				pos2.x = x;
+				pos2.y = -192;
+				pos2.z = -160;
+
+				if (n)
+				{
+					pos2.x += GetRandomControl() % n - (n >> 1);
+					pos2.z += GetRandomControl() % n - (n >> 1);
+				}
+
+				GetJointAbsPosition(item, &pos2, sub_mesh_engine[sub_index[item->object_number]]);
+
+				if (pos2.y < wh)
+					pos2.y = wh;
+
+				SubTriggerEngineBubbles(item, &pos, &pos2, sub->EngineVel[i] >> 8, j);
+			}
+		}
+
+		x = 80;
 	}
 }
 
@@ -11900,42 +12406,63 @@ void SubEffects(short item_number)
 		if (sub->Vel)
 		{
 			sub->FanRot += (short)(sub->Vel >> 12);
-			pos.x = 0;
-			pos.y = 0;
-			pos.z = 0;
-			GetJointAbsPosition(item, &pos, 3);
-			TriggerSubMist(pos.x, pos.y, pos.z, ABS(sub->Vel) >> 16, item->pos.y_rot + 0x8000);
 
-			if (!(GetRandomControl() & 1))
+			for (int i = 0; i < 2; i++)
 			{
-				bPos.x_pos = (GetRandomControl() & 0x3F) + pos.x - 32;
-				bPos.y_pos = pos.y;
-				bPos.z_pos = (GetRandomControl() & 0x3F) + pos.z - 32;
-				room_number = item->room_number;
-				GetFloor(bPos.x_pos, bPos.y_pos, bPos.z_pos, &room_number);
-				CreateBubble(&bPos, room_number, 4, 8);
+				if (sub_mesh_mist[sub_index[item->object_number]][i])
+				{
+					pos.x = 0;
+					pos.y = 0;
+					pos.z = 0;
+					GetJointAbsPosition(item, &pos, sub_mesh_mist[sub_index[item->object_number]][i]);
+					TriggerSubMist(pos.x, pos.y, pos.z, sub->Vel >> 16, item->pos.y_rot + 0x8000);
+
+					if (!(GetRandomControl() & 1))
+					{
+						bPos.x_pos = (GetRandomControl() & 0x3F) + pos.x - 32;
+						bPos.y_pos = pos.y;
+						bPos.z_pos = (GetRandomControl() & 0x3F) + pos.z - 32;
+						room_number = item->room_number;
+						GetFloor(bPos.x_pos, bPos.y_pos, bPos.z_pos, &room_number);
+						CreateBubble(&bPos, room_number, 4, 8);
+					}
+				}
 			}
 		}
 		else
 			sub->FanRot += 364;
 
-		if (sub->Flags & 1)
+		if (sub_mesh_headlight[sub_index[item->object_number]])
 		{
-			s.x = 0;
-			s.y = 96;
-			s.z = 256;
-			GetJointAbsPosition(item, &s, 0);
-			t.x = 0;
-			t.y = 96;
-			t.z = 16384;
-			GetJointAbsPosition(item, &t, 0);
-			LaraTorch(&s, &t, item->pos.y_rot, (31 - (GetRandomControl() & 3)) << 3);
-			item->mesh_bits |= 0x10;
+			if (sub->Flags & 1)
+			{
+				s.x = 0;
+				s.y = 96;
+				s.z = 256;
+				GetJointAbsPosition(item, &s, sub_mesh_headlight[sub_index[item->object_number]]);
+				t.x = 0;
+				t.y = 96;
+				t.z = 16384;
+				GetJointAbsPosition(item, &t, sub_mesh_headlight[sub_index[item->object_number]]);
+				LaraTorch(&s, &t, item->pos.y_rot, (31 - (GetRandomControl() & 3)) << 3);
+				item->mesh_bits |= 1 << sub_mesh_headlight[sub_index[item->object_number]];
+			}
+			else
+			{
+				bLaraTorch = 0;
+				item->mesh_bits &= ~(1 << sub_mesh_headlight[sub_index[item->object_number]]);
+			}
 		}
-		else
+
+		if (SubHitCount)
+			SubHitCount--;
+
+		if (sub_mesh_engine[sub_index[item->object_number]])
 		{
-			bLaraTorch = 0;
-			item->mesh_bits &= ~0x10;
+			if (item->item_flags[0] & 1)
+				SubTriggerAirBubbles(item);
+
+			SubTriggerEngineEffects(item, sub);
 		}
 	}
 	else
@@ -11943,10 +12470,13 @@ void SubEffects(short item_number)
 
 	if (SubWakeVehicle == item_number)
 	{
-		if (!(wibble & 0xF) && sub->Vel)
+		if (sub->Vel && (sub_wake_smooth[sub_index[item->object_number]] || !(wibble & 0xF)))
 		{
-			SubDoWake(item, 0);
-			SubDoWake(item, 1);
+			for (int i = 0; i < 2; i++)
+			{
+				if (sub_mesh_wake[sub_index[item->object_number]][i])
+					SubDoWake(item, i);
+			}
 		}
 
 		if (!sub->Vel)
@@ -11971,8 +12501,8 @@ void S_DrawSubWakeFX(ITEM_INFO* item)
 	PHD_VECTOR pos, wh[2][2], w[2][32][2];
 	D3DTLVERTEX v[4];
 	long current;
-	long x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, s1, s2, s3, s4, cval;
-	uchar c[2][32];
+	long x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, s1, s2, s3, s4, cval, ambient, cr, cg, cb;
+	uchar c[2][32], ar, ag, ab;
 
 	if (SubWakeVehicle == NO_ITEM || &items[SubWakeVehicle] != item)
 		return;
@@ -11991,7 +12521,7 @@ void S_DrawSubWakeFX(ITEM_INFO* item)
 
 			pos.y = 0;
 			pos.z = -64;
-			GetJointAbsPosition(item, &pos, i + 1);
+			GetJointAbsPosition(item, &pos, sub_mesh_wake[sub_index[item->object_number]][i]);
 			x1 = pos.x - item->pos.x_pos;
 			y1 = pos.y - item->pos.y_pos;
 			z1 = pos.z - item->pos.z_pos;
@@ -12001,7 +12531,7 @@ void S_DrawSubWakeFX(ITEM_INFO* item)
 			wh[i][j].z = (phd_mxptr[M20] * x1 + phd_mxptr[M21] * y1 + phd_mxptr[M22] * z1 + phd_mxptr[M23]) >> W2V_SHIFT;
 		}
 
-		current = (SubCurrentStartWake - 1) & 0x1F;
+		current = (SubCurrentStartWake[i] - 1) & 0x1F;
 
 		for (int j = 0; j < 32; j++)
 		{
@@ -12027,6 +12557,11 @@ void S_DrawSubWakeFX(ITEM_INFO* item)
 
 	phd_PopMatrix();
 
+	ambient = room[item->room_number].ambient;
+	ar = CLRR(ambient);
+	ag = CLRG(ambient);
+	ab = CLRB(ambient);
+
 	for (int i = 0; i < 2; i++)
 	{
 		cval = 63;
@@ -12035,8 +12570,30 @@ void S_DrawSubWakeFX(ITEM_INFO* item)
 			cval = (cval * SubWakeShade) >> 4;
 
 		cval <<= 1;
-		s1 = RGBA(cval, cval, cval, 0xFF);
-		s2 = RGBA(cval << 1, cval << 1, cval << 1, 0xFF);
+
+		if (sub_ambient_tint[sub_index[item->object_number]]) {
+			cr = (cval * ar) >> 5;
+
+			if (cr > 255)
+				cr = 255;
+
+			cg = (cval * ag) >> 5;
+
+			if (cg > 255)
+				cg = 255;
+
+			cb = (cval * ab) >> 5;
+
+			if (cb > 255)
+				cb = 255;
+
+			s1 = RGBA(cr >> 1, cg >> 1, cb >> 1, 0xFF);
+			s2 = RGBA(cr, cg, cb, 0xFF);
+		} else {
+			s1 = RGBA(cval, cval, cval, 0xFF);
+			s2 = RGBA(cval << 1, cval << 1, cval << 1, 0xFF);
+		}
+
 		x1 = wh[i][0].x;
 		y1 = wh[i][0].y;
 		z1 = wh[i][0].z;
@@ -12055,8 +12612,30 @@ void S_DrawSubWakeFX(ITEM_INFO* item)
 				cval = (cval * SubWakeShade) >> 4;
 
 			cval <<= 1;
-			s3 = RGBA(cval << 1, cval << 1, cval << 1, 0xFF);
-			s4 = RGBA(cval, cval, cval, 0xFF);
+
+			if (sub_ambient_tint[sub_index[item->object_number]]) {
+				cr = (cval * ar) >> 5;
+
+				if (cr > 255)
+					cr = 255;
+
+				cg = (cval * ag) >> 5;
+
+				if (cg > 255)
+					cg = 255;
+
+				cb = (cval * ab) >> 5;
+
+				if (cb > 255)
+					cb = 255;
+
+				s3 = RGBA(cr, cg, cb, 0xFF);
+				s4 = RGBA(cr >> 1, cg >> 1, cb >> 1, 0xFF);
+			} else {
+				s3 = RGBA(cval << 1, cval << 1, cval << 1, 0xFF);
+				s4 = RGBA(cval, cval, cval, 0xFF);
+			}
+
 			x3 = w[i][j][0].x;
 			y3 = w[i][j][0].y;
 			z3 = w[i][j][0].z;
@@ -12103,11 +12682,20 @@ long IsSubAssigned(long index)
 	return sub_slot_upv[index] != -1 && sub_slot_vehicle_anim[index] != -1;
 }
 
-long IsInSub(void)
+long IsSubAssignedToItem(long index, ITEM_INFO* item)
 {
+	return IsSubAssigned(index) && sub_index[sub_slot_upv[index]] == index && item->object_number == sub_slot_upv[index];
+}
+
+long IsOnSub(void)
+{
+	ITEM_INFO* item;
+
+	item = &items[lara.vehicle];
+
 	for (int i = 0; i < 16; i++)
 	{
-		if (IsSubAssigned(i) && sub_index[sub_slot_upv[i]] == i && items[lara.vehicle].object_number == sub_slot_upv[i])
+		if (IsSubAssignedToItem(i, item))
 			return 1;
 	}
 
@@ -12116,7 +12704,12 @@ long IsInSub(void)
 
 long IsDrivingSub(void)
 {
-	return lara.vehicle != -1 && IsInSub();
+	return lara.vehicle != NO_ITEM && IsOnSub();
+}
+
+long IsDrivingSubNumber(long index)
+{
+	return lara.vehicle != NO_ITEM && IsSubAssignedToItem(index, &items[lara.vehicle]);
 }
 
 void DrawAirBarSub(long flash_state)
@@ -12130,6 +12723,169 @@ void DrawAirBarSub(long flash_state)
 
 	DrawAirBar(flash_state);
 	lara.vehicle = vehicle;
+}
+
+void SortSubJoints(long index)
+{
+	if (!sub_mesh_left_wing[index])
+		sub_mesh_left_wing_index[index] = -1;
+	else
+	{
+		sub_mesh_left_wing_index[index] = 0;
+
+		if (sub_mesh_right_wing[index] && sub_mesh_left_wing[index] > sub_mesh_right_wing[index])
+			sub_mesh_left_wing_index[index]++;
+
+		for (int i = 0; i < 2; i++)
+		{
+			if (sub_mesh_fan[index][i] && sub_mesh_left_wing[index] > sub_mesh_fan[index][i])
+				sub_mesh_left_wing_index[index]++;
+		}
+	}
+
+	if (!sub_mesh_right_wing[index])
+		sub_mesh_right_wing_index[index] = -1;
+	else
+	{
+		sub_mesh_right_wing_index[index] = 0;
+
+		if (sub_mesh_left_wing[index] && sub_mesh_right_wing[index] > sub_mesh_left_wing[index])
+			sub_mesh_right_wing_index[index]++;
+
+		for (int i = 0; i < 2; i++)
+		{
+			if (sub_mesh_fan[index][i] && sub_mesh_right_wing[index] > sub_mesh_fan[index][i])
+				sub_mesh_right_wing_index[index]++;
+		}
+	}
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (!sub_mesh_fan[index][i])
+			sub_mesh_fan_index[index][i] = -1;
+		else
+		{
+			sub_mesh_fan_index[index][i] = 0;
+
+			if (sub_mesh_left_wing[index] && sub_mesh_fan[index][i] > sub_mesh_left_wing[index])
+				sub_mesh_fan_index[index][i]++;
+
+			if (sub_mesh_right_wing[index] && sub_mesh_fan[index][i] > sub_mesh_right_wing[index])
+				sub_mesh_fan_index[index][i]++;
+		}
+	}
+}
+
+void GetOnSubNow(short item_number)
+{
+	ITEM_INFO* item;
+	SUBINFO* sub;
+
+	if (lara.vehicle != NO_ITEM || lara.gun_status != LG_NO_ARMS || lara_item->gravity_status)
+		return;
+
+	item = &items[item_number];
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (IsSubAssignedToItem(i, item))
+		{
+			sub = (SUBINFO*)item->data;
+			lara.vehicle = item_number;
+			SubWakeVehicle = item_number;
+			lara.water_status = LW_UNDERWATER;
+			SubMaximumVelocity = sub_velocity_limit[i];
+
+			if (lara.gun_type == WEAPON_FLARE)
+			{
+				CreateFlare(FLARE_ITEM, 0);
+				undraw_flare_meshes();
+				lara.flare_control_left = 0;
+				lara.gun_type = WEAPON_NONE;
+				lara.request_gun_type = WEAPON_NONE;
+			}
+
+			lara_item->pos.x_pos = item->pos.x_pos;
+			lara_item->pos.y_pos = item->pos.y_pos;
+			lara_item->pos.z_pos = item->pos.z_pos;
+			lara_item->pos.y_rot = item->pos.y_rot;
+			lara_item->anim_number = objects[sub_slot_vehicle_anim[i]].anim_index + 13;
+			lara_item->frame_number = anims[lara_item->anim_number].frame_end;
+			lara_item->goal_anim_state = 8;
+			lara_item->current_anim_state = 8;
+			AnimateItem(lara_item);
+			sub->Flags |= 1;
+			break;
+		}
+	}
+}
+
+AIOBJECT* FindAIObject(short trigger_flags)
+{
+	AIOBJECT* ai;
+
+	for (int i = 0; i < nAIObjects; i++)
+	{
+		ai = &AIObjects[i];
+
+		if (ai->object_number == LARA_START_POS && ai->trigger_flags == trigger_flags)
+			return ai;
+	}
+
+	return 0;
+}
+
+void GetOffSubNow(short trigger_flags)
+{
+	ITEM_INFO* item;
+	SUBINFO* sub;
+	AIOBJECT* ai;
+
+	if (lara.vehicle == NO_ITEM || lara.gun_status != LG_NO_ARMS || lara.current_xvel || lara.current_zvel)
+		return;
+
+	item = &items[lara.vehicle];
+
+	if (item->current_anim_state == 10)
+		return;
+
+	ai = FindAIObject(trigger_flags);
+
+	if (!ai)
+		return;
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (IsSubAssignedToItem(i, item))
+		{
+			sub = (SUBINFO*)item->data;
+			lara_item->pos.x_pos = ai->x;
+			lara_item->pos.y_pos = ai->y;
+			lara_item->pos.z_pos = ai->z;
+			lara_item->pos.y_rot = ai->y_rot;
+			lara_item->anim_number = ANIM_TREAD;
+			lara_item->frame_number = anims[ANIM_TREAD].frame_base;
+			lara_item->current_anim_state = AS_TREAD;
+			lara_item->goal_anim_state = AS_TREAD;
+			lara_item->fallspeed = 0;
+			lara_item->gravity_status = 0;
+			lara_item->pos.x_rot = 0;
+			lara_item->pos.z_rot = 0;
+
+			if (lara_item->room_number != ai->room_number)
+				ItemNewRoom(lara.item_number, ai->room_number);
+
+			lara.water_status = LW_UNDERWATER;
+			lara.vehicle = NO_ITEM;
+			item->anim_number = objects[sub_slot_upv[sub_index[item->object_number]]].anim_index + 5;
+			item->frame_number = anims[item->anim_number].frame_base;
+			item->current_anim_state = 5;
+			item->goal_anim_state = 5;
+			sub->Flags &= ~1;
+			sub->Vel = 0;
+			break;
+		}
+	}
 }
 
 void setup_sub(void)
@@ -12152,9 +12908,19 @@ void setup_sub(void)
 			obj->save_flags = 1;
 			obj->save_anim = 1;
 			obj->shadow_size = 256;
-			bones[obj->bone_index] |= 0x4;
-			bones[obj->bone_index + 4] |= 0x4;
-			bones[obj->bone_index + 8] |= 0x10;
+
+			if (sub_mesh_left_wing[i])
+				bones[obj->bone_index + 4 * (sub_mesh_left_wing[i] - 1)] |= 0x4;
+
+			if (sub_mesh_right_wing[i])
+				bones[obj->bone_index + 4 * (sub_mesh_right_wing[i] - 1)] |= 0x4;
+
+			for (int j = 0; j < 2; j++)
+			{
+				if (sub_mesh_fan[i][j])
+					bones[obj->bone_index + 4 * (sub_mesh_fan[i][j] - 1)] |= 0x10;
+			}
+
 			sub_index[sub_slot_upv[i]] = i;
 		}
 	}
@@ -12165,7 +12931,7 @@ long VehicleControl(void)
 	if (IsInMineCart())
 		return MineCartControl();
 
-	if (IsInQuadBike())
+	if (IsOnQuadBike())
 		return QuadBikeControl();
 
 	return -1;
@@ -12176,7 +12942,7 @@ long VehicleControlUnderwater(void)
 	if (lara.vehicle == NO_ITEM)
 		return 0;
 
-	if (IsInSub())
+	if (IsOnSub())
 		return SubControl();
 
 	return -1;
@@ -12184,7 +12950,7 @@ long VehicleControlUnderwater(void)
 
 void VehicleLook(void)
 {
-	if (lara.vehicle != -1 && (IsInMineCart() || IsInQuadBike() || IsInSub()) && input & IN_LOOK && lara.look)
+	if (lara.vehicle != -1 && (IsInMineCart() || IsOnQuadBike() || IsOnSub()) && input & IN_LOOK && lara.look)
 	{
 		camera.type = LOOK_CAMERA;
 
@@ -12219,7 +12985,7 @@ void SaveVehicle(ITEM_INFO* item)
 				break;
 			}
 
-			if (IsSubAssigned(i) && sub_index[sub_slot_upv[i]] == i && item->object_number == sub_slot_upv[i])
+			if (IsSubAssignedToItem(i, item))
 			{
 				WriteSG(item->data, sizeof(SUBINFO));
 				break;
@@ -12242,7 +13008,7 @@ void RestoreVehicle(ITEM_INFO* item)
 				break;
 			}
 
-			if (IsSubAssigned(i) && sub_index[sub_slot_upv[i]] == i && item->object_number == sub_slot_upv[i])
+			if (IsSubAssignedToItem(i, item))
 			{
 				ReadSG(item->data, sizeof(SUBINFO));
 				break;
@@ -15347,6 +16113,33 @@ void DrawElectricDeath(void)
 	}
 }
 
+void SetLaraTorchColour(float* colour)
+{
+	float intensity;
+
+	if (HeadlightIndex == -1)
+	{
+		colour[2] = 0.0F;
+		return;
+	}
+
+	intensity = LaraTorchIntensity / 255.0F;
+	colour[0] = intensity * HeadlightRed[HeadlightIndex] / 255.0F;
+	colour[1] = intensity * HeadlightGreen[HeadlightIndex] / 255.0F;
+	colour[2] = intensity * HeadlightBlue[HeadlightIndex] / 255.0F;
+}
+
+void SetLaraTorchRange(float* range)
+{
+	if (HeadlightIndex == -1)
+	{
+		*range = 20480.0F;
+		return;
+	}
+
+	*range = HeadlightDistance[HeadlightIndex] * 1024.0F;
+}
+
 #ifdef __TINYC__
 void (*pWriteMyData)(void* Data, ulong Size);
 void (*pReadMyData)(void* Data, ulong Size);
@@ -15369,6 +16162,11 @@ void pcbSaveMyData(void)
 	data.camera_bounce_status_ = camera_bounce_status;
 	data.LaraElectric_ = LaraElectric;
 	data.LaraElectricIndex_ = LaraElectricIndex;
+	data.HeadlightIndex_ = HeadlightIndex;
+	data.SubMaximumVelocity_ = SubMaximumVelocity;
+	data.SubWakeVehicle_ = SubWakeVehicle;
+	data.TRNGCustHairOverride_ = TRNGCustHairOverride;
+	data.LaraBreath_ = LaraBreath;
 	pWriteMyData(&data, sizeof(MY_DATA));
 }
 
@@ -15387,6 +16185,18 @@ void pcbLoadMyData(void)
 	camera_bounce_status = data.camera_bounce_status_;
 	LaraElectric = data.LaraElectric_;
 	LaraElectricIndex = data.LaraElectricIndex_;
+	HeadlightIndex = data.HeadlightIndex_;
+	SubMaximumVelocity = data.SubMaximumVelocity_;
+	SubWakeVehicle = data.SubWakeVehicle_;
+	TRNGCustHairOverride = data.TRNGCustHairOverride_;
+
+	if (TRNGCustHairOverride)
+	{
+		TRNGCustHairBackup = TRNGCustHair;
+		TRNGCustHair = 1;
+	}
+
+	LaraBreath = data.LaraBreath_;
 }
 
 #ifdef __TINYC__
@@ -15551,7 +16361,43 @@ void pcbInitLoadNewLevel(void)
 		sub_sfx_little_sub_loop[i] = -1;
 		sub_sfx_little_sub_start[i] = -1;
 		sub_sfx_little_sub_stop[i] = -1;
-		sub_harpoon[i] = 1;
+		sub_mesh_harpoon[i] = 3;
+		sub_ambient_tint[i] = 1;
+		sub_responsive[i] = 1;
+		sub_velocity_limit[i] = 0x400000;
+		sub_sprint_velocity_limit[i] = 0x740000;
+		sub_surface_dismount[i] = 1;
+		sub_start_frame_surface[i] = 15;
+		sub_start_frame_underwater[i] = 30;
+		sub_mesh_wake[i][0] = 1;
+		sub_mesh_wake[i][1] = 2;
+		sub_wake_smooth[i] = 1;
+		sub_mesh_left_wing[i] = 1;
+		sub_mesh_right_wing[i] = 2;
+		sub_mesh_fan[i][0] = 3;
+		sub_mesh_fan[i][1] = 0;
+		sub_mesh_left_wing_index[i] = 0;
+		sub_mesh_right_wing_index[i] = 1;
+		sub_mesh_fan_index[i][0] = 2;
+		sub_mesh_fan_index[i][1] = -1;
+		sub_mesh_headlight[i] = 4;
+		sub_sfx_swimsuit_metal_clash[i] = -1;
+		sub_mesh_engine[i] = 7;
+		sub_sprite_air_bubbles[i] = -1;
+		sub_swimming_collision[i] = 0;
+		sub_death_release[i] = 1;
+		sub_pickup_frame[i] = 18;
+		sub_pickup[i] = 0;
+		sub_sfx_lara_underwater_engine[i] = -1;
+		sub_sprite_engine_bubbles[i][0] = -1;
+		sub_sprite_engine_bubbles[i][1] = -1;
+		sub_sfx_lara_sub_breathe[i] = -1;
+		sub_breath_clash[i] = 1;
+		sub_breath_no_air[i] = 1;
+		sub_mesh_mist[i][0] = 3;
+		sub_mesh_mist[i][1] = 0;
+		sub_surface_water_depth[i] = 338;
+		sub_speed_clash[i] = 100;
 	}
 
 	for (int i = 0; i < NUMBER_OBJECTS; i++)
@@ -15573,9 +16419,12 @@ void pcbInitLoadNewLevel(void)
 	}
 
 	SubWakeShade = 0;
-	SubCurrentStartWake = 0;
+	SubCurrentStartWake[0] = 0;
+	SubCurrentStartWake[1] = 0;
 	SubWakeVehicle = NO_ITEM;
 	SubHarpoonLeftRight = 0;
+	SubMaximumVelocity = 0x400000;
+	SubHitCount = 0;
 	LaraElectricIndex = -1;
 	LaraElectric = 0;
 
@@ -15585,6 +16434,22 @@ void pcbInitLoadNewLevel(void)
 		sfx_lara_electric_loop[i] = -1;
 		sfx_lara_electric_crackles[i] = -1;
 	}
+
+	HeadlightIndex = -1;
+
+	for (int i = 0; i < 255; i++)
+	{
+		HeadlightRed[i] = 255;
+		HeadlightGreen[i] = 255;
+		HeadlightBlue[i] = 0;
+		HeadlightDistance[i] = 20;
+	}
+
+	TRNGCustHairOverride = 0;
+	TRNGCustHairBackup = 0;
+	LaraBreath = 0;
+	LaraBreathCount = 0;
+	LaraBreathDelay = 16;
 }
 
 #ifdef __TINYC__
@@ -15656,6 +16521,34 @@ long pcbFlipEffectMine(ushort FlipIndex, ushort Timer, ushort Extra, ushort Acti
 		LaraElectricIndex = -1;
 		LaraElectric = 0;
 		break;
+
+	case 14:
+		HeadlightIndex = Timer - 1;
+		break;
+
+	case 15:
+		HeadlightIndex = -1;
+		break;
+
+	case 16:
+
+		if (!Timer)
+		{
+			if (!TRNGCustHairBackup)
+			{
+				TRNGCustHairBackup = TRNGCustHair;
+				TRNGCustHair = 1;
+				TRNGCustHairOverride = 1;
+			}
+		}
+		else if (TRNGCustHairBackup)
+		{
+			TRNGCustHair = TRNGCustHairBackup;
+			TRNGCustHairBackup = 0;
+			TRNGCustHairOverride = 0;
+		}
+
+		break;
 	}
 
 	return RetValue;
@@ -15671,11 +16564,32 @@ long pcbActionMine(ushort ActionIndex, long ItemIndex, ushort Extra, ushort Acti
 
 	RetValue = ActivationMode & 0x400 ? 2 : 1;
 
-#if 0
 	switch (ActionIndex)
 	{
+	case 1:
+		GetOnSubNow((short)ItemIndex);
+		break;
+
+	case 2:
+		items[ItemIndex].item_flags[0] |= 1;
+		break;
+
+	case 3:
+		items[ItemIndex].item_flags[0] &= ~1;
+		break;
+
+	case 4:
+		items[ItemIndex].item_flags[0] |= 2;
+		break;
+
+	case 5:
+		items[ItemIndex].item_flags[0] &= ~2;
+		break;
+
+	case 6:
+		GetOffSubNow((short)ItemIndex);
+		break;
 	}
-#endif
 
 	return RetValue;
 }
@@ -15706,6 +16620,10 @@ long pcbConditionMine(ushort ConditionIndex, long ItemIndex, ushort Extra, ushor
 
 	case 4:
 		RetValue |= IsDrivingSub();
+		break;
+
+	case 5:
+		RetValue |= IsDrivingSubNumber(ItemIndex);
 		break;
 	}
 
@@ -16033,16 +16951,159 @@ void pcbCustomizeMine(ushort CustomizeValue, long NumberOfItems, short* pItemArr
 				sub_slot_vehicle_anim[index] = pItemArray[2];
 
 			if (NumberOfItems > 3 && pItemArray[3] != -1)
-				sub_sfx_little_sub_loop[index] = pItemArray[3];
+				sub_velocity_limit[index] = pItemArray[3] << 16;
 
 			if (NumberOfItems > 4 && pItemArray[4] != -1)
-				sub_sfx_little_sub_start[index] = pItemArray[4];
+				sub_sprint_velocity_limit[index] = pItemArray[4] << 16;
 
 			if (NumberOfItems > 5 && pItemArray[5] != -1)
-				sub_sfx_little_sub_stop[index] = pItemArray[5];
+				sub_responsive[index] = (char)pItemArray[5];
 
 			if (NumberOfItems > 6 && pItemArray[6] != -1)
-				sub_harpoon[index] = (char)pItemArray[6];
+				sub_swimming_collision[index] = (char)pItemArray[6];
+
+			if (NumberOfItems > 7 && pItemArray[7] != -1)
+				sub_pickup[index] = (char)pItemArray[7];
+
+			if (NumberOfItems > 8 && pItemArray[8] != -1)
+				sub_pickup_frame[index] = pItemArray[8];
+		}
+
+		break;
+
+	case 15:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 1;
+
+			if (NumberOfItems > 1 && pItemArray[1] != -1)
+				sub_mesh_wake[index][0] = (char)pItemArray[1];
+
+			if (NumberOfItems > 2 && pItemArray[2] != -1)
+				sub_mesh_wake[index][1] = (char)pItemArray[2];
+
+			if (NumberOfItems > 3 && pItemArray[3] != -1)
+				sub_wake_smooth[index] = (char)pItemArray[3];
+
+			if (NumberOfItems > 4 && pItemArray[4] != -1)
+				sub_ambient_tint[index] = (char)pItemArray[4];
+
+			if (NumberOfItems > 5 && pItemArray[5] != -1)
+				sub_mesh_mist[index][0] = (char)pItemArray[5];
+
+			if (NumberOfItems > 6 && pItemArray[6] != -1)
+				sub_mesh_mist[index][1] = (char)pItemArray[6];
+		}
+
+		break;
+
+	case 16:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 1;
+
+			if (NumberOfItems > 1 && pItemArray[1] != -1)
+				sub_mesh_headlight[index] = (char)pItemArray[1];
+
+			if (NumberOfItems > 2 && pItemArray[2] != -1)
+				sub_mesh_harpoon[index] = (char)pItemArray[2];
+
+			if (NumberOfItems > 3 && pItemArray[3] != -1)
+				sub_mesh_left_wing[index] = (char)pItemArray[3];
+
+			if (NumberOfItems > 4 && pItemArray[4] != -1)
+				sub_mesh_right_wing[index] = (char)pItemArray[4];
+
+			if (NumberOfItems > 5 && pItemArray[5] != -1)
+				sub_mesh_fan[index][0] = (char)pItemArray[5];
+
+			if (NumberOfItems > 6 && pItemArray[6] != -1)
+				sub_mesh_fan[index][1] = (char)pItemArray[6];
+
+			SortSubJoints(index);
+		}
+
+		break;
+
+	case 17:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 1;
+
+			if (NumberOfItems > 1 && pItemArray[1] != -1)
+				sub_death_release[index] = (char)pItemArray[1];
+
+			if (NumberOfItems > 2 && pItemArray[2] != -1)
+				sub_surface_dismount[index] = (char)pItemArray[2];
+
+			if (NumberOfItems > 3 && pItemArray[3] != -1)
+				sub_sfx_little_sub_start[index] = pItemArray[3];
+
+			if (NumberOfItems > 4 && pItemArray[4] != -1)
+				sub_sfx_little_sub_stop[index] = pItemArray[4];
+
+			if (NumberOfItems > 5 && pItemArray[5] != -1)
+				sub_start_frame_underwater[index] = pItemArray[5];
+
+			if (NumberOfItems > 6 && pItemArray[6] != -1)
+				sub_start_frame_surface[index] = pItemArray[6];
+
+			if (NumberOfItems > 7 && pItemArray[7] != -1)
+				sub_surface_water_depth[index] = pItemArray[7];
+		}
+
+		break;
+
+	case 18:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 1;
+
+			if (NumberOfItems > 1 && pItemArray[1] != -1)
+				sub_sfx_lara_sub_breathe[index] = pItemArray[1];
+
+			if (NumberOfItems > 2 && pItemArray[2] != -1)
+				sub_sfx_swimsuit_metal_clash[index] = pItemArray[2];
+
+			if (NumberOfItems > 3 && pItemArray[3] != -1)
+				sub_breath_clash[index] = (char)pItemArray[3];
+
+			if (NumberOfItems > 4 && pItemArray[4] != -1)
+				sub_breath_no_air[index] = (char)pItemArray[4];
+
+			if (NumberOfItems > 5 && pItemArray[5] != -1)
+				sub_speed_clash[index] = pItemArray[5];
+		}
+
+		break;
+
+	case 19:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 1;
+
+			if (NumberOfItems > 1 && pItemArray[1] != -1)
+				sub_mesh_engine[index] = (char)pItemArray[1];
+
+			if (NumberOfItems > 2 && pItemArray[2] != -1)
+				sub_sprite_air_bubbles[index] = (char)pItemArray[2];
+
+			if (NumberOfItems > 3 && pItemArray[3] != -1)
+				sub_sprite_engine_bubbles[index][0] = (char)pItemArray[3];
+
+			if (NumberOfItems > 4 && pItemArray[4] != -1)
+				sub_sprite_engine_bubbles[index][1] = (char)pItemArray[4];
+
+			if (NumberOfItems > 5 && pItemArray[5] != -1)
+				sub_sfx_little_sub_loop[index] = pItemArray[5];
+
+			if (NumberOfItems > 6 && pItemArray[6] != -1)
+				sub_sfx_lara_underwater_engine[index] = pItemArray[6];
 		}
 
 		break;
@@ -16091,6 +17152,27 @@ void pcbParametersMine(ushort ParameterValue, long NumberOfItems, short* pItemAr
 
 			if (NumberOfItems > 3 && pItemArray[3] != -1)
 				sfx_lara_electric_crackles[index] = pItemArray[3];
+		}
+
+		break;
+
+	case 3:
+
+		if (NumberOfItems > 0 && pItemArray[0] != -1)
+		{
+			index = pItemArray[0] - 1;
+
+			if (NumberOfItems > 1 && pItemArray[1] != -1)
+				HeadlightRed[index] = (uchar)pItemArray[1];
+
+			if (NumberOfItems > 2 && pItemArray[2] != -1)
+				HeadlightGreen[index] = (uchar)pItemArray[2];
+
+			if (NumberOfItems > 3 && pItemArray[3] != -1)
+				HeadlightBlue[index] = (uchar)pItemArray[3];
+
+			if (NumberOfItems > 4 && pItemArray[4] != -1)
+				HeadlightDistance[index] = (uchar)pItemArray[4];
 		}
 
 		break;
@@ -16393,7 +17475,7 @@ void Inject(void)
 	*ptr++ = (ulong)QuadBikeUserControl;
 	*ptr++ = (ulong)QuadBikeControl;
 	*ptr++ = (ulong)IsQuadBikeAssigned;
-	*ptr++ = (ulong)IsInQuadBike;
+	*ptr++ = (ulong)IsOnQuadBike;
 	*ptr++ = (ulong)IsDrivingQuadBike;
 	*ptr++ = (ulong)SortQuadBikeJoints;
 	*ptr++ = (ulong)setup_quad_bike;
@@ -16552,7 +17634,7 @@ void Inject(void)
 	*ptr++ = (ulong)SubEffects;
 	*ptr++ = (ulong)S_DrawSubWakeFX;
 	*ptr++ = (ulong)IsSubAssigned;
-	*ptr++ = (ulong)IsInSub;
+	*ptr++ = (ulong)IsOnSub;
 	*ptr++ = (ulong)IsDrivingSub;
 	*ptr++ = (ulong)DrawAirBarSub;
 	*ptr++ = (ulong)setup_sub;
@@ -16563,6 +17645,20 @@ void Inject(void)
 	*ptr++ = (ulong)AddPolyLineSorted;
 	*ptr++ = (ulong)LaraElectricDeath;
 	*ptr++ = (ulong)DrawElectricDeath;
+	*ptr++ = (ulong)SetLaraTorchColour;
+	*ptr++ = (ulong)SetLaraTorchRange;
+	*ptr++ = (ulong)SubTriggerAirBubbles;
+	*ptr++ = (ulong)SortSubJoints;
+	*ptr++ = (ulong)GetOnSubNow;
+	*ptr++ = (ulong)SubToPickupCollision;
+	*ptr++ = (ulong)UpdateSubsuitAngles;
+	*ptr++ = (ulong)DoSubsuitStuff;
+	*ptr++ = (ulong)SubTriggerEngineBubbles;
+	*ptr++ = (ulong)SubTriggerEngineEffects;
+	*ptr++ = (ulong)IsSubAssignedToItem;
+	*ptr++ = (ulong)IsDrivingSubNumber;
+	*ptr++ = (ulong)GetOffSubNow;
+	*ptr++ = (ulong)FindAIObject;
 
 	INJECT(0x00910000, print_secret_counter);
 	INJECT(0x00910005, burning_torch_customizer_colour);
@@ -16643,4 +17739,6 @@ void Inject(void)
 	INJECT(0x00910181, DrawAirBarSub);
 	INJECT(0x00910186, ControlElectricDeath);
 	INJECT(0x0091018B, DrawElectricDeath);
+	INJECT(0x00910190, SetLaraTorchColour);
+	INJECT(0x00910195, SetLaraTorchRange);
 }
